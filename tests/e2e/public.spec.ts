@@ -45,7 +45,7 @@ test("busca sem acento, filtros, preço médio por tipo e estados vazios", async
   await page.getByRole("link", { name: "Remover filtros", exact: true }).click();
   await expect(page.locator(".provider-result").first()).toBeVisible();
   await page.goto("/buscar?modelo_preco=SOB_CONSULTA&preco_min=10");
-  await expect(page.getByRole("alert")).toContainText("Alguns filtros são inválidos");
+  await expect(page.locator("main").getByRole("alert")).toContainText("Alguns filtros são inválidos");
 });
 
 test("comparação limita três, persiste após reload, substitui contexto e remove pausada", async ({ page }) => {
@@ -128,13 +128,27 @@ test("perfil próprio impede autoavaliação", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Publicar avaliação", exact: true })).toHaveCount(0);
   const pool = testPool();
   try {
-    const own = await pool.query<{ id: string }>("SELECT id FROM perfil_prestador WHERE slug='prestador-demo-1'");
+    const own = await pool.query<{ id: string; userId: string }>("SELECT id,usuario_id AS \"userId\" FROM perfil_prestador WHERE slug='prestador-demo-1'");
+    const target = await pool.query<{ id: string }>("SELECT id FROM perfil_prestador WHERE slug='prestador-demo-2'");
+    await pool.query("DELETE FROM avaliacao WHERE usuario_id=$1 AND prestador_id=$2", [own.rows[0].userId, target.rows[0].id]);
     await page.goto("/prestadores/prestador-demo-2");
-    await page.locator('input[name="providerId"]').evaluate((input, id) => { (input as HTMLInputElement).value = id; }, own.rows[0].id);
     await page.getByLabel("Nota", { exact: true }).selectOption("5");
+    let tampered = false;
+    await page.route("**/prestadores/prestador-demo-2", async (route) => {
+      const request = route.request();
+      if (request.method() !== "POST") return route.continue();
+      const body = request.postData() ?? "";
+      const modified = body.replaceAll(target.rows[0].id, own.rows[0].id);
+      tampered = modified !== body;
+      await route.continue({ postData: modified });
+    });
     await page.getByRole("button", { name: "Publicar avaliação", exact: true }).click();
-    await expect(page.getByRole("alert")).toContainText("seu próprio perfil");
-  } finally { await pool.end(); }
+    await expect(page.locator("main").getByRole("alert")).toContainText("seu próprio perfil");
+    expect(tampered).toBe(true);
+  } finally {
+    await pool.query("DELETE FROM avaliacao WHERE usuario_id=(SELECT usuario_id FROM perfil_prestador WHERE slug='prestador-demo-1') AND prestador_id=(SELECT id FROM perfil_prestador WHERE slug='prestador-demo-2')");
+    await pool.end();
+  }
 });
 
 test("mobile abre filtros em modal sem overflow horizontal", async ({ page }) => {
@@ -148,4 +162,24 @@ test("mobile abre filtros em modal sem overflow horizontal", async ({ page }) =>
   await page.keyboard.press("Escape");
   await expect(dialog).not.toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
+
+test("foto HTTPS indisponível mantém iniciais no perfil e na busca", async ({ page }) => {
+  const pool = testPool();
+  const photoUrl = "https://photo-fixture.example.test/unavailable.png";
+  const original = await pool.query<{ photoUrl: string | null }>("SELECT foto_url AS \"photoUrl\" FROM perfil_prestador WHERE slug='prestador-demo-3'");
+  try {
+    await pool.query("UPDATE perfil_prestador SET foto_url=$1 WHERE slug='prestador-demo-3'", [photoUrl]);
+    await page.route(photoUrl, (route) => route.abort("failed"));
+    await page.goto("/prestadores/prestador-demo-3");
+    await expect(page.locator(".profile-heading span.provider-avatar")).toHaveText("NS");
+    await expect(page.locator(".profile-heading img.provider-avatar")).toHaveCount(0);
+    await page.goto("/buscar?q=nexo");
+    const result = page.locator(".provider-result").filter({ has: page.getByRole("heading", { name: "Nexo Studio — Demo", exact: true }) });
+    await expect(result.locator("span.provider-avatar")).toHaveText("NS");
+    await expect(result.locator("img.provider-avatar")).toHaveCount(0);
+  } finally {
+    await pool.query("UPDATE perfil_prestador SET foto_url=$1 WHERE slug='prestador-demo-3'", [original.rows[0]?.photoUrl ?? null]);
+    await pool.end();
+  }
 });

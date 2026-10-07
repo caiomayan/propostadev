@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPublicProvider, getProviderReviews } from "@/modules/search/queries";
 import { getSession } from "@/lib/auth/session";
-import { ProviderAvatar } from "@/components/provider-card";
+import { ProviderAvatar } from "@/components/provider-avatar";
 import { ProviderContacts } from "@/components/provider-contacts";
 import { CompareButton } from "@/components/comparison-selection";
 import { ReviewForm } from "@/components/review-form";
@@ -19,7 +19,7 @@ export default async function ProviderPage({ params, searchParams }: { params: P
   const session = await getSession();
   const reviewData = await getProviderReviews(provider.id, page, session?.user.id);
   const pages = Math.ceil(provider.reviewCount / 10);
-  return <section className="container section"><p><Link href="/buscar" className="muted">← Voltar à busca</Link></p><div className="profile-heading"><ProviderAvatar name={provider.displayName}/><div><p className="eyebrow">{provider.type === "PESSOA_FISICA" ? "Pessoa física" : "Pessoa jurídica"}</p><h1>{provider.displayName}</h1><p className="muted">{provider.yearsExperience} {provider.yearsExperience === 1 ? "ano" : "anos"} de experiência · {location(provider)}</p><p>{reputation(provider.rating, provider.reviewCount)}</p></div></div>
+  return <section className="container section"><p><Link href="/buscar" className="muted">← Voltar à busca</Link></p><div className="profile-heading"><ProviderAvatar name={provider.displayName} photoUrl={provider.photoUrl}/><div><p className="eyebrow">{provider.type === "PESSOA_FISICA" ? "Pessoa física" : "Pessoa jurídica"}</p><h1>{provider.displayName}</h1><p className="muted">{provider.yearsExperience} {provider.yearsExperience === 1 ? "ano" : "anos"} de experiência · {location(provider)}</p><p>{reputation(provider.rating, provider.reviewCount)}</p></div></div>
     <section id="contato" className="panel stack"><h2>Entre em contato diretamente</h2><p className="muted">Combine escopo, prazo e valor com o prestador. O contato acontece fora da Proposta.dev.</p><ProviderContacts provider={provider}/><p className="muted">{provider.contactEmail}</p></section>
     <section className="section"><h2>Sobre o prestador</h2><p className="profile-description">{provider.description}</p><p className="muted">Tipo de prestador e experiência são informações autodeclaradas.</p></section>
     <section><h2>Serviços anunciados</h2>{provider.offers.length ? provider.offers.map((offer) => <article className="profile-offer" key={offer.id}><p className="eyebrow">{offer.serviceName}</p><h3>{offer.title}</h3><p className="profile-offer-description">{offer.description}</p><div className="inline"><div><strong>{price(offer)}</strong><p className="muted">{deadline(offer)}</p></div><CompareButton offerId={offer.id} providerId={provider.id}/></div></article>) : <div className="empty panel"><p>Este prestador ainda não tem serviços ativos anunciados.</p></div>}</section>

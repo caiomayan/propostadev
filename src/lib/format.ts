@@ -9,7 +9,7 @@ export function price(offer: Pick<Offer, "priceType" | "priceMin" | "priceMax">)
     case "SOB_CONSULTA": return "Sob consulta";
     case "POR_HORA": return `${money(offer.priceMin)}/hora`;
     case "A_PARTIR_DE": return `A partir de ${money(offer.priceMin)}`;
-    case "INTERVALO": return `${money(offer.priceMin)} a ${money(offer.priceMax)}`;
+    case "INTERVALO": return Number(offer.priceMin) === Number(offer.priceMax) ? money(offer.priceMin) : `${money(offer.priceMin)} a ${money(offer.priceMax)}`;
     default: return money(offer.priceMin);
   }
 }

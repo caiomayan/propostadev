@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ProviderCard } from "@/components/provider-card";
 import { PriceFilters } from "@/components/provider-price-filters";
 import { FilterPanel } from "@/components/provider-filter-panel";
+import { FilterSelect } from "@/components/provider-filter-select";
 import { getCatalog, getPriceAverage } from "@/modules/catalog/queries";
 import { searchProviders } from "@/modules/search/queries";
 import { searchSchema } from "@/modules/search/validation";
@@ -24,14 +25,14 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     {!parsed.success && <div role="alert" className="panel filter-error"><p>Alguns filtros são inválidos. Ajuste os campos e busque novamente. Apenas o texto da busca foi mantido nos resultados.</p><ul>{parsed.error.issues.map((issue, index) => <li key={index}>{issue.path.join(".")}: {issue.message}</li>)}</ul></div>}
     <div className="search-layout"><FilterPanel><form action="/buscar" method="get"><div className="filter-fields">
       <label>O que você precisa?<input name="q" maxLength={120} defaultValue={input.q} placeholder="Serviço, tecnologia ou nome"/></label>
-      <label>Categoria<select name="categoria" defaultValue={input.categoria ?? ""}><option value="">Todas as categorias</option>{catalog.categories.map((category) => <option key={category.id} value={category.slug}>{category.name}</option>)}</select></label>
-      <label>Tipo de serviço<select name="tipo" defaultValue={input.tipo ?? ""}><option value="">Todos os serviços</option>{catalog.types.map((type) => <option key={type.id} value={type.slug}>{type.name}</option>)}</select></label>
-      <label>Prestador<select name="pessoa" defaultValue={input.pessoa ?? ""}><option value="">Pessoa física ou jurídica</option><option value="PESSOA_FISICA">Pessoa física</option><option value="PESSOA_JURIDICA">Pessoa jurídica</option></select></label>
+      <FilterSelect label="Categoria" name="categoria" defaultValue={input.categoria ?? ""}><option value="">Todas as categorias</option>{catalog.categories.map((category) => <option key={category.id} value={category.slug}>{category.name}</option>)}</FilterSelect>
+      <FilterSelect label="Tipo de serviço" name="tipo" defaultValue={input.tipo ?? ""}><option value="">Todos os serviços</option>{catalog.types.map((type) => <option key={type.id} value={type.slug}>{type.name}</option>)}</FilterSelect>
+      <FilterSelect label="Prestador" name="pessoa" defaultValue={input.pessoa ?? ""}><option value="">Pessoa física ou jurídica</option><option value="PESSOA_FISICA">Pessoa física</option><option value="PESSOA_JURIDICA">Pessoa jurídica</option></FilterSelect>
       <label>Experiência mínima (anos)<input name="experiencia_min" type="number" min={0} max={80} defaultValue={input.experiencia_min}/></label>
-      <label>Avaliação mínima<select name="nota_min" defaultValue={input.nota_min ?? ""}><option value="">Qualquer avaliação</option>{[1, 2, 3, 4, 5].map((rating) => <option key={rating} value={rating}>{rating} de 5 ou mais</option>)}</select></label>
+      <FilterSelect label="Avaliação mínima" name="nota_min" defaultValue={input.nota_min ?? ""}><option value="">Qualquer avaliação</option>{[1, 2, 3, 4, 5].map((rating) => <option key={rating} value={rating}>{rating} de 5 ou mais</option>)}</FilterSelect>
       <PriceFilters key={input.modelo_preco ?? "any"} model={input.modelo_preco} min={input.preco_min} max={input.preco_max}/>
       <label>Prazo estimado de até (dias)<input name="prazo_ate" type="number" min={1} max={3650} defaultValue={input.prazo_ate}/></label><p className="muted">Inclui prazos fixos e intervalos com limite superior. Prazos a combinar e “a partir de” ficam de fora.</p>
-      <label>Ordenar por<select name="ordenar" defaultValue={input.ordenar}><option value="nome">Nome</option><option value="nota">Melhor avaliação</option><option value="experiencia">Maior experiência</option><option value="preco">Menor preço anunciado</option></select></label>
+      <FilterSelect label="Ordenar por" name="ordenar" defaultValue={input.ordenar}><option value="nome">Nome</option><option value="nota">Melhor avaliação</option><option value="experiencia">Maior experiência</option><option value="preco">Menor preço anunciado</option></FilterSelect>
       <button className="button">Buscar serviços</button><Link href="/buscar" className="button secondary">Limpar filtros</Link>
     </div></form></FilterPanel><div className="search-main">
       <div className="search-count"><h2>{search.total} {search.total === 1 ? "prestador encontrado" : "prestadores encontrados"}</h2><span className="muted">Uma oferta por prestador · outras no perfil</span></div>
