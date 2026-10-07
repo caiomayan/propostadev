@@ -108,6 +108,7 @@ test("account, provider and offers persist; ownership is enforced across account
   await expect(otherSession).toHaveURL(/\/entrar$/);
   await otherSessionContext.close();
   await page.getByRole("button", { name: "Sair", exact: true }).click();
+  await expect(page).toHaveURL(/\/$/);
   await page.goto("/painel/ofertas");
   await expect(page).toHaveURL(/\/entrar$/);
   await page.getByLabel("E-mail", { exact: true }).fill(firstEmail);
