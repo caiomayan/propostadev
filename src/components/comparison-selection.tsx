@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 const storageKey = "proposta-comparison-offers";
@@ -45,13 +45,14 @@ export function CompareButton({ offerId, providerId }: { offerId: string; provid
 }
 
 export function ComparisonTray() {
+  const pathname = usePathname();
   const [ids, setIds] = useState<string[]>([]);
   useEffect(() => {
     const sync = (event?: Event) => setIds(event instanceof CustomEvent && Array.isArray(event.detail) ? event.detail : readIds());
     sync(); window.addEventListener(eventName, sync); window.addEventListener("storage", sync);
     return () => { window.removeEventListener(eventName, sync); window.removeEventListener("storage", sync); };
   }, []);
-  if (!ids.length) return null;
+  if (!ids.length || (pathname !== "/buscar" && !pathname.startsWith("/prestadores/"))) return null;
   return <aside className="comparison-tray" aria-label="Seleção para comparação"><span>{ids.length} de 3 prestadores selecionados</span><Button asChild className="button"><Link href={`/comparar?ofertas=${ids.join(",")}`}>Ver comparação</Link></Button><Button variant="outline" className="button secondary" onClick={() => writeIds([])}>Limpar</Button></aside>;
 }
 

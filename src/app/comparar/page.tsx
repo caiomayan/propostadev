@@ -10,7 +10,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
   const requested = raw.slice(0, 500).split(",").filter(Boolean);
   const { offers, removed } = await getComparison(requested);
   const ids = offers.map((offer) => offer.id);
-  return <section className="container section"><ComparisonHydrator ids={ids} hasQuery={params.ofertas !== undefined}/><div className="page-heading"><p className="eyebrow">Sua seleção</p><h1>Compare antes de conversar</h1><p className="muted">Até três prestadores, com o serviço que você selecionou. Preços e prazos são anunciados e precisam ser confirmados no contato.</p></div>
+  return <section className="container section"><ComparisonHydrator ids={ids} hasQuery={params.ofertas !== undefined}/><div className="page-heading"><h1>Compare antes de conversar</h1><p className="muted">Até três prestadores, com o serviço que você selecionou. Preços e prazos são anunciados e precisam ser confirmados no contato.</p></div>
     {removed && <p role="status" className="panel">Algumas ofertas foram removidas da seleção porque estão indisponíveis, repetidas ou excedem o limite de três prestadores.</p>}
     {offers.length === 0 ? <div className="empty panel"><h2>Sua comparação começa na busca</h2><p className="muted">Escolha até três prestadores para conferir serviços, preços, experiência e avaliações lado a lado.</p><Link className="button" href="/buscar">Buscar desenvolvedores</Link></div> : <>
       {offers.length === 1 && <p className="panel">Você selecionou um prestador. <Link href="/buscar">Adicione outro na busca</Link> para comparar.</p>}
