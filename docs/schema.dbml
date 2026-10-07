@@ -1,0 +1,119 @@
+Project proposta_dev {
+  database_type: 'PostgreSQL'
+  Note: 'Modelo de domínio V1. auth_user é projeção conceitual de user do Better Auth; migrations da auth vêm da biblioteca. Checks e índices parciais adicionais em DATABASE-RULES.md.'
+}
+Enum tipo_prestador {
+  PESSOA_FISICA
+  PESSOA_JURIDICA
+}
+Enum tipo_preco {
+  FIXO
+  A_PARTIR_DE
+  INTERVALO
+  POR_HORA
+  SOB_CONSULTA
+}
+Enum tipo_prazo {
+  FIXO
+  INTERVALO
+  A_PARTIR_DE
+  A_COMBINAR
+}
+Table auth_user {
+  id text [pk, note: 'ID nativo da auth; nome físico user/schema conforme adapter. Não criar conta paralela.']
+  name text [not null]
+  email text [not null, unique]
+  email_verified boolean [not null, default: false]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  Note: 'Projeção parcial; session/account/verification e campos adicionais devem ser gerados pela versão instalada de Better Auth.'
+}
+Table perfil_prestador {
+  id uuid [pk, default: `gen_random_uuid()`]
+  usuario_id text [not null, unique]
+  slug varchar(160) [not null, unique]
+  tipo tipo_prestador [not null]
+  nome_exibicao varchar(100) [not null]
+  descricao text [not null]
+  anos_experiencia smallint [not null]
+  foto_url text
+  cidade varchar(100)
+  uf varchar(2)
+  pais varchar(2) [not null, default: 'BR']
+  email_contato varchar(254) [not null]
+  telefone varchar(20)
+  whatsapp varchar(20)
+  site_url text
+  github_url text
+  linkedin_url text
+  contatos_publicados_em timestamptz [not null, note: 'Consentimento explícito para exposição dos contatos; não é aceite de política genérica.']
+  ativo boolean [not null, default: true]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+}
+Table categoria {
+  id uuid [pk, default: `gen_random_uuid()`]
+  nome varchar(100) [not null]
+  slug varchar(120) [not null, unique]
+  ativo boolean [not null, default: true]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+}
+Table tipo_servico {
+  id uuid [pk, default: `gen_random_uuid()`]
+  categoria_id uuid [not null]
+  nome varchar(100) [not null]
+  slug varchar(120) [not null, unique]
+  descricao text
+  ativo boolean [not null, default: true]
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  indexes {
+    categoria_id
+  }
+}
+Table oferta_servico {
+  id uuid [pk, default: `gen_random_uuid()`]
+  prestador_id uuid [not null]
+  tipo_servico_id uuid [not null]
+  titulo varchar(120) [not null]
+  descricao text [not null]
+  tipo_preco tipo_preco [not null]
+  preco_minimo numeric(10,2)
+  preco_maximo numeric(10,2)
+  tipo_prazo tipo_prazo [not null]
+  prazo_minimo_dias integer
+  prazo_maximo_dias integer
+  ativo boolean [not null, default: false]
+  deleted_at timestamptz
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  indexes {
+    prestador_id
+    (tipo_servico_id, ativo)
+  }
+  Note: 'SQL: unique parcial (prestador_id,tipo_servico_id) WHERE ativo AND deleted_at IS NULL; checks dependentes de tipo_preco/tipo_prazo obrigatórios.'
+}
+Table avaliacao {
+  id uuid [pk, default: `gen_random_uuid()`]
+  usuario_id text [not null]
+  prestador_id uuid [not null]
+  nota smallint [not null]
+  comentario text
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
+  checks {
+    `nota BETWEEN 1 AND 5` [name: 'avaliacao_nota_valida']
+    `comentario IS NULL OR char_length(comentario) <= 2000` [name: 'avaliacao_comentario_limite']
+  }
+  indexes {
+    (usuario_id, prestador_id) [unique]
+    (prestador_id, created_at)
+  }
+}
+Ref: perfil_prestador.usuario_id - auth_user.id [delete: cascade]
+Ref: tipo_servico.categoria_id > categoria.id [delete: restrict]
+Ref: oferta_servico.prestador_id > perfil_prestador.id [delete: cascade]
+Ref: oferta_servico.tipo_servico_id > tipo_servico.id [delete: restrict]
+Ref: avaliacao.usuario_id > auth_user.id [delete: cascade]
+Ref: avaliacao.prestador_id > perfil_prestador.id [delete: cascade]
