@@ -2,6 +2,25 @@
 
 Diretório de prestadores de desenvolvimento. Visitantes pesquisam, filtram, comparam até três prestadores e acessam contatos públicos. Uma conta pode publicar perfil PF/PJ, administrar ofertas e avaliar outros prestadores. Negociação externa; sem pagamentos ou contratação interna.
 
+
+## Produção — Supabase e Vercel
+
+Publicado em 07/10/2026: https://propostadev-one.vercel.app. PostgreSQL no Supabase em São Paulo; aplicativo na Vercel Hobby, conectado à branch main. Configuração feita pelo navegador.
+
+Variáveis sensíveis na Vercel: DATABASE_URL (transaction pooler, porta 6543), BETTER_AUTH_SECRET (aleatório) e BETTER_AUTH_URL=https://propostadev-one.vercel.app. Nunca versionar os valores privados. A URL do banco usa sslmode=verify-full&sslrootcert=supabase-ca.crt; a senha deve estar codificada para URL.
+
+Build Command na Vercel:
+
+```sh
+curl -fsS https://supabase-downloads.s3-ap-southeast-1.amazonaws.com/prod/ssl/prod-ca-2021.crt -o supabase-ca.crt && pnpm db:migrate && node --conditions=react-server --import tsx scripts/seed.ts && pnpm build
+```
+
+A CA pública vem do endereço oficial apresentado pelo dashboard do Supabase. next.config.ts inclui supabase-ca.crt no tracing das funções. O arquivo é baixado em cada build; a verificação TLS permanece ativa. O comando do seed usa as variáveis do ambiente de hospedagem, sem exigir um .env local. Migrations e catálogo são incrementais/idempotentes; previews neste projeto usam a mesma base de produção e não devem executar alterações experimentais de schema.
+
+As 11 tabelas public têm RLS habilitada, sem políticas de acesso para anon/authenticated. Privilégios de tabelas/sequências atuais e futuras desses papéis foram restringidos. O acesso do aplicativo acontece somente no servidor pelo PostgreSQL; Better Auth continua responsável pelas contas/sessões. Não usar Supabase Auth no frontend deste projeto.
+
+Deploy, migrations e catálogo foram confirmados. Home, busca e redirecionamento privado foram validados no ambiente publicado; testes de autenticação usam uma conta QA sem perfil/oferta pública. Após um redeploy, recarregue formulários antigos antes de enviá-los, pois os identificadores das Server Actions podem mudar.
+
 ## Executar localmente
 
 Requisitos: Node 24 e Docker Desktop com engine Linux ativo. PostgreSQL roda somente no container; aplicativo roda no host. As versões exatas estão no package.json e pnpm-lock.yaml.
@@ -63,6 +82,6 @@ Auth HTTP tem limite persistente de 20 requisições/minuto e regras adicionais 
 
 ## Limites da entrega
 
-Não há SMTP, recuperação/verificação de e-mail, moderação, upload, OAuth, pagamentos, demandas ou propostas internas. Não há alegação de contratação verificada. Hospedagem, domínio, política de privacidade real, proteção operacional e moderação precisam de decisões próprias antes de lançamento público. O projeto não foi publicado em nuvem.
+Não há SMTP, recuperação/verificação de e-mail, moderação, upload, OAuth, pagamentos, demandas ou propostas internas. Não há alegação de contratação verificada. Domínio próprio, política de privacidade real, proteção operacional e moderação precisam de decisões próprias para a operação pública. O MVP foi publicado em Supabase/Vercel em 07/10/2026; veja a seção de produção.
 
 O registry shadcn foi usado diretamente após falhas locais da CLI; componentes em src/components/ui foram personalizados com os tokens do projeto. A dependência legada não utilizada do Drizzle Kit foi removida via override; veja ADR 0002. O audit de runtime foi executado separadamente da auditoria de ferramentas de desenvolvimento.
