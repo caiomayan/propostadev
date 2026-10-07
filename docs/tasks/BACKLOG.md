@@ -1,6 +1,6 @@
 # Backlog — tracker local
 
-Status atualizado em 06/10/2026. Evidências detalhadas em ../VALIDATION.md; limitações operacionais no README. Nenhuma issue remota criada.
+Status atualizado em 07/10/2026. Evidências detalhadas em ../VALIDATION.md; limitações operacionais no README. Nenhuma issue remota criada.
 
 | Tarefa | Depende de | Fatia / entrega | Evidência obrigatória |
 |---|---|---|---|
@@ -34,4 +34,18 @@ T00 é base técnica necessária; T01–T07 são fatias verticais, não agentes 
 | T09 | DONE | tests, README, VALIDATION; 28 unitários, 9 integração, 8 E2E; lint/typecheck/build passaram |
 | T10 | DONE | README, ADR0002, DESIGN, VALIDATION; instalação congelada e restart passaram; matriz RF01–12 registrada |
 
-Limite conhecido: audit de runtime limpo; ferramenta de desenvolvimento traz um advisory alto transitivo sem correção disponível. Não há deploy em nuvem; decisões de operação pública permanecem fora do escopo. Próxima etapa opcional é preparar um ambiente de hospedagem com suas políticas reais.
+Limite conhecido: audit de runtime limpo; ferramenta de desenvolvimento traz um advisory alto transitivo sem correção disponível. Deploy em nuvem concluído em 07/10/2026. Domínio próprio e políticas de operação pública continuam pendentes; configuração e limites estão no README.
+
+
+## Publicação — 07/10/2026
+
+Status: DONE. Supabase e Vercel configurados exclusivamente pelo navegador, conforme autorização do usuário.
+
+- Produção: https://propostadev-one.vercel.app, com deploy automático da branch main.
+- Migrations e seed de catálogo executados no build; catálogo com 3 categorias e 8 tipos de serviço, sem seed demo.
+- Conexão PostgreSQL com verificação TLS e CA oficial do Supabase incluída nas funções da Vercel; secrets armazenados nas variáveis da Vercel.
+- As 11 tabelas públicas têm RLS ativa; privilégios dos papéis anon/authenticated restringidos. O backend acessa o banco pelo servidor.
+- Verificado em produção: home, catálogo, busca vazia, redirecionamento privado, cadastro de QA, login, logout, sessão após recarregar e página de conta. A conta de QA não publicou perfil nem oferta.
+- Correção de empacotamento da CA: commit 000ba9d. Configuração e evidências no README: commit 19e4d7b.
+- Os 45 testes locais registrados acima pertencem à validação anterior; não foram reexecutados nesta etapa pelo navegador.
+- O checkout local não foi sincronizado nesta etapa. Atualizar a branch a partir do GitHub antes de retomar alterações locais.
