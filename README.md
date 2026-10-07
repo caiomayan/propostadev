@@ -1,31 +1,68 @@
-# Proposta.dev — pacote de implementação MVP
+# Proposta.dev
 
-Versão 1.0 • 06/10/2026 • Português brasileiro
+Diretório de prestadores de desenvolvimento. Visitantes pesquisam, filtram, comparam até três prestadores e acessam contatos públicos. Uma conta pode publicar perfil PF/PJ, administrar ofertas e avaliar outros prestadores. Negociação externa; sem pagamentos ou contratação interna.
 
-Este é um pacote de requisitos e execução, não um aplicativo já implementado. Extraia na raiz do repositório e envie ao agente o conteúdo de `PROMPT-AGENTE.md`. A primeira atividade é conferir o ambiente; a entrega esperada é o sistema funcionando com banco real, não apenas telas.
+## Executar localmente
 
-## Ordem de leitura
-1. AGENTS.md e GLOSSARY.md.
-2. docs/PRD.md e docs/SCOPE.md.
-3. docs/ARCHITECTURE.md e docs/DESIGN-SYSTEM.md.
-4. docs/schema.dbml e docs/specs/MVP.md.
-5. docs/tasks/BACKLOG.md e docs/ACCEPTANCE.md.
+Requisitos: Node 24 e Docker Desktop com engine Linux ativo. PostgreSQL roda somente no container; aplicativo roda no host. As versões exatas estão no package.json e pnpm-lock.yaml.
 
-## Decisões já tomadas
-- Next.js App Router, TypeScript strict, Tailwind, shadcn/ui; monólito modular.
-- PostgreSQL em Docker Compose, Drizzle ORM + migrations SQL versionadas, Better Auth com e-mail/senha e sessões persistidas.
-- App executa localmente com Node; apenas o banco precisa de Docker. Sem Supabase, Redis ou backend separado.
-- Usuário único; perfil de prestador opcional, PF ou PJ. Sem CPF/CNPJ na V1.
-- Catálogo administrado por seed; ofertas próprias dos prestadores; descoberta, comparação e contato externo.
-- Avaliações abertas a usuários autenticados, uma por usuário/prestador, sem autoavaliação.
-- Sem contratação, propostas, pagamentos, demandas, triagem ou recomendação automática.
+```powershell
+npm install --global pnpm@11.25.0
+pnpm install --frozen-lockfile
+Copy-Item .env.example .env
+```
 
-## Skills de Matt Pocock
-Instale no seu repositório com `npx skills@latest add mattpocock/skills`, escolhendo o agente de destino. O repositório oficial recomenda incluir `setup-matt-pocock-skills` e executar o setup por repositório. Configure documentos em `docs/`, glossário em `GLOSSARY.md` e tracker local em `docs/tasks/`.
+Preencha BETTER_AUTH_SECRET com uma sequência aleatória de pelo menos 32 caracteres. Gere uma com `node -e "console.log(require('node:crypto').randomBytes(48).toString('base64'))"`. Nunca publique .env. Os valores locais de POSTGRES_USER/PASSWORD/DB/PORT e DATABASE_URL devem coincidir. A porta do banco neste projeto é 5434; a do aplicativo é 3000.
 
-Os nomes das skills mudam entre versões: confira a instalação. O fluxo atual consultado é entrevista (`grill-me`/`grill-with-docs`), síntese de PRD (`to-prd`) e decomposição (`to-issues`); versões anteriores usavam `write-a-prd` e `prd-to-issues`. O pacote já contém o resultado desses passos. Use a entrevista apenas para bloqueios novos; não refaça todas as perguntas e não recrie o PRD sem motivo. Skills complementam SDD; não substituem specs e testes. Não há skills instaladas dentro deste ZIP.
+```powershell
+docker compose up -d --wait
+pnpm db:migrate
+pnpm db:seed
+pnpm dev
+```
 
-## Como entregar ao agente
-Cole PROMPT-AGENTE.md e permita leitura desta pasta. Ele deve implementar uma fatia funcional por vez, atualizar o backlog, testar, revisar e continuar até concluir o MVP. Não é preciso uma aprovação entre cada tarefa. Publicação, domínio e serviços pagos ficam fora desta entrega.
+Abra http://localhost:3000. Cadastre uma conta, crie o perfil e publique uma oferta. O seed padrão contém apenas 3 categorias e 8 tipos de serviço; a ausência inicial de prestadores é um estado real.
 
-Fontes técnicas consultadas: docs/SOURCES.md. Escolhas de produto são decisões deste projeto, não regras prescritas por essas fontes.
+## Demonstração opcional
+
+O seed demo é recusado em produção e exige opt-in. Ele cria oito perfis fictícios, identificados como Demo, com preços variados e uma avaliação sintética. Use apenas para exploração local. Para identificar o ambiente inteiro, ajuste DEMO_MODE=true antes de iniciar/buildar o aplicativo.
+
+```powershell
+$env:ALLOW_DEMO_SEED='true'
+pnpm db:seed:demo
+```
+
+Login local: prestador1@demo.example, senha Demo-local-2026! (ou DEMO_PASSWORD definido antes da primeira execução). Repetir o seed não redefine a senha de uma conta já existente. Não use essas credenciais em serviços públicos.
+
+## Testes e produção local
+
+```powershell
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm test:integration
+pnpm build
+pnpm exec playwright install chromium
+pnpm test:e2e
+pnpm start
+```
+
+Integração exige DATABASE_URL_TEST. O nome da base deve terminar em `_test` e ser diferente do banco de desenvolvimento. A preparação cria somente a base dedicada se ausente e aplica migrations. E2E usa essa base, seed demo e servidor de produção em http://localhost:3100; não reutiliza servidor existente. Os testes criam contas próprias e não limpam o banco de desenvolvimento. Não rode testes e script visual simultaneamente contra o servidor de teste.
+
+Para screenshots, mantenha um servidor separado em 3100 apontando ao DATABASE_URL_TEST, BETTER_AUTH_URL=http://localhost:3100 e DEMO_MODE=true, então execute `pnpm exec tsx scripts/visual-qa.ts`. O script captura 375/768/1440px em artifacts/visual-qa e verifica overflow/status; inspeção visual humana continua necessária.
+
+Resultados e limites reais: docs/VALIDATION.md. Escopo: docs/SCOPE.md. Regras: docs/specs/MVP.md e docs/DATABASE-RULES.md. Progresso: docs/tasks/BACKLOG.md. Decisões de implementação: docs/adr/0002-implementation.md.
+
+## Dados e alterações
+
+Sessões e hashes pertencem ao Better Auth; schema gerado com `pnpm auth:generate`. Domínio usa Drizzle e migrations SQL versionadas. Depois de alterar o schema, `pnpm db:generate`, revise o SQL e execute `pnpm db:migrate`. Não use push destrutivo. Triggers adicionais são uma migration separada, 0001_domain-rules.sql; domain-rules.sql serve apenas como fonte legível, não deve ser executado novamente manualmente.
+
+`docker compose stop` preserva o volume. `docker compose up -d --wait` retoma os dados. Não execute down -v para reiniciar. Backup local: `docker compose exec -T db pg_dump -U proposta -d propostadev -Fc -f /tmp/propostadev.dump`, seguido de `docker compose cp db:/tmp/propostadev.dump ./propostadev.dump`. O dump contém dados pessoais: guarde fora do Git em armazenamento protegido. Restore em outra base vazia deve usar pg_restore com credenciais/nomes correspondentes. Para lançamento público, defina e teste política de backup e restore do ambiente real.
+
+Auth HTTP tem limite persistente de 20 requisições/minuto e regras adicionais da biblioteca em endpoints sensíveis. Server Actions usam contador SQL atômico de até 20 operações/minuto por identidade e escopo (conta, perfil, oferta, avaliação); login/cadastro usam hash do e-mail. Todos os writes de domínio validam entrada e sessão; ofertas e avaliações verificam propriedade na consulta.
+
+## Limites da entrega
+
+Não há SMTP, recuperação/verificação de e-mail, moderação, upload, OAuth, pagamentos, demandas ou propostas internas. Não há alegação de contratação verificada. Hospedagem, domínio, política de privacidade real, proteção operacional e moderação precisam de decisões próprias antes de lançamento público. O projeto não foi publicado em nuvem.
+
+O registry shadcn foi usado diretamente após falhas locais da CLI; componentes em src/components/ui foram personalizados com os tokens do projeto. A dependência legada não utilizada do Drizzle Kit foi removida via override; veja ADR 0002. O audit de runtime foi executado separadamente da auditoria de ferramentas de desenvolvimento.

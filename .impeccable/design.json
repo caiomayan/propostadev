@@ -1,0 +1,309 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-07T01:48:30.395Z",
+  "title": "Design System: Proposta.dev",
+  "extensions": {
+    "colorMeta": {
+      "background": {
+        "role": "neutral",
+        "displayName": "Papel neutro",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ],
+        "rampPurpose": "Prévia tonal sintetizada; não define cores adicionais do produto."
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Branco de superfície",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ],
+        "rampPurpose": "Prévia tonal sintetizada; não define cores adicionais do produto."
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Grafite de texto",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ],
+        "rampPurpose": "Prévia tonal sintetizada; não define cores adicionais do produto."
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Cinza suave",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ],
+        "rampPurpose": "Prévia tonal sintetizada; não define cores adicionais do produto."
+      },
+      "muted-foreground": {
+        "role": "neutral",
+        "displayName": "Cinza de metadados",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ],
+        "rampPurpose": "Prévia tonal sintetizada; não define cores adicionais do produto."
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Cinza de divisória",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ],
+        "rampPurpose": "Prévia tonal sintetizada; não define cores adicionais do produto."
+      },
+      "primary": {
+        "role": "primary",
+        "displayName": "Grafite principal",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ],
+        "rampPurpose": "Prévia tonal sintetizada; não define cores adicionais do produto."
+      },
+      "primary-foreground": {
+        "role": "neutral",
+        "displayName": "Branco de contraste",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ],
+        "rampPurpose": "Prévia tonal sintetizada; não define cores adicionais do produto."
+      },
+      "ring": {
+        "role": "neutral",
+        "displayName": "Cinza de foco",
+        "tonalRamp": [
+          "oklch(15% 0 0)",
+          "oklch(26% 0 0)",
+          "oklch(38% 0 0)",
+          "oklch(49% 0 0)",
+          "oklch(61% 0 0)",
+          "oklch(72% 0 0)",
+          "oklch(84% 0 0)",
+          "oklch(95% 0 0)"
+        ],
+        "rampPurpose": "Prévia tonal sintetizada; não define cores adicionais do produto."
+      },
+      "destructive": {
+        "role": "semantic",
+        "displayName": "Vermelho de erro",
+        "tonalRamp": [
+          "oklch(15% 0.10 25)",
+          "oklch(26% 0.10 25)",
+          "oklch(38% 0.10 25)",
+          "oklch(49% 0.10 25)",
+          "oklch(61% 0.10 25)",
+          "oklch(72% 0.10 25)",
+          "oklch(84% 0.10 25)",
+          "oklch(95% 0.10 25)"
+        ],
+        "rampPurpose": "Prévia tonal sintetizada; não define cores adicionais do produto."
+      },
+      "success": {
+        "role": "semantic",
+        "displayName": "Verde de confirmação",
+        "tonalRamp": [
+          "oklch(15% 0.10 145)",
+          "oklch(26% 0.10 145)",
+          "oklch(38% 0.10 145)",
+          "oklch(49% 0.10 145)",
+          "oklch(61% 0.10 145)",
+          "oklch(72% 0.10 145)",
+          "oklch(84% 0.10 145)",
+          "oklch(95% 0.10 145)"
+        ],
+        "rampPurpose": "Prévia tonal sintetizada; não define cores adicionais do produto."
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Títulos de página; 30px até 768px, autenticação em 28px."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Texto geral; metadados em escala menor."
+      }
+    },
+    "shadows": [
+      {
+        "name": "comparison-tray",
+        "value": "0 4px 16px #18181b0d",
+        "purpose": "Distingue a bandeja sticky do plano de conteúdo."
+      }
+    ],
+    "motion": [
+      {
+        "name": "filter-sheet-transition",
+        "value": "180ms",
+        "purpose": "Override da duração de transição do filtro; reduced-motion desativa transições e animações."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "result-intermediate",
+        "value": "1100px"
+      },
+      {
+        "name": "global-mobile",
+        "value": "768px"
+      },
+      {
+        "name": "public-mobile",
+        "value": "767px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "CTA da composição pública.",
+      "html": "<button class=\"ds-primary\">Ver perfil</button>",
+      "css": ".ds-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border-radius:6px;padding:10px 18px;font-size:14px;font-weight:500;border:1px solid var(--primary);background:var(--primary);color:var(--primary-foreground);font-family:Arial,Helvetica,sans-serif;cursor:pointer;}.ds-primary:hover{opacity:.88}.ds-primary:focus-visible{outline:2px solid var(--ring);outline-offset:3px}.ds-primary:disabled{opacity:.6;cursor:wait}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Ação complementar com contorno neutro.",
+      "html": "<button class=\"ds-secondary\">Comparar</button>",
+      "css": ".ds-secondary{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border-radius:6px;padding:10px 18px;font-size:14px;font-weight:500;border:1px solid var(--primary);background:var(--primary);color:var(--primary-foreground);font-family:Arial,Helvetica,sans-serif;cursor:pointer;background:var(--card);color:var(--foreground);border-color:var(--border)}.ds-secondary:hover{opacity:.88}.ds-secondary:focus-visible{outline:2px solid var(--ring);outline-offset:3px}.ds-secondary:disabled{opacity:.6;cursor:wait}"
+    },
+    {
+      "name": "Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Label persistente e campo da composição global.",
+      "html": "<label class=\"ds-field\">Buscar serviços<input placeholder=\"Site, aplicativo, integração\"></label>",
+      "css": ".ds-field{display:flex;flex-direction:column;gap:8px;font-size:14px;font-weight:500;color:var(--foreground);font-family:Arial,Helvetica,sans-serif;}.ds-field input{border:1px solid var(--border);border-radius:6px;min-height:44px;padding:10px 12px;background:var(--card);color:var(--foreground);font-size:16px;font-weight:400;font-family:Arial,Helvetica,sans-serif;}.ds-field input:focus-visible{outline:2px solid var(--ring);outline-offset:3px}"
+    },
+    {
+      "name": "Navigation",
+      "kind": "nav",
+      "description": "Wordmark e links textuais com quebra no mobile.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Principal\"><a class=\"ds-wordmark\" href=\"#\">Proposta<span>.dev</span></a><a href=\"#\">Buscar desenvolvedores</a><a href=\"#\">Oferecer serviços</a><a href=\"#\">Comparar</a></nav>",
+      "css": ".ds-nav{display:flex;align-items:center;flex-wrap:wrap;gap:28px;font-size:14px;color:var(--foreground);font-family:Arial,Helvetica,sans-serif;}.ds-nav a{color:inherit;text-decoration:none}.ds-nav a:hover{text-decoration:underline;text-underline-offset:4px}.ds-nav a:focus-visible{outline:2px solid var(--ring);outline-offset:3px}.ds-wordmark{font-size:23px;font-weight:600;letter-spacing:-.04em;white-space:nowrap}.ds-wordmark span{color:var(--muted-foreground)}"
+    },
+    {
+      "name": "Domain Label",
+      "kind": "chip",
+      "refersTo": "domain-label",
+      "description": "Metadado neutro de domínio; não é um kicker promocional.",
+      "html": "<span class=\"ds-label\">Pessoa física</span>",
+      "css": ".ds-label{display:inline-block;font-size:12px;border:1px solid var(--border);border-radius:4px;padding:3px 8px;background:var(--muted);color:var(--foreground);font-family:Arial,Helvetica,sans-serif;}"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Superfície para formulário ou conteúdo agrupado.",
+      "html": "<section class=\"ds-panel\"><h2>Perfil</h2><p>Informações públicas do prestador.</p></section>",
+      "css": ".ds-panel{background:var(--card);color:var(--foreground);border:1px solid var(--border);border-radius:8px;padding:24px;min-width:0;font-family:Arial,Helvetica,sans-serif;}.ds-panel h2{margin:0;font-size:24px;font-weight:600;line-height:1.3;letter-spacing:-.02em}.ds-panel p{margin:12px 0 0;color:var(--muted-foreground);font-size:16px;line-height:1.6}@media(max-width:768px){.ds-panel{padding:20px}}"
+    },
+    {
+      "name": "Comparison Tray",
+      "kind": "custom",
+      "description": "Seleção sticky apenas em busca e perfil, quando há ofertas selecionadas.",
+      "html": "<aside class=\"ds-tray\" aria-label=\"Seleção para comparação\"><span>2 de 3 prestadores selecionados</span><button class=\"ds-tray-action\">Ver comparação</button></aside>",
+      "css": ".ds-tray{position:sticky;bottom:16px;display:flex;justify-content:center;align-items:center;gap:16px;margin:24px auto 0;padding:16px;background:var(--card);color:var(--foreground);border:1px solid var(--border);border-radius:8px;box-shadow:0 4px 16px #18181b0d;font-family:Arial,Helvetica,sans-serif;}.ds-tray-action{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border-radius:6px;padding:10px 18px;font-size:14px;font-weight:500;border:1px solid var(--primary);background:var(--primary);color:var(--primary-foreground);font-family:Arial,Helvetica,sans-serif;cursor:pointer;}.ds-tray-action:hover{opacity:.88}.ds-tray-action:focus-visible{outline:2px solid var(--ring);outline-offset:3px}@media(max-width:767px){.ds-tray{gap:8px;flex-wrap:wrap;font-size:14px;bottom:8px;padding:12px}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Operate — diretório editorial neutro",
+    "overview": "O sistema construído organiza identidade, oferta e ação com texto legível, divisórias e uma paleta neutra. A busca e os dados do prestador conduzem a leitura; o produto não usa uma composição de agência como identidade. A marca é um wordmark tipográfico, com `.dev` em contraste secundário.\n\nEste registro descreve o código atual em `src/app/globals.css`, `src/app/buscar/public.css` e componentes compartilhados. `PRODUCT.md` fornece os compromissos duráveis de português brasileiro, sobriedade e acesso por teclado; `docs/DESIGN-SYSTEM.md` continua sendo a autoridade de apresentação do pacote. Não há comp visual aprovada separada: a referência desta implementação é o brief baseado nos documentos e no código.",
+    "keyCharacteristics": [
+      "Paleta neutra com cores semânticas pontuais.",
+      "Hierarquia compacta, metadados próximos à informação principal.",
+      "Resultados em linhas, comparação em tabela e formulários em seções.",
+      "Bordas e alinhamento como separadores; elevação reservada a elementos sobrepostos."
+    ],
+    "rules": [
+      {
+        "name": "Semantic Color",
+        "body": "Cor semântica comunica estado; categorias compartilham a paleta neutra.",
+        "section": "colors"
+      },
+      {
+        "name": "Information Hierarchy",
+        "body": "Título, metadados e ação têm papéis separados; não acrescentar uma linha decorativa para anunciar cada heading.",
+        "section": "typography"
+      },
+      {
+        "name": "Content Plane",
+        "body": "Linhas de resultados permanecem no plano da página; a bandeja e o Sheet podem se sobrepor ao conteúdo.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do preservar a paleta neutra, labels persistentes e foco visível.",
+      "Do organizar identidade, oferta e ação em linhas legíveis que empilham no mobile.",
+      "Do usar rótulos de serviço e tipo somente quando acrescentam informação de domínio.",
+      "Do limitar o scroll horizontal ao contêiner da comparação.",
+      "Do manter contato e negociação com texto direto em português brasileiro."
+    ],
+    "donts": [
+      "Don't adicionar kickers decorativos acima dos títulos.",
+      "Don't criar cores de categoria, gradientes, glow ou glassmorphism para esta identidade.",
+      "Don't transformar resultados em uma grade de cartões promocionais ou inventar métricas.",
+      "Don't estender a bandeja de comparação para rotas fora de busca e perfil.",
+      "Don't tratar dimensões e sombras dos primitivos shadcn como substitutas automáticas das composições existentes."
+    ]
+  }
+}

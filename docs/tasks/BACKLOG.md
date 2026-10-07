@@ -1,6 +1,6 @@
 # Backlog — tracker local
 
-Status inicial de todas as tarefas: TODO. Ao executar, atualizar para IN_PROGRESS/DONE/BLOCKED, com evidência e pendências. Não abrir issues remotas automaticamente.
+Status atualizado em 06/10/2026. Evidências detalhadas em ../VALIDATION.md; limitações operacionais no README. Nenhuma issue remota criada.
 
 | Tarefa | Depende de | Fatia / entrega | Evidência obrigatória |
 |---|---|---|---|
@@ -20,4 +20,18 @@ Status inicial de todas as tarefas: TODO. Ao executar, atualizar para IN_PROGRES
 T00 é base técnica necessária; T01–T07 são fatias verticais, não agentes separados construindo frontend e backend sem contrato. Delegação opcional pode paralelizar T05/T06/T07 após suas dependências. Um integrador controla migrations, auth e tokens. Não editar mesmas migrations em paralelo. Cada tarefa referencia RF no PRD/Sxx na spec e acrescenta testes apenas relevantes.
 
 ## Registro a preencher pelo implementador
-Para cada tarefa: status, arquivos alterados, RF/Sxx atendidos, comandos e resultado, riscos/bloqueios, próxima tarefa. Retomada de sessão lê esse registro antes de inventar novo plano.
+| Tarefa | Status | Arquivos / RF / evidência |
+|---|---|---|
+| T00 | DONE | package.json, compose.yaml, src/lib/db, drizzle, scripts; RF12; banco saudável, migration vazia, seed duas vezes e build passaram |
+| T01 | DONE | src/lib/auth, actions/auth, entrar/cadastro/painel/conta; RF02; sessão real, logout, alteração de senha e revogação em E2E |
+| T02 | DONE | actions/provider, painel/perfil, prestadores; RF03/04; propriedade, ativação e HTTP404 verificadas |
+| T03 | DONE | actions/offers, painel/ofertas, schema; RF05/06; CRUD E2E, checks e concorrência SQL passaram |
+| T04 | DONE | lib/public/queries, buscar, home; RF01/07; filtros mesma oferta, acentos e ordenação testados |
+| T05 | DONE | comparar, comparison-selection; RF08; limite três, troca de contexto, pausa e persistência em E2E |
+| T06 | DONE | actions/reviews, profile-reviews, queries; RF09/10; edição/exclusão, agregados, UNIQUE e self-review testados |
+| T07 | DONE | public queries/formatters; RF11; média FIXO e n mínimo testados |
+| T08 | DONE | seed-demo, UI/CSS, visual-qa; 40 capturas por rodada, zero overflow; revisão independente e correções |
+| T09 | DONE | tests, README, VALIDATION; 28 unitários, 9 integração, 8 E2E; lint/typecheck/build passaram |
+| T10 | DONE | README, ADR0002, DESIGN, VALIDATION; instalação congelada e restart passaram; matriz RF01–12 registrada |
+
+Limite conhecido: audit de runtime limpo; ferramenta de desenvolvimento traz um advisory alto transitivo sem correção disponível. Não há deploy em nuvem; decisões de operação pública permanecem fora do escopo. Próxima etapa opcional é preparar um ambiente de hospedagem com suas políticas reais.
