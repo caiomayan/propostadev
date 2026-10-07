@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   cacheComponents: false,
+  outputFileTracingIncludes: {
+    "/*": ["./supabase-ca.crt"],
+  },
   turbopack: {
     rules: {
       "*.css": {
