@@ -1,0 +1,17 @@
+"use client";
+import { useState } from "react";
+import type { Offer } from "@/lib/db/schema";
+import { saveOffer } from "@/modules/offers/actions";
+import { ActionForm } from "./action-form";
+import { Field, TextAreaField } from "./field";
+const prices = { FIXO: "Preço fixo", A_PARTIR_DE: "A partir de", INTERVALO: "Intervalo de preços", POR_HORA: "Por hora", SOB_CONSULTA: "Sob consulta" };
+const deadlines = { FIXO: "Prazo fixo", A_PARTIR_DE: "A partir de", INTERVALO: "Intervalo de dias", A_COMBINAR: "A combinar" };
+export function OfferForm({ offer, catalog }: { offer?: Offer; catalog: { id: string; name: string }[] }) {
+  const [price, setPrice] = useState<string>(offer?.priceType ?? "SOB_CONSULTA");
+  const [deadline, setDeadline] = useState<string>(offer?.deadlineType ?? "A_COMBINAR");
+  const [priceChanged, setPriceChanged] = useState(false);
+  const [deadlineChanged, setDeadlineChanged] = useState(false);
+  return <ActionForm action={saveOffer} label="Salvar oferta">{offer && <input type="hidden" name="id" value={offer.id} />}<label className="field"><span>Tipo de serviço</span><select name="serviceTypeId" defaultValue={offer?.serviceTypeId} required><option value="">Selecione</option>{catalog.map((type) => <option key={type.id} value={type.id}>{type.name}</option>)}</select></label><Field name="title" label="Título" required minLength={5} maxLength={120} defaultValue={offer?.title} /><TextAreaField label="Descrição" name="description" minLength={30} maxLength={5000} required rows={6} defaultValue={offer?.description} /><label className="field"><span>Modelo de preço</span><select name="priceType" value={price} onChange={(e) => { setPrice(e.target.value); setPriceChanged(true); }}>{Object.entries(prices).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><p>Valores em reais. Informe decimais com ponto: 1500.00. Por hora representa R$/hora; os demais modelos representam R$/projeto.</p>{price !== "SOB_CONSULTA" && <Field key={`${price}-min`} name="priceMin" label={price === "INTERVALO" ? "Preço mínimo" : "Preço anunciado"} required inputMode="decimal" pattern="[0-9]{1,8}(\.[0-9]{1,2})?" defaultValue={!priceChanged && price === offer?.priceType ? offer?.priceMin ?? '' : ''} />}{price === "INTERVALO" && <Field name="priceMax" label="Preço máximo" required inputMode="decimal" defaultValue={!priceChanged ? offer?.priceMax ?? '' : ''} />}<label className="field"><span>Modelo de prazo</span><select name="deadlineType" value={deadline} onChange={(e) => { setDeadline(e.target.value); setDeadlineChanged(true); }}>{Object.entries(deadlines).map(([value,label]) => <option key={value} value={value}>{label}</option>)}</select></label>{deadline !== "A_COMBINAR" && <Field key={`${deadline}-min`} name="deadlineMinDays" label={deadline === "INTERVALO" ? "Prazo mínimo (dias)" : "Prazo anunciado (dias)"} type="number" required min={1} max={3650} defaultValue={!deadlineChanged && deadline === offer?.deadlineType ? offer?.deadlineMinDays ?? '' : ''} />}{deadline === "INTERVALO" && <Field name="deadlineMaxDays" label="Prazo máximo (dias)" type="number" required min={1} max={3650} defaultValue={!deadlineChanged ? offer?.deadlineMaxDays ?? '' : ''} />}<label className="checkbox"><input name="active" type="checkbox" defaultChecked={offer?.active ?? false} /> Publicar oferta (desmarque para pausar)</label></ActionForm>;
+}
+
+

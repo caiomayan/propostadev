@@ -1,6 +1,7 @@
 "use server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { createHash } from "node:crypto";
 import { auth } from "./config";
@@ -36,7 +37,7 @@ export async function updateName(_: ActionState, form: FormData): Promise<Action
   const parsed = z.object({ name: z.string().trim().min(2).max(100) }).safeParse(Object.fromEntries(form));
   if (!parsed.success) return { error: "Informe um nome de 2 a 100 caracteres." };
   if (!await mutationAllowed(session.user.id, "account")) return { error: "Muitas alterações. Aguarde um minuto." };
-  try { await auth.api.updateUser({ body: parsed.data, headers: await headers() }); return { success: "Nome atualizado." }; }
+  try { await auth.api.updateUser({ body: parsed.data, headers: await headers() }); revalidatePath("/painel", "layout"); return { success: "Nome atualizado." }; }
   catch { return { error: "Não foi possível atualizar o nome." }; }
 }
 export async function changePassword(_: ActionState, form: FormData): Promise<ActionState> {

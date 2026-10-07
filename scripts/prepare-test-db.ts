@@ -7,6 +7,9 @@ const name = url.pathname.slice(1);
 if (!/^[a-z0-9_]+_test$/.test(name)) throw new Error("O nome da base de teste deve terminar em _test.");
 url.pathname = "/postgres";
 const admin = new Pool({ connectionString: url.toString() });
+async function main() {
 try { if (!(await admin.query("SELECT 1 FROM pg_database WHERE datname = $1", [name])).rowCount) await admin.query(`CREATE DATABASE "${name}"`); } finally { await admin.end(); }
 const result = spawnSync(process.execPath, ["--import", "tsx", "scripts/migrate.ts"], { stdio: "inherit", env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL_TEST } });
 if (result.status !== 0) process.exit(result.status ?? 1);
+}
+main().catch(() => { console.error("Não foi possível preparar a base de teste dedicada."); process.exitCode = 1; });

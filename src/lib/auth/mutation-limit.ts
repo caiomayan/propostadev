@@ -7,6 +7,9 @@ export async function mutationAllowed(userId: string, scope: string) {
 }
 export function mutationError(error: unknown) {
   const cause = error instanceof Error && "cause" in error ? error.cause : error;
-  if (cause && typeof cause === "object" && "code" in cause && cause.code === "23505") return "Já existe um registro ativo para esse tipo. Pause a oferta anterior ou edite o registro existente.";
+  if (cause && typeof cause === "object" && "code" in cause && cause.code === "23505") {
+    if ("constraint" in cause && cause.constraint === "oferta_ativa_por_tipo_unique") return "Já existe uma oferta ativa para esse tipo. Pause a oferta anterior ou edite o registro existente.";
+    return "Esse registro já existe. Recarregue a página e edite o registro existente.";
+  }
   return "Não foi possível salvar. Tente novamente em alguns instantes.";
 }
