@@ -1,0 +1,57 @@
+{
+  "name": "propostadev",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "db:migrate": "tsx scripts/migrate.ts",
+    "lint": "eslint src scripts tests *.ts *.mjs",
+    "db:seed:demo": "tsx --conditions=react-server --env-file=.env scripts/seed-demo.ts",
+    "typecheck": "tsc --noEmit",
+    "dev": "next dev",
+    "auth:generate": "auth generate --config scripts/auth-generation.ts --output src/lib/db/auth-schema.ts --yes",
+    "test:integration": "tsx scripts/prepare-test-db.ts && vitest run --config vitest.integration.config.ts",
+    "db:seed": "tsx --conditions=react-server --env-file=.env scripts/seed.ts",
+    "build": "next build",
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate",
+    "test:e2e": "playwright test",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "1.4.0",
+    "better-auth": "1.7.7",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "drizzle-orm": "0.45.3",
+    "lucide-react": "1.52.0",
+    "next": "16.4.0",
+    "pg": "8.23.1",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "server-only": "0.0.1",
+    "tailwind-merge": "3.7.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@tailwindcss/turbopack": "^4",
+    "@types/node": "^20",
+    "@types/pg": "8.23.1",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "auth": "1.7.7",
+    "dotenv": "18.0.6",
+    "drizzle-kit": "0.31.11",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.0",
+    "pnpm": "11.25.0",
+    "tailwindcss": "^4",
+    "tsx": "4.23.15",
+    "typescript": "^5",
+    "vitest": "4.1.11"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "packageManager": "pnpm@11.25.0"
+}

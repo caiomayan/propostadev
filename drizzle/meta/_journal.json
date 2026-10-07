@@ -1,0 +1,20 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1791335972676,
+      "tag": "0000_sloppy_sunset_bain",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791336009131,
+      "tag": "0001_domain-rules",
+      "breakpoints": true
+    }
+  ]
+}
