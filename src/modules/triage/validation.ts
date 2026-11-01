@@ -25,7 +25,7 @@ const moneyField = (label: string) => z.string().transform((value, ctx) => {
 export const draftInputSchema = z.object({
   tipo: z.string().min(1, "Escolha um tipo de serviço.").max(120),
   titulo: z.string().trim().min(5, "O título precisa de pelo menos 5 caracteres.").max(120, "O título pode ter até 120 caracteres."),
-  descricao: z.string().trim().min(30, "A descrição precisa de pelo menos 30 caracteres.").max(5000, "A descrição pode ter até 5.000 caracteres."),
+  descricao: z.string().trim().min(30, "A descrição precisa de pelo menos 30 caracteres.").max(2000, "A descrição pode ter até 2.000 caracteres."),
   orcamento: z.enum(budgetKinds, "Informe como você pensa o orçamento."),
   min: moneyField("Valor mínimo"),
   max: moneyField("Valor máximo"),

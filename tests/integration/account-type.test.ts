@@ -66,6 +66,9 @@ describe.skipIf(!testUrl)("tipo de conta (ticket 03)", () => {
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
+      // Simula a coluna recém-criada: ninguém tem tipo (contas de execuções E2E anteriores já têm) e sem o trigger de imutabilidade.
+      await client.query('ALTER TABLE "user" DISABLE TRIGGER user_tipo_conta_imutavel');
+      await client.query('UPDATE "user" SET tipo_conta = NULL');
       await client.query(statement!);
       const rows = await client.query<{ id: string; tipo_conta: string }>('SELECT id,tipo_conta FROM "user" WHERE id = ANY($1)', [[withProfile, withoutProfile]]);
       const byId = Object.fromEntries(rows.rows.map((row) => [row.id, row.tipo_conta]));
