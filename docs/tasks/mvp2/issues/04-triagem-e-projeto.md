@@ -11,8 +11,8 @@ O Cliente logado publica o Projeto. O visitante entra ou se cadastra como Client
 
 **Status:** ready-for-agent
 
-- [ ] Tabela projeto com checks; seed com mapeamento objetivo → tipos
-- [ ] Testes do Preço de referência (inclui n < 3) e da ordem dos compatíveis
-- [ ] Rascunho na URL validado no servidor; publicação exige Cliente
-- [ ] Cancelamento só pelo dono e só ABERTO
-- [ ] Jornada no browser em mobile e desktop
+- [x] Tabela projeto com checks; seed com mapeamento objetivo → tipos — drizzle/0003_projeto-triagem.sql; scripts/seed.ts (8 objetivos); constraints cobertas em tests/integration/triage.test.ts
+- [x] Testes do Preço de referência (inclui n < 3) e da ordem dos compatíveis — tests/integration/triage.test.ts, tests/unit/triage.test.ts
+- [x] Rascunho na URL validado no servidor; publicação exige Cliente — parseDraft na página e na action; Prestador/visitante recusados (integração e E2E)
+- [x] Cancelamento só pelo dono e só ABERTO — UPDATE condicional; teste de outro Cliente/Prestador/ENCERRADO
+- [x] Jornada no browser em mobile e desktop — E2E visitante→cadastro→publicar→Meus projetos; browser do Orca em 375 e 1440: sem overflow, console sem erros, rede sem 4xx/5xx
