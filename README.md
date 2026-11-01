@@ -51,7 +51,7 @@ $env:ALLOW_DEMO_SEED='true'
 pnpm db:seed:demo
 ```
 
-Login local: prestador1@demo.example, senha Demo-local-2026! (ou DEMO_PASSWORD definido antes da primeira execução). Repetir o seed não redefine a senha de uma conta já existente. Não use essas credenciais em serviços públicos.
+Login local: prestador1@demo.example (Prestador) ou cliente1@demo.example (Cliente), senha Demo-local-2026! (ou DEMO_PASSWORD definido antes da primeira execução). Repetir o seed não redefine a senha de uma conta já existente. Não use essas credenciais em serviços públicos.
 
 ## Testes e produção local
 

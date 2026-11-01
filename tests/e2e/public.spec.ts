@@ -99,6 +99,7 @@ test("usuário cria, edita e exclui avaliação sem publicar e-mail privado", as
   await page.getByLabel("Nome", { exact: true }).fill(name);
   await page.getByLabel("E-mail", { exact: true }).fill(privateEmail);
   await page.getByLabel("Senha", { exact: true }).fill("Proposta-test-password-2026");
+  await page.getByRole("radio", { name: /Quero contratar/ }).check();
   await page.getByRole("button", { name: "Criar conta", exact: true }).click();
   await expect(page).toHaveURL(/\/painel$/);
   await page.goto("/prestadores/prestador-demo-3");
@@ -143,7 +144,7 @@ test("perfil próprio impede autoavaliação", async ({ page }) => {
       await route.continue({ postData: modified });
     });
     await page.getByRole("button", { name: "Publicar avaliação", exact: true }).click();
-    await expect(page.locator("main").getByRole("alert")).toContainText("seu próprio perfil");
+    await expect(page.locator("main").getByRole("alert")).toContainText("exclusiva de contas de Cliente");
     expect(tampered).toBe(true);
   } finally {
     await pool.query("DELETE FROM avaliacao WHERE usuario_id=(SELECT usuario_id FROM perfil_prestador WHERE slug='prestador-demo-1') AND prestador_id=(SELECT id FROM perfil_prestador WHERE slug='prestador-demo-2')");

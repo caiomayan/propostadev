@@ -6,13 +6,15 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { categories, offers, providers, serviceTypes } from "@/lib/db/schema";
 import { getSession } from "@/lib/auth/session";
+import { accountTypeDenial } from "@/lib/auth/account-type";
 import { mutationAllowed, mutationError } from "@/lib/auth/mutation-limit";
 import type { ActionState } from "@/lib/auth/action-state";
 import { offerSchema } from "./validation";
 
 export async function saveOffer(_: ActionState, form: FormData): Promise<ActionState> {
   const session = await getSession();
-  if (!session) return { error: "Entre para gerenciar ofertas." };
+  const denied = accountTypeDenial(session, "PRESTADOR");
+  if (!session || denied) return { error: denied ?? "Entre para gerenciar ofertas." };
   const id = form.get("id");
   if (id && !z.string().uuid().safeParse(id).success) return { error: "Oferta inválida." };
   const parsed = offerSchema.safeParse({ ...Object.fromEntries(form), active: form.get("active") === "on" });
@@ -39,7 +41,8 @@ export async function saveOffer(_: ActionState, form: FormData): Promise<ActionS
 }
 export async function deleteOffer(_: ActionState, form: FormData): Promise<ActionState> {
   const session = await getSession();
-  if (!session) return { error: "Entre para gerenciar ofertas." };
+  const denied = accountTypeDenial(session, "PRESTADOR");
+  if (!session || denied) return { error: denied ?? "Entre para gerenciar ofertas." };
   const id = z.string().uuid().safeParse(form.get("id"));
   if (!id.success) return { error: "Oferta inválida." };
   const [provider] = await db.select().from(providers).where(eq(providers.userId, session.user.id)).limit(1);

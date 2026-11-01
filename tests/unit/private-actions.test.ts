@@ -24,7 +24,7 @@ describe("direct server actions authorization", () => {
     expect(mocks.delete).not.toHaveBeenCalled();
   });
   it("rejects own profile reviews using the session identity", async () => {
-    mocks.getSession.mockResolvedValue({ user: { id: "owner" } });
+    mocks.getSession.mockResolvedValue({ user: { id: "owner", accountType: "CLIENTE" } });
     mocks.select.mockReturnValue({ from: () => ({ where: () => ({ limit: async () => [{ id: "550e8400-e29b-41d4-a716-446655440000", userId: "owner", active: true }] }) }) });
     const data = new FormData();
     data.set("providerId", "550e8400-e29b-41d4-a716-446655440000");
@@ -33,6 +33,25 @@ describe("direct server actions authorization", () => {
     const result = await saveReview({}, data);
     expect(result.error).toContain("próprio perfil");
     expect(mocks.insert).not.toHaveBeenCalled();
+  });
+});
+describe("autorização por tipo de conta", () => {
+  const forged = () => { const data = new FormData(); data.set("providerId", "550e8400-e29b-41d4-a716-446655440000"); data.set("id", "550e8400-e29b-41d4-a716-446655440000"); data.set("rating", "5"); return data; };
+  const untouched = () => { for (const mock of [mocks.select, mocks.insert, mocks.update, mocks.delete]) expect(mock).not.toHaveBeenCalled(); };
+  it.each([saveProvider, setProviderActive, saveOffer, deleteOffer])("Cliente não gerencia perfil nem ofertas", async (action) => {
+    mocks.getSession.mockResolvedValue({ user: { id: "cliente", accountType: "CLIENTE" } });
+    expect((await action({}, forged())).error).toContain("Prestador");
+    untouched();
+  });
+  it("Prestador não avalia", async () => {
+    mocks.getSession.mockResolvedValue({ user: { id: "prestador", accountType: "PRESTADOR" } });
+    expect((await saveReview({}, forged())).error).toContain("Cliente");
+    untouched();
+  });
+  it.each([saveProvider, saveOffer, saveReview])("conta sem tipo é recusada", async (action) => {
+    mocks.getSession.mockResolvedValue({ user: { id: "novo", accountType: null } });
+    expect((await action({}, forged())).error).toContain("tipo");
+    untouched();
   });
 });
 describe("login destination", () => {

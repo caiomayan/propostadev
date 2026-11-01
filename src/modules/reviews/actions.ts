@@ -5,12 +5,14 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { providers, reviews } from "@/lib/db/schema";
 import { getSession } from "@/lib/auth/session";
+import { accountTypeDenial } from "@/lib/auth/account-type";
 import { mutationAllowed, mutationError } from "@/lib/auth/mutation-limit";
 import type { ActionState } from "@/lib/auth/action-state";
 import { reviewSchema } from "./validation";
 export async function saveReview(_: ActionState, form: FormData): Promise<ActionState> {
   const session = await getSession();
-  if (!session) return { error: "Entre para avaliar um prestador." };
+  const denied = accountTypeDenial(session, "CLIENTE");
+  if (!session || denied) return { error: denied ?? "Entre para avaliar um prestador." };
   const parsed = reviewSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) return { error: "Confira a nota e o comentário.", fields: parsed.error.flatten().fieldErrors };
   const [provider] = await db.select().from(providers).where(and(eq(providers.id, parsed.data.providerId), eq(providers.active, true))).limit(1);
