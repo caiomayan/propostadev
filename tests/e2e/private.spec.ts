@@ -139,7 +139,8 @@ test("login returns a generic error and rejects an external destination", async 
 
 test("cadastro como Cliente leva ao painel de Cliente, sem Perfil nem Ofertas", async ({ page }) => {
   await register(page, "Cliente de teste", `cliente-${Date.now()}-${Math.random().toString(16).slice(2, 8)}@example.test`, "CLIENTE");
-  await expect(page.getByRole("heading", { name: "Seus projetos aparecerão aqui" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Comece descrevendo o que você precisa" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Descrever um projeto" })).toHaveAttribute("href", "/triagem");
   const nav = page.getByRole("navigation", { name: "Painel" });
   await expect(nav.getByRole("link", { name: "Conta", exact: true })).toBeVisible();
   await expect(nav.getByRole("link", { name: "Perfil", exact: true })).toHaveCount(0);
