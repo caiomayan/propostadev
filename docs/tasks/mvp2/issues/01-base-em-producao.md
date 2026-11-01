@@ -4,13 +4,13 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Banco Supabase inspecionado antes de qualquer alteração (tabelas, dados, extensões), com o estado registrado aqui
-- [ ] Conexão do app compatível com o pooler (prepared statements desativados quando necessário) e com SSL
-- [ ] `unaccent` e triggers de 0001 funcionando no Supabase
-- [ ] Script de migração de produção documentado no README (conexão de sessão/direta)
-- [ ] Deploy de produção pronto e páginas públicas sem erro no console/rede
+- [x] Banco Supabase inspecionado antes de qualquer alteração (tabelas, dados, extensões), com o estado registrado aqui
+- [x] Conexão do app compatível com o pooler (prepared statements desativados quando necessário) e com SSL
+- [x] `unaccent` e triggers de 0001 funcionando no Supabase
+- [x] Script de migração de produção documentado no README (conexão de sessão/direta)
+- [x] Deploy de produção pronto e páginas públicas sem erro no console/rede
 
 ## Comentários
 
@@ -26,3 +26,11 @@
 **01/11/2026 — acesso para migrations**
 - SUPABASE_DATABASE_URL (Session pooler, aws-1-sa-east-1, porta 5432) configurado pelo dono em `.env.local`, fora do git. Conexão com SSL testada: `current_user=postgres`, 2 migrations registradas.
 - Próximo passo, antes do deploy do MVP 2: script de migração de produção que use essa URL com SSL, documentado no README.
+
+**01/11/2026 — produção restabelecida e corrigida**
+- Causa do 500: a senha do banco foi redefinida e o DATABASE_URL da Vercel continuava com a antiga (`28P01 password authentication failed`).
+- O DATABASE_URL foi atualizado pelo dono via `vercel env update`, no mesmo formato documentado (transaction pooler 6543, `sslmode=verify-full&sslrootcert=supabase-ca.crt`). A URL foi testada antes com verificação TLS pela CA oficial.
+- Hotfix de segurança: Next 16.4.0 → 16.4.3 (GHSA-2464-fhr4-w9xw e RCE em `use cache`) e Zod 4.6.5 → 4.6.6. lint, typecheck, unit 28, integração 9, build e E2E 8 passaram; publicado na main.
+- O build command da Vercel passou a rodar migrations e seed só com VERCEL_ENV=production (README atualizado).
+- Redeploy de produção concluído. `/`, `/buscar`, `/entrar` e `/cadastro` respondem 200; console sem erros no browser do Orca.
+- Pendência para a entrega: as migrations do MVP 2 entram em produção pelo build da main no merge final (ticket 10).
