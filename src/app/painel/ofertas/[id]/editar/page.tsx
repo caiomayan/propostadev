@@ -5,6 +5,9 @@ import { db } from "@/lib/db";
 import { categories, offers, providers, serviceTypes } from "@/lib/db/schema";
 import { requirePrestador } from "@/lib/auth/session";
 import { OfferForm } from "@/components/forms/offer-form";
+import { OfferPosition } from "@/components/offer-position";
+import { precoReferencia } from "@/modules/triage/queries";
+import "../../../../triagem/triagem.css";
 export default async function EditOfferPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await requirePrestador();
   const { id } = await params;
@@ -12,5 +15,6 @@ export default async function EditOfferPage({ params }: { params: Promise<{ id: 
   const [row] = await db.select({ offer: offers }).from(offers).innerJoin(providers, eq(providers.id, offers.providerId)).where(and(eq(offers.id, id), eq(providers.userId, session.user.id), isNull(offers.deletedAt))).limit(1);
   if (!row) notFound();
   const catalog = await db.select({ id: serviceTypes.id, name: serviceTypes.name }).from(serviceTypes).innerJoin(categories, eq(categories.id, serviceTypes.categoryId)).where(and(eq(serviceTypes.active, true), eq(categories.active, true))).orderBy(serviceTypes.name);
-  return <section className="stack"><h1>Editar oferta</h1><div className="panel"><OfferForm offer={row.offer} catalog={catalog} /></div></section>;
+  const reference = await precoReferencia(row.offer.serviceTypeId);
+  return <section className="stack form-page"><header className="dash-heading"><h1>Editar oferta</h1><p className="muted">{row.offer.active ? "Esta oferta está publicada." : "Esta oferta está pausada e não aparece na busca."}</p></header><div className="panel stack"><h2>Onde seu preço cai</h2><OfferPosition offer={row.offer} reference={reference} /></div><div className="panel"><OfferForm offer={row.offer} catalog={catalog} /></div></section>;
 }

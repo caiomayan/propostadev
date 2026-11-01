@@ -2,7 +2,8 @@ import { money } from "@/lib/format";
 import { positionText, type BudgetPosition, type Range } from "@/modules/triage/position";
 import type { Budget } from "@/modules/triage/validation";
 
-export type RulerData = { faixa: Range | null; media: string | null; n: number; orcamento?: Budget; posicao?: BudgetPosition };
+/** `budgetLabel` e `positionText` permitem reaproveitar a régua para o preço de uma Oferta (padrão: orçamento do Cliente). */
+export type RulerData = { faixa: Range | null; media: string | null; n: number; orcamento?: Budget; posicao?: BudgetPosition; budgetLabel?: string; positions?: Partial<Record<Exclude<BudgetPosition, "INDEFINIDO">, string>> };
 
 /**
  * Régua de preço, a assinatura visual do produto.
@@ -27,10 +28,12 @@ function DataRuler({ data }: { data: RulerData }) {
   const from = Math.max(0, lo - pad), span = hi + pad - from;
   const at = (value: number) => `${Math.min(100, Math.max(0, ((value - from) / span) * 100)).toFixed(2)}%`;
   const width = (a: number, b: number) => `${Math.max(0.8, ((Math.min(100, Math.max(0, ((b - from) / span) * 100))) - Math.min(100, Math.max(0, ((a - from) / span) * 100)))).toFixed(2)}%`;
+  const budgetLabel = data.budgetLabel ?? "Seu orçamento";
+  const positionLabel = (value: Exclude<BudgetPosition, "INDEFINIDO">) => data.positions?.[value] ?? positionText[value];
   const description = [
     faixa ? `Faixa anunciada de ${money(faixa.min)} a ${money(faixa.max)}.` : "Dados insuficientes para uma faixa de preços.",
     media ? `Média dos preços fixos: ${money(media)}.` : "",
-    posicao && posicao !== "INDEFINIDO" ? positionText[posicao] : "",
+    posicao && posicao !== "INDEFINIDO" ? positionLabel(posicao) : "",
   ].filter(Boolean).join(" ");
   return <figure className="data-ruler">
     <div className="ruler-track" role="img" aria-label={description}>
@@ -41,8 +44,8 @@ function DataRuler({ data }: { data: RulerData }) {
     <ul className="ruler-legend">
       <li><span className="swatch band" aria-hidden="true"/>{faixa ? <>Faixa anunciada: <strong>{money(faixa.min)} a {money(faixa.max)}</strong></> : <>Faixa anunciada: <strong>dados insuficientes</strong></>}</li>
       {media && <li><span className="swatch average" aria-hidden="true"/>Média dos preços fixos: <strong>{money(media)}</strong></li>}
-      {orcamento && orcamento.tipo !== "NAO_SEI" && budgetHigh !== null && <li><span className="swatch budget" aria-hidden="true"/>Seu orçamento: <strong>{orcamento.tipo === "ATE" ? `até ${money(orcamento.max)}` : `${money(orcamento.min)} a ${money(orcamento.max)}`}</strong></li>}
+      {orcamento && orcamento.tipo !== "NAO_SEI" && budgetHigh !== null && <li><span className="swatch budget" aria-hidden="true"/>{budgetLabel}: <strong>{orcamento.tipo === "ATE" ? `até ${money(orcamento.max)}` : orcamento.min === orcamento.max ? money(orcamento.max) : `${money(orcamento.min)} a ${money(orcamento.max)}`}</strong></li>}
     </ul>
-    <figcaption className="ruler-caption">{posicao && posicao !== "INDEFINIDO" ? <strong>{positionText[posicao]} </strong> : orcamento?.tipo === "NAO_SEI" ? "Você ainda não definiu um orçamento: use a faixa como ponto de partida. " : ""}Baseado em {data.n} {data.n === 1 ? "prestador" : "prestadores"} com preço por projeto. Preço de referência não é orçamento.</figcaption>
+    <figcaption className="ruler-caption">{posicao && posicao !== "INDEFINIDO" ? <strong>{positionLabel(posicao)} </strong> : orcamento?.tipo === "NAO_SEI" ? "Você ainda não definiu um orçamento: use a faixa como ponto de partida. " : ""}Baseado em {data.n} {data.n === 1 ? "prestador" : "prestadores"} com preço por projeto. Preço de referência não é orçamento.</figcaption>
   </figure>;
 }
