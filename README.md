@@ -33,6 +33,24 @@ Copy-Item .env.example .env
 
 Preencha BETTER_AUTH_SECRET com uma sequência aleatória de pelo menos 32 caracteres. Gere uma com `node -e "console.log(require('node:crypto').randomBytes(48).toString('base64'))"`. Nunca publique .env. Os valores locais de POSTGRES_USER/PASSWORD/DB/PORT e DATABASE_URL devem coincidir. A porta do banco neste projeto é 5434; a do aplicativo é 3000.
 
+### Login social e e-mail (opcionais)
+
+| Variável | Para quê | Padrão |
+| --- | --- | --- |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | Login com GitHub. O botão só aparece com as duas. | vazio (sem botão) |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Login com Google. O botão só aparece com as duas. | vazio (sem botão) |
+| `SMTP_HOST` | Servidor SMTP. | `smtp.gmail.com` |
+| `SMTP_PORT` | Porta SMTP (465 usa TLS direto). | `465` |
+| `SMTP_USER` / `SMTP_PASS` | Credenciais SMTP. No Gmail, use senha de app. | vazio |
+| `EMAIL_FROM` | Endereço do remetente. | igual a `SMTP_USER` |
+
+URLs de callback OAuth (registre no app do GitHub e no cliente OAuth do Google):
+
+- GitHub: `https://propostadev-one.vercel.app/api/auth/callback/github` (produção) e `http://localhost:3000/api/auth/callback/github` (desenvolvimento).
+- Google: `https://propostadev-one.vercel.app/api/auth/callback/google` (produção) e `http://localhost:3000/api/auth/callback/google` (desenvolvimento).
+
+Comportamento sem configuração (ADR 0003): sem credenciais OAuth, os botões não são renderizados. Sem `SMTP_USER`/`SMTP_PASS`, em desenvolvimento o link de recuperação e de verificação aparece no console do servidor (`[e-mail em desenvolvimento]`); em produção nenhum e-mail é enviado, o link "Esqueci minha senha" não aparece, `/esqueci-senha` informa que a recuperação está indisponível e o aviso "Confirme seu e-mail" não é exibido. Quem entra pela primeira vez por OAuth cai em `/boas-vindas` para escolher o tipo de conta. O vínculo automático de uma conta social a uma conta existente com o mesmo e-mail só acontece quando o provedor marca o e-mail como verificado e a conta local já confirmou o e-mail; senão o login social é recusado. O link de redefinição vale 1 hora, só funciona uma vez e encerra as demais sessões. O E2E usa um SMTP fictício em porta fechada apenas para habilitar os fluxos e lê os tokens da tabela `verification`.
+
 ```powershell
 docker compose up -d --wait
 pnpm db:migrate
