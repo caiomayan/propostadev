@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Bricolage_Grotesque, Figtree } from "next/font/google";
 import "./globals.css";
 import "./buscar/public.css";
 import { ComparisonTray } from "@/components/comparison-selection";
+import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 
-export const metadata: Metadata = { title: { default: "Proposta.dev — encontre desenvolvedores", template: "%s | Proposta.dev" }, description: "Descubra prestadores de desenvolvimento, compare serviços e converse diretamente." };
+const display = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-bricolage", display: "swap" });
+const body = Figtree({ subsets: ["latin"], variable: "--font-figtree", display: "swap" });
+
+export const metadata: Metadata = { title: { default: "Proposta.dev — encontre desenvolvedores", template: "%s | Proposta.dev" }, description: "Descreva o que você precisa, veja quanto costuma custar e encontre desenvolvedores." };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="pt-BR"><body><a className="skip-link" href="#conteudo">Pular para o conteúdo</a>{process.env.DEMO_MODE === "true" && <div className="demo-banner">Ambiente de demonstração · perfis e ofertas fictícios</div>}<header className="site-header"><div className="container header-inner"><Link href="/" className="wordmark" aria-label="Proposta.dev início">Proposta<span>.dev</span></Link><nav className="site-nav" aria-label="Principal"><Link href="/buscar">Buscar desenvolvedores</Link><Link href="/painel/perfil">Oferecer serviços</Link><Link href="/comparar">Comparar</Link></nav><div className="header-account"><Link href="/painel" className="button secondary">Minha conta</Link></div></div></header><main id="conteudo">{children}</main><ComparisonTray/><footer className="site-footer"><div className="container footer-inner"><span className="wordmark">Proposta<span>.dev</span></span><p>Descubra, compare, converse. A negociação acontece diretamente com o prestador.</p></div></footer></body></html>;
+  return <html lang="pt-BR" className={`${display.variable} ${body.variable}`}><body><a className="skip-link" href="#conteudo">Pular para o conteúdo</a>{process.env.DEMO_MODE === "true" && <div className="demo-banner">Ambiente de demonstração · perfis e ofertas fictícios</div>}<SiteHeader/><main id="conteudo">{children}</main><ComparisonTray/><SiteFooter/></body></html>;
 }
