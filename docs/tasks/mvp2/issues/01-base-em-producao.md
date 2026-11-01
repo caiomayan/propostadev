@@ -22,3 +22,7 @@
 - Vercel: projeto já conectado ao GitHub `caiomayan/propostadev`, com produção servindo da branch main. Env de produção: DATABASE_URL, BETTER_AUTH_SECRET e BETTER_AUTH_URL, todos *sensitive* (não legíveis pelo CLI).
 - Smoke: `/`, `/buscar` e `/entrar` responderam 200 depois da reativação.
 - Pendente: connection string do dono no `.env.local` (SUPABASE_DATABASE_URL) para rodar migrations e seed em produção.
+
+**01/11/2026 — acesso para migrations**
+- SUPABASE_DATABASE_URL (Session pooler, aws-1-sa-east-1, porta 5432) configurado pelo dono em `.env.local`, fora do git. Conexão com SSL testada: `current_user=postgres`, 2 migrations registradas.
+- Próximo passo, antes do deploy do MVP 2: script de migração de produção que use essa URL com SSL, documentado no README.
