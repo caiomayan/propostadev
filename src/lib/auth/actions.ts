@@ -6,7 +6,7 @@ import { z } from "zod";
 import { createHash } from "node:crypto";
 import { auth } from "./config";
 import { getSession } from "./session";
-import { safeDestination, type ActionState } from "./action-state";
+import { safeDestination, internalNext, withNext, type ActionState } from "./action-state";
 import { mutationAllowed } from "./mutation-limit";
 import { setAccountType } from "./account-type";
 import { accountTypes } from "./user-fields";
@@ -35,7 +35,7 @@ export async function signUp(_: ActionState, form: FormData): Promise<ActionStat
   // O tipo nunca passa pelo input do Better Auth: só o servidor o define, uma vez.
   // Se falhar, a conta fica sem tipo e o painel redireciona para /boas-vindas.
   try { await setAccountType(createdId, chosenType); } catch { /* tratado por /boas-vindas */ }
-  redirect("/painel");
+  redirect(safeDestination(form.get("next")));
 }
 export async function chooseAccountType(_: ActionState, form: FormData): Promise<ActionState> {
   const session = await getSession();
@@ -46,7 +46,7 @@ export async function chooseAccountType(_: ActionState, form: FormData): Promise
   if (!await mutationAllowed(session.user.id, "account")) return { error: "Muitas alterações. Aguarde um minuto." };
   try { if (!await setAccountType(session.user.id, parsed.data.accountType)) return { error: "O tipo de conta já foi definido e não pode ser alterado." }; }
   catch { return { error: "Não foi possível salvar o tipo da conta." }; }
-  redirect("/painel");
+  redirect(safeDestination(form.get("next")));
 }
 export async function signOut() {
   await auth.api.signOut({ headers: await headers() });
@@ -105,8 +105,9 @@ export async function socialSignIn(form: FormData) {
   if (!provider.success || !enabledSocialProviders().includes(provider.data)) redirect("/entrar?erro=login-social");
   const forwarded = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   if (!await mutationAllowed(digest(forwarded), "social")) redirect("/entrar?erro=tentativas");
+  const next = internalNext(form.get("next"));
   let url: string | undefined;
-  try { url = (await auth.api.signInSocial({ body: { provider: provider.data, callbackURL: "/painel", newUserCallbackURL: "/boas-vindas", errorCallbackURL: "/entrar?erro=login-social" }, headers: await headers() })).url; }
+  try { url = (await auth.api.signInSocial({ body: { provider: provider.data, callbackURL: next ?? "/painel", newUserCallbackURL: withNext("/boas-vindas", next), errorCallbackURL: "/entrar?erro=login-social" }, headers: await headers() })).url; }
   catch { /* cai no redirect de erro */ }
   redirect(url ?? "/entrar?erro=login-social");
 }
