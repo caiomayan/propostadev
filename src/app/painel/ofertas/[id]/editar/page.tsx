@@ -3,10 +3,10 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { categories, offers, providers, serviceTypes } from "@/lib/db/schema";
-import { requireSession } from "@/lib/auth/session";
+import { requirePrestador } from "@/lib/auth/session";
 import { OfferForm } from "@/components/forms/offer-form";
 export default async function EditOfferPage({ params }: { params: Promise<{ id: string }> }) {
-  const session = await requireSession();
+  const session = await requirePrestador();
   const { id } = await params;
   if (!z.string().uuid().safeParse(id).success) notFound();
   const [row] = await db.select({ offer: offers }).from(offers).innerJoin(providers, eq(providers.id, offers.providerId)).where(and(eq(offers.id, id), eq(providers.userId, session.user.id), isNull(offers.deletedAt))).limit(1);

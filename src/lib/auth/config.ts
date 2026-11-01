@@ -6,12 +6,14 @@ import { APIError } from "better-auth/api";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import * as schema from "@/lib/db/auth-schema";
+import { userAdditionalFields } from "./user-fields";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: "pg", schema }),
   secret: process.env.BETTER_AUTH_SECRET,
   baseURL: process.env.BETTER_AUTH_URL,
   trustedOrigins: [process.env.BETTER_AUTH_URL ?? "http://localhost:3000"],
+  user: { additionalFields: userAdditionalFields },
   emailAndPassword: { enabled: true, minPasswordLength: 12, maxPasswordLength: 128 },
   rateLimit: { enabled: true, storage: "database", window: 60, max: 20 },
   databaseHooks: {
