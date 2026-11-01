@@ -45,17 +45,16 @@ test("visitante faz a Triagem, cria conta de Cliente, publica e vê o projeto em
   await expect(cards.first().getByRole("link", { name: "Ver perfil" })).toHaveAttribute("href", /\/prestadores\//);
   await expect(page.getByRole("link", { name: "Entrar para publicar" })).toHaveAttribute("href", /\/entrar\?next=%2Ftriagem/);
 
-  // Cadastro como Cliente; o rascunho é retomado no painel
+  // Cadastro como Cliente; o ?next devolve o visitante à Triagem com o rascunho intacto
   await page.getByRole("link", { name: "Criar conta de Cliente" }).click();
-  await expect(page).toHaveURL(/\/cadastro/);
+  await expect(page).toHaveURL(/\/cadastro\?next=%2Ftriagem/);
   const email = `cliente-triagem-${Date.now()}@test.example`;
   await page.getByLabel("Nome", { exact: true }).fill("Cliente da Triagem");
   await page.getByLabel("E-mail", { exact: true }).fill(email);
   await page.getByLabel("Senha", { exact: true }).fill(password);
   await page.getByRole("radio", { name: /Quero contratar/ }).check();
   await page.getByRole("button", { name: "Criar conta", exact: true }).click();
-  await expect(page).toHaveURL(/\/painel/);
-  await page.getByRole("link", { name: "Continuar a Triagem" }).click();
+  await expect(page).toHaveURL(/\/triagem\?.*orcamento=FAIXA/);
   await expect(page.getByRole("heading", { name: "Página de lançamento do meu curso" })).toBeVisible();
 
   // Publicar
