@@ -38,10 +38,10 @@ type Row = {
 };
 const toOpportunity = (row: Row): Opportunity => ({
   id: row.id, title: row.title, description: row.description, serviceTypeId: row.serviceTypeId, serviceName: row.serviceName,
-  budget: { tipo: row.budgetType, min: row.budgetMin, max: row.budgetMax }, desiredDays: row.desiredDays, createdAt: row.createdAt, status: row.status,
+  budget: { tipo: row.budgetType, min: row.budgetMin, max: row.budgetMax }, desiredDays: row.desiredDays, createdAt: new Date(row.createdAt), status: row.status,
   clientFirstName: row.clientFirstName, invited: row.invited, eligible: row.eligible,
   proposal: row.proposalId && row.proposalAmount && row.proposalDays !== null && row.proposalMessage && row.proposalStatus && row.proposalUpdatedAt
-    ? { id: row.proposalId, amount: row.proposalAmount, days: row.proposalDays, message: row.proposalMessage, status: row.proposalStatus, updatedAt: row.proposalUpdatedAt } : null,
+    ? { id: row.proposalId, amount: row.proposalAmount, days: row.proposalDays, message: row.proposalMessage, status: row.proposalStatus, updatedAt: new Date(row.proposalUpdatedAt) } : null,
 });
 
 // O Prestador (perfil ativo) vê Projetos ABERTOS dos tipos em que tem Oferta ativa. A coluna u.name é reduzida
@@ -83,5 +83,5 @@ export async function listMyProposals(userId: string): Promise<MyProposal[]> {
       pr.status, pr.created_at AS "createdAt", pr.updated_at AS "updatedAt"
     FROM proposta pr JOIN perfil_prestador pf ON pf.id = pr.prestador_id JOIN projeto p ON p.id = pr.projeto_id JOIN tipo_servico t ON t.id = p.tipo_servico_id
     WHERE pf.usuario_id = ${userId} ORDER BY pr.updated_at DESC, pr.id`);
-  return result.rows;
+  return result.rows.map((row) => ({ ...row, createdAt: new Date(row.createdAt), updatedAt: new Date(row.updatedAt) }));
 }

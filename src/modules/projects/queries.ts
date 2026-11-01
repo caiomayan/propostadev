@@ -34,7 +34,7 @@ export async function listProjectProposals(clientId: string, projectId: string):
     SELECT pr.id, pf.slug AS "providerSlug", pf.nome_exibicao AS "providerName", pr.valor::text AS amount, pr.prazo_dias AS days, pr.mensagem AS message, pr.status, pr.created_at AS "createdAt"
     FROM proposta pr JOIN projeto p ON p.id = pr.projeto_id JOIN perfil_prestador pf ON pf.id = pr.prestador_id
     WHERE p.id = ${projectId}::uuid AND p.cliente_id = ${clientId} AND pr.status <> 'RETIRADA' ORDER BY pr.created_at, pr.id`);
-  return result.rows;
+  return result.rows.map((row) => ({ ...row, createdAt: new Date(row.createdAt) }));
 }
 /** Ids dos Prestadores já convidados para o Projeto do Cliente. */
 export async function listInvitedProviderIds(clientId: string, projectId: string): Promise<string[]> {

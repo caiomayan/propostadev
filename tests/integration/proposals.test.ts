@@ -197,6 +197,7 @@ describe.skipIf(!testUrl)("Oportunidades, Propostas e Convites (ticket 05)", () 
       expect(standing.state).toBe("ok");
       expect(items.map((item) => item.id)).toEqual([invited, newer, older]);
       expect(items[0].invited).toBe(true);
+      expect(items[0].createdAt).toBeInstanceOf(Date);
       expect(items[1].invited).toBe(false);
       expect(items.map((item) => item.id)).not.toContain(otherType);
       expect(items.map((item) => item.id)).not.toContain(closed);
