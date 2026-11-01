@@ -8,9 +8,9 @@
 
 **Blocked by:** 03
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Botões OAuth ausentes sem credenciais; presentes e funcionais com elas
-- [ ] Fluxo de redefinição testado ponta a ponta (token expira, uso único)
-- [ ] Mensagens não revelam existência de e-mail
-- [ ] Variáveis documentadas em .env.example e README
+- [x] Botões OAuth ausentes sem credenciais; presentes com elas. Evidência: tests/unit/auth-providers.test.ts, E2E `sem credenciais…`, e no browser do Orca (dev na 3008) só o botão GitHub com variáveis fictícias. O handshake real com GitHub/Google não foi testado: não há credenciais, e o redirect usa `signInSocial` do Better Auth
+- [x] Fluxo de redefinição testado ponta a ponta (token expira, uso único). Evidência: tests/integration/auth-recovery.test.ts (válido, reutilizado, expirado, sessões revogadas), tests/e2e/auth.spec.ts e fluxo manual no browser do Orca pelo link do console
+- [x] Mensagens não revelam existência de e-mail. Evidência: resposta neutra idêntica para e-mail existente e inexistente (integração e E2E); login e cadastro mantêm erros genéricos
+- [x] Variáveis documentadas em .env.example e README (seção "Login social e e-mail", com as URLs de callback)

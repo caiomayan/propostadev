@@ -264,3 +264,21 @@ dialog::backdrop { background: var(--overlay); }
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
   .button:hover, .button:active { transform: none; }
 }
+
+/* ---------- autenticação: senha, força e aviso de e-mail ---------- */
+.password-control { position: relative; display: flex; }
+.password-control input { width: 100%; padding-right: 52px; }
+.password-toggle { position: absolute; inset-block: 0; right: 0; width: 48px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: 0; border-radius: 0 var(--radius) var(--radius) 0; color: var(--muted-foreground); cursor: pointer; }
+.password-toggle:hover { color: var(--foreground); }
+.password-toggle:focus-visible { outline: 3px solid var(--ring); outline-offset: -3px; }
+.password-toggle svg { width: 20px; height: 20px; }
+.password-strength { display: flex; flex-direction: column; gap: 6px; }
+.password-strength-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.password-strength-bar span { height: 6px; border-radius: 999px; background: var(--muted); }
+.password-strength-bar span[data-on="true"] { background: var(--muted-foreground); }
+.password-strength[data-level="1"] .password-strength-bar span[data-on="true"] { background: var(--destructive); }
+.password-strength[data-level="4"] .password-strength-bar span[data-on="true"], .password-strength[data-level="3"] .password-strength-bar span[data-on="true"] { background: var(--success); }
+.password-strength [role=status] { color: var(--muted-foreground); font-weight: 400; }
+.verification-notice { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 12px 16px; border-radius: var(--radius); background: var(--muted); color: var(--foreground); font-size: .9375rem; }
+.verification-notice .button { min-height: 36px; padding: 4px 16px; font-size: .875rem; }
+.form-success { color: var(--success); }
