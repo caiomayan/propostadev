@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { boolean, check, index, integer, numeric, pgEnum, pgTable, smallint, text, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
+import { boolean, check, index, integer, numeric, pgEnum, pgTable, primaryKey, smallint, text, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 import { user } from "./auth-schema";
 
 export const providerTypes = ["PESSOA_FISICA", "PESSOA_JURIDICA"] as const;
@@ -34,6 +34,25 @@ export const offers = pgTable("oferta_servico", {
   check("oferta_preco_valido", sql`(${t.priceType} = 'SOB_CONSULTA' AND ${t.priceMin} IS NULL AND ${t.priceMax} IS NULL) OR (${t.priceType} IN ('FIXO', 'A_PARTIR_DE', 'POR_HORA') AND ${t.priceMin} IS NOT NULL AND ${t.priceMin} > 0 AND ${t.priceMax} IS NULL) OR (${t.priceType} = 'INTERVALO' AND ${t.priceMin} IS NOT NULL AND ${t.priceMax} IS NOT NULL AND ${t.priceMin} > 0 AND ${t.priceMax} >= ${t.priceMin})`),
   check("oferta_prazo_valido", sql`(${t.deadlineType} = 'A_COMBINAR' AND ${t.deadlineMinDays} IS NULL AND ${t.deadlineMaxDays} IS NULL) OR (${t.deadlineType} IN ('FIXO', 'A_PARTIR_DE') AND ${t.deadlineMinDays} IS NOT NULL AND ${t.deadlineMinDays} BETWEEN 1 AND 3650 AND ${t.deadlineMaxDays} IS NULL) OR (${t.deadlineType} = 'INTERVALO' AND ${t.deadlineMinDays} IS NOT NULL AND ${t.deadlineMaxDays} IS NOT NULL AND ${t.deadlineMinDays} BETWEEN 1 AND 3650 AND ${t.deadlineMaxDays} BETWEEN ${t.deadlineMinDays} AND 3650)`)]);
 export const reviews = pgTable("avaliacao", { id: uuid("id").defaultRandom().primaryKey(), userId: text("usuario_id").notNull().references(() => user.id, { onDelete: "cascade" }), providerId: uuid("prestador_id").notNull().references(() => providers.id, { onDelete: "cascade" }), rating: smallint("nota").notNull(), comment: text("comentario"), ...dates() }, (t) => [uniqueIndex("avaliacao_usuario_prestador_unique").on(t.userId, t.providerId), index("avaliacao_prestador_data_idx").on(t.providerId, t.createdAt), check("avaliacao_nota_valida", sql`${t.rating} BETWEEN 1 AND 5`), check("avaliacao_comentario_limite", sql`${t.comment} IS NULL OR char_length(${t.comment}) <= 2000`)]);
+export const budgetTypes = ["FAIXA", "ATE", "NAO_SEI"] as const;
+export const projectStatuses = ["ABERTO", "ENCERRADO", "CANCELADO"] as const;
+export const budgetType = pgEnum("orcamento_tipo", budgetTypes);
+export const projectStatus = pgEnum("projeto_status", projectStatuses);
+// Projeto (ticket 04): necessidade descrita por um Cliente. proposta_aceita_id ainda sem FK (a tabela proposta chega no ticket 05).
+export const projects = pgTable("projeto", {
+  id: uuid("id").defaultRandom().primaryKey(), clientId: text("cliente_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  serviceTypeId: uuid("tipo_servico_id").notNull().references(() => serviceTypes.id, { onDelete: "restrict" }),
+  title: varchar("titulo", { length: 120 }).notNull(), description: text("descricao").notNull(),
+  budgetType: budgetType("orcamento_tipo").notNull(), budgetMin: numeric("orcamento_min", { precision: 10, scale: 2 }), budgetMax: numeric("orcamento_max", { precision: 10, scale: 2 }),
+  desiredDays: integer("prazo_desejado_dias"), status: projectStatus("status").default("ABERTO").notNull(), acceptedProposalId: uuid("proposta_aceita_id"), ...dates(),
+}, (t) => [index("projeto_cliente_status_idx").on(t.clientId, t.status), index("projeto_tipo_status_idx").on(t.serviceTypeId, t.status),
+  check("projeto_titulo_valido", sql`char_length(btrim(${t.title})) between 5 and 120`), check("projeto_descricao_valida", sql`char_length(btrim(${t.description})) between 30 and 5000`),
+  check("projeto_prazo_valido", sql`${t.desiredDays} IS NULL OR ${t.desiredDays} BETWEEN 1 AND 3650`),
+  check("projeto_orcamento_valido", sql`(${t.budgetType} = 'NAO_SEI' AND ${t.budgetMin} IS NULL AND ${t.budgetMax} IS NULL) OR (${t.budgetType} = 'ATE' AND ${t.budgetMin} IS NULL AND ${t.budgetMax} IS NOT NULL AND ${t.budgetMax} > 0) OR (${t.budgetType} = 'FAIXA' AND ${t.budgetMin} IS NOT NULL AND ${t.budgetMax} IS NOT NULL AND ${t.budgetMin} > 0 AND ${t.budgetMax} >= ${t.budgetMin})`),
+  check("projeto_aceite_so_encerrado", sql`${t.acceptedProposalId} IS NULL OR ${t.status} = 'ENCERRADO'`)]);
+// Objetivos em linguagem simples da Triagem e os Tipos de serviço que sugerem (seed versionado em scripts/seed.ts).
+export const triageGoals = pgTable("objetivo_triagem", { id: uuid("id").defaultRandom().primaryKey(), slug: varchar("slug", { length: 80 }).notNull(), label: varchar("rotulo", { length: 120 }).notNull(), hint: varchar("dica", { length: 200 }), position: smallint("ordem").notNull(), ...dates() }, (t) => [uniqueIndex("objetivo_triagem_slug_unique").on(t.slug), check("objetivo_triagem_texto_valido", sql`btrim(${t.slug}) <> '' AND btrim(${t.label}) <> ''`)]);
+export const triageGoalServices = pgTable("objetivo_triagem_tipo", { goalId: uuid("objetivo_id").notNull().references(() => triageGoals.id, { onDelete: "cascade" }), serviceTypeId: uuid("tipo_servico_id").notNull().references(() => serviceTypes.id, { onDelete: "cascade" }), position: smallint("ordem").notNull() }, (t) => [primaryKey({ columns: [t.goalId, t.serviceTypeId], name: "objetivo_triagem_tipo_pk" })]);
 export type Provider = typeof providers.$inferSelect;
 export type Offer = typeof offers.$inferSelect;
 export type Category = typeof categories.$inferSelect;

@@ -1,0 +1,114 @@
+/* Triagem e telas do Projeto (ticket 04). Só tokens de globals.css; sem cores novas. */
+.triage { padding-block: 40px 24px; max-width: 920px; }
+.triage h1 { font-size: clamp(1.875rem, 1.2rem + 2.6vw, 3rem); line-height: 1.05; letter-spacing: -.035em; overflow-wrap: anywhere; }
+.triage .page-heading { display: flex; flex-direction: column; gap: 12px; }
+.triage .page-heading p { margin-top: 0; max-width: 60ch; }
+
+.triage-steps { display: flex; flex-wrap: wrap; gap: 8px 20px; list-style: none; padding: 0; margin: 0; font-size: .875rem; font-weight: 600; color: var(--muted-foreground); }
+.triage-steps li { display: inline-flex; align-items: center; gap: 8px; }
+.triage-steps li span { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 999px; background: var(--muted); color: var(--foreground); font-size: .8125rem; }
+.triage-steps li[aria-current="step"] { color: var(--foreground); }
+.triage-steps li[aria-current="step"] span { background: var(--accent-fill); color: var(--accent-ink); }
+.triage-steps li.done span { background: var(--primary); color: var(--primary-foreground); }
+
+.triage-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; list-style: none; padding: 0; margin: 0; }
+.triage-card { position: relative; display: flex; flex-direction: column; gap: 6px; height: 100%; min-height: 108px; padding: 22px 56px 22px 24px; background: var(--card); border-radius: var(--radius-lg); }
+.triage-card strong { font-family: var(--font-display); font-size: 1.25rem; letter-spacing: -.02em; line-height: 1.2; }
+.triage-card span { color: var(--muted-foreground); font-size: .9375rem; }
+.triage-card svg { position: absolute; right: 22px; top: 50%; width: 20px; height: 20px; margin-top: -10px; transition: transform .15s ease; }
+.triage-card:hover { text-decoration: none; background: var(--muted); }
+.triage-card:hover svg { transform: translateX(4px); }
+.triage-card.known { background: var(--primary); color: var(--primary-foreground); }
+.triage-card.known span { color: inherit; opacity: .85; }
+.triage-card.known:hover { background: var(--primary); filter: brightness(1.12); }
+.triage-card.known :focus-visible, .triage-card.known:focus-visible { outline-color: var(--accent-fill); }
+
+.triage-form { max-width: 640px; }
+.triage-form .field input, .triage-form .field textarea { width: 100%; }
+.triage-fieldset { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+.triage-fieldset legend { padding: 0; margin-bottom: 4px; font-size: .9375rem; font-weight: 600; }
+.choice-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.choice { display: flex; gap: 10px; align-items: flex-start; padding: 14px; background: var(--card); border-radius: var(--radius); border: 1.5px solid var(--border); cursor: pointer; }
+.choice:has(input:checked) { border-color: var(--foreground); background: var(--muted); }
+.choice:has(input:focus-visible) { outline: 3px solid var(--ring); outline-offset: 2px; }
+.choice input { margin-top: 2px; }
+.choice span { display: flex; flex-direction: column; gap: 2px; font-size: .9375rem; }
+.choice small { color: var(--muted-foreground); font-size: .8125rem; font-weight: 400; }
+.field-error { color: var(--destructive); font-size: .875rem; font-weight: 500; }
+.triage-form .button { align-self: flex-start; }
+.triage-form input:disabled { opacity: .5; cursor: not-allowed; }
+
+.triage-summary { display: flex; flex-wrap: wrap; gap: 8px 40px; margin: 0; }
+.triage-summary div { display: flex; flex-direction: column; gap: 2px; }
+.triage-summary dt { font-size: .8125rem; font-weight: 600; color: var(--muted-foreground); }
+.triage-summary dd { margin: 0; font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; letter-spacing: -.02em; }
+
+.reference-average { display: flex; flex-direction: column; gap: 2px; }
+.reference-average span { font-size: .875rem; font-weight: 600; color: var(--muted-foreground); }
+.reference-average strong { font-family: var(--font-display); font-size: clamp(2.25rem, 1.6rem + 2.4vw, 3.25rem); letter-spacing: -.035em; line-height: 1.05; }
+.reference-average small { color: var(--muted-foreground); font-size: .875rem; }
+.insufficient { background: var(--muted); border-radius: var(--radius); padding: 20px; display: flex; flex-direction: column; gap: 6px; }
+.insufficient strong { font-family: var(--font-display); font-size: 1.375rem; }
+
+/* PriceRuler com dados */
+.data-ruler { margin: 0; display: flex; flex-direction: column; gap: 16px; }
+.ruler-track { position: relative; height: 72px; border-bottom: 3px solid var(--foreground); background-image: repeating-linear-gradient(to right, var(--foreground) 0 2px, transparent 2px 5%); background-size: 100% 14px; background-position: bottom; background-repeat: no-repeat; }
+.ruler-band { position: absolute; top: 4px; bottom: 18px; background: var(--accent-fill); border-radius: 10px; }
+.ruler-average { position: absolute; top: 0; bottom: 0; width: 4px; margin-left: -2px; background: var(--foreground); border-radius: 2px; }
+.ruler-budget { position: absolute; bottom: -14px; height: 8px; background: var(--primary); border-radius: 999px; }
+.ruler-budget.until { border-top-right-radius: 999px; border-bottom-right-radius: 999px; border-top-left-radius: 0; border-bottom-left-radius: 0; }
+.ruler-legend { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; font-size: .9375rem; }
+.ruler-legend li { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.ruler-legend strong { font-family: var(--font-display); font-size: 1.0625rem; }
+.swatch { display: inline-block; flex-shrink: 0; }
+.swatch.band { width: 28px; height: 14px; border-radius: 6px; background: var(--accent-fill); }
+.swatch.average { width: 4px; height: 18px; border-radius: 2px; background: var(--foreground); margin-inline: 12px; }
+.swatch.budget { width: 28px; height: 8px; border-radius: 999px; background: var(--primary); }
+
+.compatible-list { gap: 16px; }
+.compatible-card { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr); gap: 24px; padding: 24px; background: var(--card); border-radius: var(--radius-lg); align-items: start; }
+.compatible-card h3 { font-size: 1.1875rem; margin: 0 0 6px; }
+.compatible-card p { margin: 3px 0; font-size: .9375rem; }
+.compatible-offer strong { font-family: var(--font-display); font-size: 1.25rem; letter-spacing: -.02em; }
+.compatible-reasons { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { display: inline-flex; align-items: center; min-height: 28px; padding: 4px 12px; border-radius: 999px; background: var(--accent-fill); color: var(--accent-ink); font-size: .8125rem; font-weight: 600; }
+.chip.neutral { background: var(--muted); color: var(--foreground); }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* Projetos do Cliente */
+.project-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+.project-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 24px; padding: 20px 24px; background: var(--card); border-radius: var(--radius-lg); }
+.project-row h2 { font-size: 1.25rem; }
+.project-row h2 a { overflow-wrap: anywhere; }
+.project-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: .9375rem; color: var(--muted-foreground); margin-top: 4px; }
+.status { display: inline-flex; align-items: center; min-height: 28px; padding: 4px 12px; border-radius: 999px; font-size: .8125rem; font-weight: 700; background: var(--muted); color: var(--foreground); }
+.status.aberto { background: var(--accent-fill); color: var(--accent-ink); }
+.status.cancelado { background: transparent; border: 1.5px solid var(--border); color: var(--muted-foreground); }
+.project-description { white-space: pre-wrap; overflow-wrap: anywhere; }
+.confirm { border: 1.5px solid var(--border); border-radius: var(--radius); padding: 16px; }
+.confirm summary { cursor: pointer; font-weight: 600; min-height: 28px; }
+.confirm[open] summary { margin-bottom: 12px; }
+.confirm .button { background: var(--destructive); border-color: var(--destructive); color: #fff; }
+
+/* Entrada da Triagem na home */
+.triage-slot .goal-links { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.triage-slot .goal-links a { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 10px 16px; border-radius: 999px; background: color-mix(in srgb, var(--primary-foreground) 14%, transparent); color: inherit; font-weight: 600; }
+.triage-slot .goal-links a:hover { text-decoration: none; background: color-mix(in srgb, var(--primary-foreground) 24%, transparent); }
+.triage-slot .goal-links svg { width: 16px; height: 16px; flex-shrink: 0; }
+.triage-slot .slot-secondary { font-size: .9375rem; }
+.triage-slot .slot-secondary a { color: inherit; text-decoration: underline; }
+
+@media (max-width: 860px) {
+  .compatible-card { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 20px; }
+  .choice-row { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .triage { padding-block: 24px 16px; }
+  .triage-cards { grid-template-columns: minmax(0, 1fr); }
+  .project-row { padding: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .triage-card svg { transition: none; }
+  .triage-card:hover svg { transform: none; }
+}
