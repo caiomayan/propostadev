@@ -81,8 +81,9 @@ Compartilhados e reutilizados pelos próximos tickets (triagem, propostas, pain�
 - `Button` (`ui/button`): default, outline, secondary, ghost, destructive; 44px. Classes `.button`, `.button.secondary`, `.button.accent`, `.button.danger` seguem o mesmo visual.
 - `Card` (`ui/card`): `tone` default | muted | accent | brand. Equivalente em classe: `.panel` / `.panel.tone`.
 - `Badge`, `Input`, `Textarea`, `Skeleton`, `Sheet` restilizados pelos tokens.
-- `PriceRuler` (`components/price-ruler.tsx`): ilustração decorativa, sem dados.
-- Slot da Triagem na home: `.triage-slot[data-slot="triagem"]`, hoje com a busca; o ticket 04 acrescenta a entrada "O que você precisa?" aqui, sem link morto.
+- `PriceRuler` (`components/price-ruler.tsx`): sem props é a ilustração decorativa da home (sem dados); com `data` mostra a faixa anunciada em limão, a média dos preços fixos e o orçamento do Cliente (ou o valor de uma Proposta, com `sujeito: "valor"`) na mesma escala, sempre com os valores também como texto na legenda. Usada na Triagem, no Projeto, nas Oportunidades e no formulário de Proposta.
+- Slot da Triagem na home: `.triage-slot[data-slot="triagem"]` traz a entrada "O que você precisa?" (atalhos de objetivo e "Começar a Triagem"); a busca virou o link secundário "Buscar prestadores".
+- Triagem, Projeto, Oportunidades e Propostas: `src/app/triagem/triagem.css` (`.triage-card`, `.chip`, `.status`, `.project-row`, `.data-ruler`, `.compatible-card`, `.confirm`). Selo "Convite" é um `.chip` limão; contadores de Propostas são `.chip.neutral`.
 - Busca, perfil e comparação: `.provider-result`, `.price-statistic`, tabela e bandeja de comparação em `src/app/buscar/public.css`.
 
 ## Do's and Don'ts
