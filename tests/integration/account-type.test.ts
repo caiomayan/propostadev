@@ -60,13 +60,16 @@ describe.skipIf(!testUrl)("tipo de conta (ticket 03)", () => {
   it("backfill da migration: com perfil vira PRESTADOR, sem perfil vira CLIENTE", async () => {
     const statement = readFileSync("drizzle/0002_tipo-conta.sql", "utf8").split("--> statement-breakpoint").map((part) => part.trim()).find((part) => /UPDATE "user"/.test(part));
     expect(statement).toBeTruthy();
+    // Restringe o UPDATE do backfill às linhas criadas aqui, para não depender de usuários deixados por outros testes.
+    const scoped = statement!.replace(/;?\s*$/, ' WHERE "user".id = ANY($1);');
+    expect(scoped).not.toBe(statement);
     const withProfile = await newUser(null);
     const withoutProfile = await newUser(null);
     await pool.query("INSERT INTO perfil_prestador(usuario_id,slug,tipo,nome_exibicao,descricao,anos_experiencia,email_contato,contatos_publicados_em) VALUES($1,$2,'PESSOA_FISICA','Perfil legado','Descrição de teste suficientemente longa para o perfil.',5,'publico@test.example',now())", [withProfile, randomUUID()]);
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
-      await client.query(statement!);
+      await client.query(scoped, [[withProfile, withoutProfile]]);
       const rows = await client.query<{ id: string; tipo_conta: string }>('SELECT id,tipo_conta FROM "user" WHERE id = ANY($1)', [[withProfile, withoutProfile]]);
       const byId = Object.fromEntries(rows.rows.map((row) => [row.id, row.tipo_conta]));
       expect(byId[withProfile]).toBe("PRESTADOR");

@@ -122,3 +122,72 @@ test("painel avisa e-mail não confirmado, permite reenviar e some após a confi
     await pool.end();
   }
 });
+
+// --- Destino ?next (ticket 08, complemento) ---
+const uniqueEmail = (prefix: string) => `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 8)}@example.test`;
+async function fillRegistration(page: Page, email: string) {
+  await page.getByLabel("Nome", { exact: true }).fill("Conta com destino");
+  await page.getByLabel("E-mail", { exact: true }).fill(email);
+  await page.getByLabel("Senha", { exact: true }).fill(password);
+  await page.getByRole("radio", { name: /Quero contratar/ }).check();
+  await page.getByRole("button", { name: "Criar conta", exact: true }).click();
+}
+async function clearAccountType(email: string) {
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL_TEST });
+  try {
+    await pool.query('ALTER TABLE "user" DISABLE TRIGGER user_tipo_conta_imutavel');
+    await pool.query('UPDATE "user" SET tipo_conta=NULL WHERE email=$1', [email]);
+    await pool.query('ALTER TABLE "user" ENABLE TRIGGER user_tipo_conta_imutavel');
+  } finally { await pool.end(); }
+}
+
+test("cadastro com ?next termina no destino informado", async ({ page }) => {
+  await page.goto("/cadastro?next=/buscar%3Fq%3Dloja");
+  await fillRegistration(page, uniqueEmail("next"));
+  await expect(page).toHaveURL(/\/buscar\?q=loja$/);
+});
+
+test("query string longa e codificada sobrevive entrar → cadastro → destino", async ({ page }) => {
+  const destination = "/buscar?q=" + encodeURIComponent("loja virtual & sistema = ação 100%") + "&rascunho=" + "a%2Fb%3Fc%3Dd%26e".repeat(40) + "&x=1";
+  await page.goto(`/entrar?next=${encodeURIComponent(destination)}`);
+  await page.getByRole("link", { name: "Criar conta" }).click();
+  await expect(page).toHaveURL(/\/cadastro\?next=/);
+  expect(new URL(page.url()).searchParams.get("next")).toBe(destination);
+  await fillRegistration(page, uniqueEmail("longo"));
+  await expect.poll(() => { const url = new URL(page.url()); return url.pathname + url.search; }).toBe(destination);
+  await page.goto(`/cadastro?next=${encodeURIComponent(destination)}`);
+  await page.getByRole("link", { name: "Entrar", exact: true }).last().click();
+  expect(new URL(page.url()).searchParams.get("next")).toBe(destination);
+});
+
+test("next externo é ignorado no cadastro e na escolha de tipo", async ({ page }) => {
+  for (const evil of ["https://evil.example", "//evil.example/x", "/" + String.fromCharCode(92) + "evil.example"]) {
+    await page.context().clearCookies();
+    await page.goto(`/cadastro?next=${encodeURIComponent(evil)}`);
+    await expect(page.locator('input[name="next"]')).toHaveCount(0);
+    await fillRegistration(page, uniqueEmail("evil"));
+    await expect(page).toHaveURL(/\/painel$/);
+  }
+  const email = uniqueEmail("evil-tipo");
+  await page.context().clearCookies();
+  await page.goto("/cadastro");
+  await fillRegistration(page, email);
+  await expect(page).toHaveURL(/\/painel$/);
+  await clearAccountType(email);
+  await page.goto(`/boas-vindas?next=${encodeURIComponent("https://evil.example")}`);
+  await page.getByRole("radio", { name: /Quero contratar/ }).check();
+  await page.getByRole("button", { name: "Continuar", exact: true }).click();
+  await expect(page).toHaveURL(/\/painel$/);
+});
+
+test("/boas-vindas?next redireciona ao destino depois da escolha do tipo", async ({ page }) => {
+  const email = uniqueEmail("boas");
+  await page.goto("/cadastro");
+  await fillRegistration(page, email);
+  await expect(page).toHaveURL(/\/painel$/);
+  await clearAccountType(email);
+  await page.goto("/boas-vindas?next=/buscar%3Fq%3Dloja");
+  await page.getByRole("radio", { name: /Quero oferecer serviços/ }).check();
+  await page.getByRole("button", { name: "Continuar", exact: true }).click();
+  await expect(page).toHaveURL(/\/buscar\?q=loja$/);
+});
