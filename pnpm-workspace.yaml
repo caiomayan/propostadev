@@ -3,4 +3,5 @@ allowBuilds:
   unrs-resolver: true
 minimumReleaseAge: 0
 overrides:
+  zod: 4.6.6
   'drizzle-kit@0.31.11>@esbuild-kit/esm-loader': '-'
