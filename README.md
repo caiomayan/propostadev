@@ -12,10 +12,10 @@ Variáveis sensíveis na Vercel: DATABASE_URL (transaction pooler, porta 6543), 
 Build Command na Vercel:
 
 ```sh
-curl -fsS https://supabase-downloads.s3-ap-southeast-1.amazonaws.com/prod/ssl/prod-ca-2021.crt -o supabase-ca.crt && pnpm db:migrate && node --conditions=react-server --import tsx scripts/seed.ts && pnpm build
+curl -fsS https://supabase-downloads.s3-ap-southeast-1.amazonaws.com/prod/ssl/prod-ca-2021.crt -o supabase-ca.crt && if [ "$VERCEL_ENV" = production ]; then pnpm db:migrate && node --conditions=react-server --import tsx scripts/seed.ts; fi && pnpm build
 ```
 
-A CA pública vem do endereço oficial apresentado pelo dashboard do Supabase. next.config.ts inclui supabase-ca.crt no tracing das funções. O arquivo é baixado em cada build; a verificação TLS permanece ativa. O comando do seed usa as variáveis do ambiente de hospedagem, sem exigir um .env local. Migrations e catálogo são incrementais/idempotentes; previews neste projeto usam a mesma base de produção e não devem executar alterações experimentais de schema.
+A CA pública vem do endereço oficial apresentado pelo dashboard do Supabase. next.config.ts inclui supabase-ca.crt no tracing das funções. O arquivo é baixado em cada build; a verificação TLS permanece ativa. O comando do seed usa as variáveis do ambiente de hospedagem, sem exigir um .env local. Migrations e catálogo são incrementais/idempotentes; previews neste projeto usam a mesma base de produção; por isso migrations e seed rodam apenas quando VERCEL_ENV=production (01/11/2026), e um preview com schema novo pode falhar até o merge na main.
 
 As 11 tabelas public têm RLS habilitada, sem políticas de acesso para anon/authenticated. Privilégios de tabelas/sequências atuais e futuras desses papéis foram restringidos. O acesso do aplicativo acontece somente no servidor pelo PostgreSQL; Better Auth continua responsável pelas contas/sessões. Não usar Supabase Auth no frontend deste projeto.
 
