@@ -69,7 +69,7 @@ O seed demo exige opt-in (`ALLOW_DEMO_SEED=true`) e é recusado com `NODE_ENV=pr
 - Propostas em todos os status (enviada, pré-selecionada, recusada, aceita e retirada) e Convites;
 - duas Avaliações verificadas (feitas depois do Aceite) e uma Avaliação anterior, sem contratação verificada.
 
-O seed é idempotente: cada Projeto só é criado uma vez. Os cenários estão em `scripts/demo-scenarios.ts`. Para identificar o ambiente inteiro como demonstração, ajuste DEMO_MODE=true antes de iniciar ou buildar o aplicativo.
+O seed é idempotente: cada Projeto só é criado uma vez. Para voltar a demo ao estado inicial depois de ensaios (Aceites e Propostas feitos ao vivo), rode com `DEMO_RESET=true`: os Projetos e as Avaliações verificadas dos Clientes demo são recriados. Os cenários estão em `scripts/demo-scenarios.ts`. Para identificar o ambiente inteiro como demonstração, ajuste DEMO_MODE=true antes de iniciar ou buildar o aplicativo.
 
 ```powershell
 $env:ALLOW_DEMO_SEED='true'

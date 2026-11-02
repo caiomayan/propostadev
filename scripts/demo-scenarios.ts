@@ -1,4 +1,4 @@
-import { and, eq, like } from "drizzle-orm";
+import { and, eq, inArray, like, sql } from "drizzle-orm";
 import { auth } from "../src/lib/auth/config";
 import { db } from "../src/lib/db";
 import { user } from "../src/lib/db/auth-schema";
@@ -99,6 +99,13 @@ export async function seedDemoScenarios(password: string) {
   }
   // Contas fictícias não recebem e-mail: marcadas como confirmadas para a demo não exibir o aviso de verificação.
   await db.update(user).set({ emailVerified: true }).where(like(user.email, "%@demo.example"));
+  if (process.env.DEMO_RESET === "true") {
+    // Volta a demo ao estado inicial depois de ensaios: remove as Avaliações verificadas e os Projetos dos Clientes demo
+    // (Propostas e Convites caem em cascata). A Avaliação anterior, sem Aceite, é preservada.
+    const clientIds = [...ids.values()];
+    await db.delete(reviews).where(and(inArray(reviews.userId, clientIds), sql`EXISTS (SELECT 1 FROM proposta p JOIN projeto j ON j.id = p.projeto_id WHERE p.status = 'ACEITA' AND p.prestador_id = ${reviews.providerId} AND j.cliente_id = ${reviews.userId})`));
+    await db.delete(projects).where(inArray(projects.clientId, clientIds));
+  }
   const types = new Map((await db.select({ id: serviceTypes.id, slug: serviceTypes.slug }).from(serviceTypes)).map((type) => [type.slug, type.id]));
   const providerIds = new Map((await db.select({ id: providers.id, slug: providers.slug }).from(providers)).map((provider) => [provider.slug, provider.id]));
   let created = 0;
