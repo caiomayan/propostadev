@@ -119,3 +119,61 @@
 .opportunity-head h2 { font-size: 1.375rem; overflow-wrap: anywhere; }
 .invite-form { display: flex; flex-direction: column; gap: 6px; }
 .proposal-ruler { margin-block: 4px; }
+
+/* Triagem de Propostas e Aceite (ticket 06) */
+.triage-controls { display: flex; flex-wrap: wrap; gap: 16px 40px; }
+.triage-controls nav { min-width: 0; }
+.triage-controls .chips-row { list-style: none; padding: 0; margin-top: 6px; }
+.filter-link { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 16px; border-radius: 999px; border: 1.5px solid var(--border); color: var(--foreground); font-weight: 600; font-size: .9375rem; }
+.filter-link:hover { text-decoration: none; border-color: var(--foreground); }
+.filter-link.current { background: var(--primary); border-color: var(--primary); color: var(--primary-foreground); }
+.proposal-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr)); gap: 16px; }
+.proposal-list > li { display: flex; min-width: 0; }
+.proposal-subhead { font-size: 1.125rem; margin-top: 8px; }
+.proposal-card { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 16px; padding: 24px; background: var(--card); border-radius: var(--radius-lg); border: 2px solid transparent; }
+.proposal-card.pre_selecionada { border-color: var(--primary); }
+.proposal-card.recusada { opacity: .88; }
+.proposal-card.aceita, .proposal-card.highlight { border-color: var(--primary); background: var(--card); }
+.proposal-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px 16px; }
+.proposal-head h3 { font-size: 1.1875rem; margin: 0 0 4px; overflow-wrap: anywhere; }
+.proposal-head .provider-identity { min-width: 0; flex: 1 1 220px; }
+.proposal-figures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 0; }
+.proposal-figures dt { font-size: .875rem; font-weight: 600; color: var(--muted-foreground); }
+.proposal-figures dd { margin: 2px 0 0; font-size: .9375rem; }
+.proposal-figures .figure { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.2; overflow-wrap: anywhere; }
+.deadline { font-weight: 600; }
+.deadline.antes, .deadline.no-prazo { color: var(--success); }
+.deadline.alem { color: var(--destructive); }
+.deadline.flexivel { color: var(--muted-foreground); }
+.status.enviada { background: var(--muted); }
+.status.pre { background: var(--primary); color: var(--primary-foreground); }
+.status.aceita { background: var(--accent-fill); color: var(--accent-ink); outline: 2px solid var(--primary); outline-offset: -2px; }
+.status.recusada { background: transparent; border: 1.5px solid var(--border); color: var(--muted-foreground); }
+.data-ruler.compact { gap: 8px; }
+.data-ruler.compact .ruler-track { height: 56px; }
+.data-ruler.compact .ruler-legend { margin-top: 0; gap: 4px; font-size: .875rem; }
+.data-ruler.compact .ruler-legend strong { font-size: 1rem; }
+.data-ruler.compact .ruler-caption { font-size: .875rem; }
+.ruler-point { position: absolute; top: 50%; width: 20px; height: 20px; margin: -10px 0 0 -10px; border-radius: 50%; background: var(--primary); border: 3px solid var(--card); box-shadow: 0 0 0 2px var(--primary); }
+.swatch.point { width: 14px; height: 14px; border-radius: 50%; background: var(--primary); margin-inline: 7px; box-shadow: 0 0 0 2px var(--primary); border: 2px solid var(--card); }
+.no-reference { margin: 0; padding: 12px 16px; border-radius: var(--radius); background: var(--muted); }
+.proposal-message summary { cursor: pointer; list-style: none; min-height: 44px; }
+.proposal-message summary::-webkit-details-marker { display: none; }
+.proposal-message .msg-preview { display: block; }
+.proposal-message .msg-toggle { display: inline-block; margin-top: 6px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.proposal-message .msg-less, .proposal-message[open] .msg-preview, .proposal-message[open] .msg-more { display: none; }
+.proposal-message[open] .msg-less { display: inline-block; }
+.proposal-message[open] > p { margin-top: 12px; }
+.proposal-actions { display: flex; flex-direction: column; gap: 12px; margin-top: auto; padding-top: 4px; }
+.quick-action { display: flex; flex-direction: column; gap: 6px; }
+.confirm.accept { border-color: var(--primary); }
+.confirm.accept .button { background: var(--primary); border-color: var(--primary); color: var(--primary-foreground); }
+.accepted-provider .contact-links { margin-block: 4px; }
+.accepted-provider h2 { overflow-wrap: anywhere; }
+.client-contact { flex-basis: 100%; display: flex; flex-direction: column; gap: 6px; padding: 16px; border-radius: var(--radius); background: var(--muted); }
+.client-contact p { margin: 0; }
+.client-contact .button { max-width: 100%; overflow-wrap: anywhere; text-align: center; }
+@media (max-width: 640px) {
+  .proposal-card { padding: 18px; }
+  .proposal-figures .figure { font-size: 1.3125rem; }
+}

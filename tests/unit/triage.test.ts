@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { catalog } from "../../scripts/seed";
 import { goalSeeds } from "../../src/modules/triage/goals";
-import { posicaoOrcamento } from "../../src/modules/triage/position";
+import { compareDeadline, posicaoOrcamento, posicaoValor, positionSentence } from "../../src/modules/triage/position";
+import { parseTriageOrder } from "../../src/modules/proposals/queries";
 import { draftQuery, normalizeMoney, parseDraft } from "../../src/modules/triage/validation";
 
 const faixa = { min: "500.00", max: "5000.00" };
@@ -72,5 +73,30 @@ describe("mapeamento objetivo → tipos de serviço", () => {
   it("tem slugs únicos e ao menos um tipo por objetivo", () => {
     expect(new Set(goalSeeds.map((goal) => goal.slug)).size).toBe(goalSeeds.length);
     for (const goal of goalSeeds) expect(goal.services.length).toBeGreaterThan(0);
+  });
+});
+
+describe("Triagem de Propostas (ticket 06)", () => {
+  it("compara o prazo da Proposta com o desejado", () => {
+    expect(compareDeadline(15, 20)).toEqual({ tone: "antes", text: "5 dias antes do desejado" });
+    expect(compareDeadline(29, 30)).toEqual({ tone: "antes", text: "1 dia antes do desejado" });
+    expect(compareDeadline(30, 30)).toEqual({ tone: "no-prazo", text: "Dentro do prazo" });
+    expect(compareDeadline(40, 30)).toEqual({ tone: "alem", text: "10 dias além do desejado" });
+    expect(compareDeadline(31, 30)).toEqual({ tone: "alem", text: "1 dia além do desejado" });
+    expect(compareDeadline(90, null)).toEqual({ tone: "flexivel", text: "Prazo desejado flexível" });
+  });
+  it("posiciona o valor único de uma Proposta na faixa", () => {
+    expect(posicaoValor("499.99", faixa)).toBe("ABAIXO");
+    expect(posicaoValor("500.00", faixa)).toBe("DENTRO");
+    expect(posicaoValor("5000.00", faixa)).toBe("DENTRO");
+    expect(posicaoValor("5000.01", faixa)).toBe("ACIMA");
+    expect(posicaoValor("1000.00", null)).toBe("INDEFINIDO");
+    expect(positionSentence("ACIMA", "proposta")).toBe("O valor da proposta está acima da faixa anunciada.");
+    expect(positionSentence("ABAIXO", "valor")).toBe("Seu valor está abaixo da faixa anunciada.");
+  });
+  it("aceita só as ordens conhecidas; o resto cai na ordem padrão", () => {
+    expect(parseTriageOrder("valor")).toBe("valor");
+    expect(parseTriageOrder("reputacao")).toBe("reputacao");
+    for (const invalid of [undefined, "", "VALOR", "valor; DROP TABLE proposta", ["valor"], 1]) expect(parseTriageOrder(invalid)).toBeUndefined();
   });
 });

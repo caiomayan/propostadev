@@ -8,7 +8,11 @@ import { ForgetDraft } from "@/components/triage/draft-memory";
 import { money } from "@/lib/format";
 import { requireCliente } from "@/lib/auth/session";
 import { cancelProject } from "@/modules/projects/actions";
-import { getClientProject, listInvitedProviderIds, listProjectProposals } from "@/modules/projects/queries";
+import { getClientProject, listInvitedProviderIds } from "@/modules/projects/queries";
+import { getAcceptedProvider, listProposalsForTriage, parseTriageOrder } from "@/modules/proposals/queries";
+import { AcceptedProviderBlock } from "@/components/proposals/accepted-provider";
+import { ProposalCard } from "@/components/proposals/proposal-card";
+import { TriageControls } from "@/components/proposals/triage-controls";
 import { CompatibleCard } from "@/components/triage/compatible-card";
 import { InviteButton } from "@/components/projects/invite-button";
 import { MAX_INVITES } from "@/modules/proposals/validation";
@@ -18,19 +22,24 @@ import { precoReferencia, prestadoresCompativeis } from "@/modules/triage/querie
 import "../../../triagem/triagem.css";
 
 export const metadata: Metadata = { title: "Projeto" };
-const proposalStatusLabels: Record<string, string> = { ENVIADA: "Enviada", PRE_SELECIONADA: "Pré-selecionada", RECUSADA: "Recusada", ACEITA: "Aceita" };
 
-export default async function ProjectDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ publicado?: string }> }) {
+export default async function ProjectDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ publicado?: string; ordem?: string; pre?: string }> }) {
   const session = await requireCliente();
   const { id } = await params;
   const project = await getClientProject(session.user.id, id);
   if (!project) notFound();
-  const { publicado } = await searchParams;
+  const { publicado, ordem: ordemParam, pre } = await searchParams;
+  const ordem = parseTriageOrder(ordemParam), soPre = pre === "1" && project.status === "ABERTO";
+  const open = project.status === "ABERTO";
   const budget = { tipo: project.budgetType, min: project.budgetMin, max: project.budgetMax };
-  const [reference, proposals, invitedIds, compatible] = await Promise.all([
-    precoReferencia(project.serviceTypeId), listProjectProposals(session.user.id, project.id), listInvitedProviderIds(session.user.id, project.id),
+  const [reference, proposals, invitedIds, compatible, accepted] = await Promise.all([
+    precoReferencia(project.serviceTypeId), listProposalsForTriage(session.user.id, project.id, { ordem, soPre }), listInvitedProviderIds(session.user.id, project.id),
     project.status === "ABERTO" ? prestadoresCompativeis({ tipoServicoId: project.serviceTypeId, orcamento: budget, prazoDias: project.desiredDays }) : Promise.resolve([]),
+    getAcceptedProvider(session.user.id, project.id),
   ]);
+  const winner = proposals.find((proposal) => proposal.status === "ACEITA");
+  const others = proposals.filter((proposal) => proposal.status !== "ACEITA");
+  const basePath = `/painel/projetos/${project.id}`;
   return <section className="stack">
     {publicado === "1" && <><ForgetDraft/><p role="status" className="panel tone">Projeto publicado. Ele está aberto e aparece em “Meus projetos”.</p></>}
     <p><Link href="/painel/projetos" className="inline"><ArrowLeft size={16} aria-hidden="true"/> Meus projetos</Link></p>
@@ -45,10 +54,16 @@ export default async function ProjectDetailPage({ params, searchParams }: { para
         <PriceRuler data={{ faixa: reference.faixa, media: reference.mediaFixos, n: reference.n, orcamento: budget, posicao: posicaoOrcamento(budget, reference.faixa) }}/>
       </> : <div className="insufficient"><strong>Dados insuficientes</strong><p>Só {reference.n} {reference.n === 1 ? "prestador anuncia" : "prestadores anunciam"} preço por projeto neste tipo de serviço. São necessários pelo menos 3.</p></div>}
     </section>
-    <section className="panel stack" aria-labelledby="propostas">
-      <div><p className="eyebrow">Propostas</p><h2 id="propostas">{project.proposalCount} {project.proposalCount === 1 ? "proposta ativa" : "propostas ativas"}</h2></div>
-      {proposals.length === 0 ? <p className="muted">Nenhuma proposta recebida ainda. Convide prestadores compatíveis abaixo para acelerar.</p>
-        : <ul className="project-list">{proposals.map((proposal) => <li key={proposal.id} className="project-row"><div><h3><Link href={`/prestadores/${proposal.providerSlug}`}>{proposal.providerName}</Link></h3><p className="project-meta"><span>{money(proposal.amount)} em {proposal.days} {proposal.days === 1 ? "dia" : "dias"}</span></p><p className="project-description">{proposal.message}</p></div><span className="status">{proposalStatusLabels[proposal.status] ?? proposal.status}</span></li>)}</ul>}
+    {accepted && <AcceptedProviderBlock provider={accepted}/>}
+    <section className="stack" aria-labelledby="propostas">
+      <div><p className="eyebrow">Propostas</p><h2 id="propostas">{open ? `${project.proposalCount} ${project.proposalCount === 1 ? "proposta ativa" : "propostas ativas"}` : `${proposals.length} ${proposals.length === 1 ? "proposta recebida" : "propostas recebidas"}`}</h2>
+        {!open && <p className="muted">{project.status === "ENCERRADO" ? "O projeto foi encerrado com o aceite de uma proposta. A lista é somente leitura." : "O projeto foi cancelado. A lista é somente leitura."}</p>}</div>
+      {proposals.length > 1 || soPre || ordem ? <TriageControls basePath={basePath} ordem={ordem} soPre={soPre} canFilter={open}/> : null}
+      {winner && <ProposalCard proposal={winner} reference={reference} budget={budget} desiredDays={project.desiredDays} actions={false} highlight/>}
+      {others.length === 0 && !winner
+        ? soPre ? <div className="empty"><h3>Nenhuma proposta pré-selecionada</h3><p>Pré-selecione as propostas que continuam na disputa para filtrá-las aqui.</p><Link className="button secondary" href={basePath}>Ver todas as propostas</Link></div>
+          : <p className="muted">Nenhuma proposta recebida ainda.{open && " Convide prestadores compatíveis abaixo para acelerar."}</p>
+        : others.length > 0 && <>{winner && <h3 className="proposal-subhead">Propostas recusadas</h3>}<ul className="proposal-list" aria-label="Propostas do projeto">{others.map((proposal) => <li key={proposal.id}><ProposalCard proposal={proposal} reference={reference} budget={budget} desiredDays={project.desiredDays} actions={open}/></li>)}</ul></>}
     </section>
     {project.status === "ABERTO" && <section className="stack" aria-labelledby="convidar">
       <div><p className="eyebrow">Convites</p><h2 id="convidar">Convide prestadores compatíveis</h2><p className="muted">{invitedIds.length} de {MAX_INVITES} convites usados. O prestador convidado vê o seu projeto primeiro, com o selo Convite.</p></div>

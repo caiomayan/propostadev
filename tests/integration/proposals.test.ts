@@ -298,7 +298,8 @@ describe.skipIf(!testUrl)("Oportunidades, Propostas e Convites (ticket 05)", () 
 
   describe("Contador de Propostas do Cliente", () => {
     it("conta ENVIADA e PRE_SELECIONADA por Projeto, só do próprio Cliente", async () => {
-      const { listClientProjects, listProjectProposals } = await import("@/modules/projects/queries");
+      const { listClientProjects } = await import("@/modules/projects/queries");
+      const { listProposalsForTriage } = await import("@/modules/proposals/queries");
       const client = await newUser("CLIENTE");
       const stranger = await newUser("CLIENTE");
       const project = await newProject(client.id);
@@ -308,9 +309,9 @@ describe.skipIf(!testUrl)("Oportunidades, Propostas e Convites (ticket 05)", () 
       const rows = await listClientProjects(client.id);
       expect(rows.find((row) => row.id === project)?.proposalCount).toBe(2);
       expect(rows.find((row) => row.id === empty)?.proposalCount).toBe(0);
-      expect((await listProjectProposals(client.id, project)).map((item) => item.status).sort()).toEqual(["ENVIADA", "PRE_SELECIONADA", "RECUSADA"]);
-      expect(JSON.stringify(await listProjectProposals(client.id, project))).not.toContain("@");
-      expect(await listProjectProposals(stranger.id, project)).toEqual([]);
+      expect((await listProposalsForTriage(client.id, project)).map((item) => item.status).sort()).toEqual(["ENVIADA", "PRE_SELECIONADA", "RECUSADA"]);
+      expect(JSON.stringify(await listProposalsForTriage(client.id, project))).not.toContain("@");
+      expect(await listProposalsForTriage(stranger.id, project)).toEqual([]);
     });
   });
 });

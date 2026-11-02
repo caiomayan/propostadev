@@ -1,7 +1,10 @@
 import "server-only";
-import { sql } from "drizzle-orm";
+import { sql, type SQL } from "drizzle-orm";
+import { z } from "zod";
 import { db } from "@/lib/db";
 import { uuidSchema } from "./validation";
+
+export type ProposalStatus = "ENVIADA" | "PRE_SELECIONADA" | "RECUSADA" | "ACEITA" | "RETIRADA";
 
 export type OpportunityBudget = { tipo: "FAIXA" | "ATE" | "NAO_SEI"; min: string | null; max: string | null };
 export type Opportunity = {
@@ -10,7 +13,7 @@ export type Opportunity = {
   /** Só o primeiro nome. O e-mail e o nome completo do Cliente nunca saem daqui. */
   clientFirstName: string;
   invited: boolean;
-  proposal: { id: string; amount: string; days: number; message: string; status: "ENVIADA" | "PRE_SELECIONADA" | "RECUSADA" | "ACEITA" | "RETIRADA"; updatedAt: Date } | null;
+  proposal: { id: string; amount: string; days: number; message: string; status: ProposalStatus; updatedAt: Date } | null;
   /** Projeto aberto em que o Prestador tem Oferta ativa no tipo: pode propor. */
   eligible: boolean;
 };
@@ -76,12 +79,83 @@ export async function getOpportunity(userId: string, projectId: string): Promise
   return { standing, item: visible ? item : null };
 }
 
-export type MyProposal = { id: string; projectId: string; projectTitle: string; projectStatus: Opportunity["status"]; serviceName: string; amount: string; days: number; status: NonNullable<Opportunity["proposal"]>["status"]; createdAt: Date; updatedAt: Date };
+export type MyProposal = {
+  id: string; projectId: string; projectTitle: string; projectStatus: Opportunity["status"]; serviceName: string; amount: string; days: number; status: ProposalStatus; createdAt: Date; updatedAt: Date;
+  /** Nome completo e e-mail do Cliente: só preenchidos na Proposta ACEITA do próprio Prestador (CASE no SQL); em qualquer outro caso, null. */
+  client: { name: string; email: string } | null;
+};
+type MyProposalRow = Omit<MyProposal, "client"> & { clientName: string | null; clientEmail: string | null };
 export async function listMyProposals(userId: string): Promise<MyProposal[]> {
-  const result = await db.execute<MyProposal>(sql`
+  // O e-mail do Cliente só sai do banco quando a Proposta é a ACEITA do Projeto (projeto.proposta_aceita_id); caso contrário, NULL.
+  const result = await db.execute<MyProposalRow>(sql`
     SELECT pr.id, p.id AS "projectId", p.titulo AS "projectTitle", p.status AS "projectStatus", t.nome AS "serviceName", pr.valor::text AS amount, pr.prazo_dias AS days,
-      pr.status, pr.created_at AS "createdAt", pr.updated_at AS "updatedAt"
+      pr.status, pr.created_at AS "createdAt", pr.updated_at AS "updatedAt",
+      CASE WHEN pr.status = 'ACEITA' AND p.proposta_aceita_id = pr.id THEN u.name END AS "clientName",
+      CASE WHEN pr.status = 'ACEITA' AND p.proposta_aceita_id = pr.id THEN u.email END AS "clientEmail"
     FROM proposta pr JOIN perfil_prestador pf ON pf.id = pr.prestador_id JOIN projeto p ON p.id = pr.projeto_id JOIN tipo_servico t ON t.id = p.tipo_servico_id
+      JOIN "user" u ON u.id = p.cliente_id
     WHERE pf.usuario_id = ${userId} ORDER BY pr.updated_at DESC, pr.id`);
-  return result.rows.map((row) => ({ ...row, createdAt: new Date(row.createdAt), updatedAt: new Date(row.updatedAt) }));
+  return result.rows.map(({ clientName, clientEmail, ...row }) => ({ ...row, createdAt: new Date(row.createdAt), updatedAt: new Date(row.updatedAt), client: clientName && clientEmail ? { name: clientName, email: clientEmail } : null }));
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// Triagem do Cliente (ticket 06)
+// ---------------------------------------------------------------------------------------------------------------
+export const triageOrders = ["valor", "prazo", "reputacao"] as const;
+export type TriageOrder = (typeof triageOrders)[number];
+/** `ordem` inválida ou ausente → undefined (ordem padrão). */
+export const parseTriageOrder = (value: unknown): TriageOrder | undefined => { const parsed = z.enum(triageOrders).safeParse(value); return parsed.success ? parsed.data : undefined; };
+
+export type TriageProposal = {
+  id: string; providerId: string; providerSlug: string; providerName: string; providerPhotoUrl: string | null; providerActive: boolean;
+  amount: string; days: number; message: string; status: ProposalStatus; createdAt: Date;
+  rating: string | null; reviewCount: number;
+  /** Avaliações verificadas do Prestador. Ticket 07: troque somente a expressão `verifiedCount` abaixo. */
+  verifiedCount: number;
+};
+
+// Verificadas = avaliações ligadas a uma Proposta aceita. Até o ticket 07 é 0 (mesmo ponto de troca de modules/triage/queries.ts).
+const verifiedCount = sql`0::int`;
+// Fragmentos de ORDER BY fixos (nunca montados a partir da entrada). Recusadas por último; pr.id desempata.
+const orderings: Record<TriageOrder | "padrao", SQL> = {
+  padrao: sql`CASE pr.status WHEN 'ACEITA' THEN 0 WHEN 'PRE_SELECIONADA' THEN 1 WHEN 'ENVIADA' THEN 2 ELSE 3 END, pr.created_at DESC, pr.id`,
+  valor: sql`(pr.status = 'RECUSADA'), pr.valor ASC, pr.prazo_dias ASC, pr.created_at DESC, pr.id`,
+  prazo: sql`(pr.status = 'RECUSADA'), pr.prazo_dias ASC, pr.valor ASC, pr.created_at DESC, pr.id`,
+  reputacao: sql`(pr.status = 'RECUSADA'), "verifiedCount" DESC, rating::numeric DESC NULLS LAST, "reviewCount" DESC, pr.valor ASC, pr.id`,
+};
+
+/**
+ * Propostas de um Projeto para o dono (Cliente da sessão); outro Cliente recebe []. RETIRADA não aparece.
+ * Nunca traz contato do Prestador: os contatos vêm de getAcceptedProvider, só depois do Aceite.
+ * `soPre`: apenas PRE_SELECIONADA.
+ */
+export async function listProposalsForTriage(clientId: string, projectId: string, options: { ordem?: TriageOrder; soPre?: boolean } = {}): Promise<TriageProposal[]> {
+  if (!uuidSchema.safeParse(projectId).success) return [];
+  const result = await db.execute<TriageProposal>(sql`
+    SELECT pr.id, pf.id AS "providerId", pf.slug AS "providerSlug", pf.nome_exibicao AS "providerName", pf.foto_url AS "providerPhotoUrl", pf.ativo AS "providerActive",
+      pr.valor::text AS amount, pr.prazo_dias AS days, pr.mensagem AS message, pr.status, pr.created_at AS "createdAt",
+      r.rating, coalesce(r.count, 0)::int AS "reviewCount", ${verifiedCount} AS "verifiedCount"
+    FROM proposta pr JOIN projeto p ON p.id = pr.projeto_id JOIN perfil_prestador pf ON pf.id = pr.prestador_id
+    LEFT JOIN (SELECT prestador_id, avg(nota)::text AS rating, count(*)::int AS count FROM avaliacao GROUP BY prestador_id) r ON r.prestador_id = pf.id
+    WHERE p.id = ${projectId}::uuid AND p.cliente_id = ${clientId} AND pr.status <> 'RETIRADA' ${options.soPre ? sql`AND pr.status = 'PRE_SELECIONADA'` : sql``}
+    ORDER BY ${orderings[options.ordem ?? "padrao"]}`);
+  return result.rows.map((row) => ({ ...row, createdAt: new Date(row.createdAt) }));
+}
+
+export type AcceptedProvider = {
+  proposalId: string; slug: string; displayName: string; active: boolean;
+  contactEmail: string; phone: string | null; whatsapp: string | null; siteUrl: string | null; githubUrl: string | null; linkedinUrl: string | null;
+};
+/**
+ * Contatos públicos do Prestador escolhido: só para o dono de um Projeto ENCERRADO, e só do Prestador da Proposta ACEITA.
+ * São os mesmos contatos que o Perfil público publica (consentidos pelo Prestador).
+ */
+export async function getAcceptedProvider(clientId: string, projectId: string): Promise<AcceptedProvider | null> {
+  if (!uuidSchema.safeParse(projectId).success) return null;
+  const result = await db.execute<AcceptedProvider>(sql`
+    SELECT pr.id AS "proposalId", pf.slug, pf.nome_exibicao AS "displayName", pf.ativo AS active, pf.email_contato AS "contactEmail", pf.telefone AS phone, pf.whatsapp AS whatsapp,
+      pf.site_url AS "siteUrl", pf.github_url AS "githubUrl", pf.linkedin_url AS "linkedinUrl"
+    FROM projeto p JOIN proposta pr ON pr.id = p.proposta_aceita_id AND pr.status = 'ACEITA' JOIN perfil_prestador pf ON pf.id = pr.prestador_id
+    WHERE p.id = ${projectId}::uuid AND p.cliente_id = ${clientId} AND p.status = 'ENCERRADO'`);
+  return result.rows[0] ?? null;
 }
