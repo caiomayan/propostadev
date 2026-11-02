@@ -5,6 +5,7 @@ import { user } from "../src/lib/db/auth-schema";
 import { offers, providers, reviews, serviceTypes } from "../src/lib/db/schema";
 import { setAccountType } from "../src/lib/auth/account-type";
 import { seedCatalog } from "./seed";
+import { seedDemoScenarios } from "./demo-scenarios";
 
 async function seedDemo() {
   if (process.env.NODE_ENV === "production" || process.env.ALLOW_DEMO_SEED !== "true") throw new Error("Demo recusada: use ALLOW_DEMO_SEED=true apenas em ambiente local.");
@@ -31,7 +32,8 @@ async function seedDemo() {
   await setAccountType(clientAccount.id, "CLIENTE");
   const targets = await db.select({ id: providers.id }).from(providers).where(eq(providers.slug, "prestador-demo-1"));
   if (targets[0]) await db.insert(reviews).values({ userId: clientAccount.id, providerId: targets[0].id, rating: 4, comment: "Avaliação fictícia de demonstração; não representa uma contratação real." }).onConflictDoNothing();
-  console.info("Demo pronta: 8 perfis fictícios e 1 cliente. Login prestador1@demo.example ou cliente1@demo.example; senha definida por DEMO_PASSWORD ou padrão local documentado.");
+  const scenarios = await seedDemoScenarios(password);
+  console.info(`Demo pronta: 8 perfis fictícios, ${scenarios.clients} clientes e ${scenarios.projects} projetos (${scenarios.created} criados agora). Login prestador1@demo.example ou cliente1@demo.example; senha definida por DEMO_PASSWORD ou padrão local documentado.`);
 }
 
 seedDemo().catch((error: unknown) => { console.error(error instanceof Error ? error.message : "Falha ao criar demonstração."); process.exitCode = 1; }).finally(() => pool.end());

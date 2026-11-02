@@ -62,14 +62,21 @@ Abra http://localhost:3000. Cadastre uma conta, crie o perfil e publique uma ofe
 
 ## Demonstração opcional
 
-O seed demo é recusado em produção e exige opt-in. Ele cria oito perfis fictícios, identificados como Demo, com preços variados e uma avaliação sintética. Use apenas para exploração local. Para identificar o ambiente inteiro, ajuste DEMO_MODE=true antes de iniciar/buildar o aplicativo.
+O seed demo exige opt-in (`ALLOW_DEMO_SEED=true`) e é recusado com `NODE_ENV=production`. Ele cria:
+- oito Prestadores fictícios, identificados como Demo, com Ofertas e preços variados;
+- três Clientes (Mariana Costa, Rafael Lima e Juliana Alves);
+- seis Projetos: três abertos, dois encerrados com Aceite e um cancelado;
+- Propostas em todos os status (enviada, pré-selecionada, recusada, aceita e retirada) e Convites;
+- duas Avaliações verificadas (feitas depois do Aceite) e uma Avaliação anterior, sem contratação verificada.
+
+O seed é idempotente: cada Projeto só é criado uma vez. Os cenários estão em `scripts/demo-scenarios.ts`. Para identificar o ambiente inteiro como demonstração, ajuste DEMO_MODE=true antes de iniciar ou buildar o aplicativo.
 
 ```powershell
 $env:ALLOW_DEMO_SEED='true'
 pnpm db:seed:demo
 ```
 
-Login local: prestador1@demo.example (Prestador) ou cliente1@demo.example (Cliente), senha Demo-local-2026! (ou DEMO_PASSWORD definido antes da primeira execução). Repetir o seed não redefine a senha de uma conta já existente. Não use essas credenciais em serviços públicos.
+Login local: prestador1@demo.example a prestador8@demo.example (Prestadores) ou cliente1@demo.example a cliente3@demo.example (Clientes), senha Demo-local-2026! (ou DEMO_PASSWORD definido antes da primeira execução). Repetir o seed não redefine a senha de uma conta já existente. Não use essas credenciais em serviços públicos.
 
 ## Testes e produção local
 
