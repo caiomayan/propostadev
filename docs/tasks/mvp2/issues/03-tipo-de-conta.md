@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] Campo adicional no usuário do Better Auth via CLI de geração; migration com backfill — `additionalFields` (`tipo_conta`, `input: false`) em `src/lib/auth/user-fields.ts`; `pnpm auth:generate` regenerou `auth-schema.ts`; migration `drizzle/0002_tipo-conta.sql` (check, backfill, trigger). Evidência: `tests/integration/account-type.test.ts` (backfill, check, sign-up/update forjados recusados).
 - [x] Tipo imutável no servidor; sem tipo → /boas-vindas — `setAccountType` (UPDATE condicional) + trigger `user_tipo_conta_imutavel`; `requireAccount` redireciona. Evidência: testes de integração e E2E "conta sem tipo…"; verificado no browser do Orca (console e rede sem erros).

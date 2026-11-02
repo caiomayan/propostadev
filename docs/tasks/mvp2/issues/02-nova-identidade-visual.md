@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** done (aguardando merge)
+**Status:** done
 
 - [x] Direção visual registrada em DESIGN.md e docs/DESIGN-SYSTEM.md — "régua de preço", reescritos em 01/11/2026
 - [x] Tokens e componentes base usados por home, busca, perfil e comparação — tokens em globals.css, Wordmark/SiteHeader/SiteFooter/Card/PriceRuler e ui/* restilizados; verificado no browser do Orca em /, /buscar, /prestadores/prestador-demo-1 e /comparar, console e rede sem erros

@@ -8,11 +8,11 @@
 
 **Blocked by:** 02, 07
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Seed roda duas vezes sem duplicar; contas demo no README
-- [ ] Revisão visual 375/768/1440 sem overflow; teclado nas jornadas principais
-- [ ] Console e rede limpos em todas as rotas
+- [x] Seed roda duas vezes sem duplicar; contas demo no README (rodado 2x localmente: "0 criados agora" na segunda; `DEMO_RESET=true` restaura)
+- [x] Revisão visual 375/768/1440 sem overflow; teclado nas jornadas principais (parte A em 375/768/1440; telas novas em 375 e 1440 com Playwright isolado: triagem de Propostas, projeto encerrado, Oportunidade, Minhas propostas, perfil com avaliações; Aceite feito só com Tab/Enter, foco visível de 3px)
+- [x] Console e rede limpos em todas as rotas verificadas (sem erros de console nem respostas >= 400, fora o 404 esperado)
 
 ## Parte A (acabamento das telas existentes) — concluída
 

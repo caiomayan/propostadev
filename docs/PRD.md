@@ -3,7 +3,7 @@
 ## Problema e proposta
 Pequenos negócios e pessoas têm dificuldade de descobrir desenvolvedores de software, comparar serviços e entender preços e prazos anunciados. Prestadores precisam de uma vitrine simples com informações consistentes e caminhos de contato.
 
-Proposta.dev conecta essas pessoas por um catálogo de serviços e perfis públicos. O cliente pesquisa, filtra, compara e contata prestadores. O prestador cria perfil e ofertas. A plataforma não intermedeia negociação ou contratação na V1.
+Proposta.dev conecta essas pessoas por um catálogo de serviços e perfis públicos. O cliente pesquisa, filtra, compara e contata prestadores. O prestador cria perfil e ofertas. A plataforma não intermediava negociação ou contratação na V1. No MVP 2 (ADR 0003 e `docs/tasks/mvp2/spec.md`), o Cliente faz a Triagem, publica Projetos e recebe Propostas; o Aceite libera os contatos. Pagamento e contrato continuam fora da plataforma.
 
 ## Objetivos
 1. Permitir descobrir prestadores por tipo de serviço com preços/prazos transparentes.

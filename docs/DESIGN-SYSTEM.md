@@ -36,7 +36,7 @@ Escala 4, 8, 12, 16, 24, 32, 48, 64. Contêiner 1240px, gutter 16/24px. Pílula 
 - **Busca**: filtros em cartão lateral (Sheet no mobile), estatística de preço em cartão escuro, resultados como cartões horizontais com preço em destaque.
 - **Perfil**: avatar circular em limão, contato em cartão, ofertas e avaliações em cartões. Avaliação verificada: borda `--primary` e selo `.verified-seal` (limão, ícone de check, "Contratado pela Proposta.dev"). Avaliação anterior: borda tracejada, sem fundo, nota `.previous-note` em itálico discreto; nunca mostra o selo.
 - **Comparação**: tabela em cartão, rolagem horizontal só dentro dela; bandeja flutuante escura (só busca e perfil).
-- **Footer**: bloco verde com três colunas e aviso de que o produto é um diretório.
+- **Footer**: bloco verde com três colunas e o aviso de que pagamento e contrato são combinados entre Cliente e Prestador.
 
 ## Acessibilidade e QA
 Foco visível, contraste AA nos dois temas, alvos de 44px, labels persistentes, skip link, `prefers-reduced-motion`. Verificar 375/768/1440 sem overflow horizontal (só a tabela de comparação rola). Microcopy em pt-BR direta: "Buscar serviços", "Ver perfil", "Comparar", "Entrar em contato".

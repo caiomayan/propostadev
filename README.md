@@ -1,6 +1,8 @@
 # Proposta.dev
 
-Diretório de prestadores de desenvolvimento. Visitantes pesquisam, filtram, comparam até três prestadores e acessam contatos públicos. Uma conta pode publicar perfil PF/PJ, administrar ofertas e avaliar outros prestadores. Negociação externa; sem pagamentos ou contratação interna.
+Marketplace de serviços de desenvolvimento. O Cliente descreve o projeto na Triagem e vê, antes de criar conta, o Preço de referência do tipo de serviço e os Prestadores compatíveis. Depois publica o projeto, convida prestadores, recebe Propostas, compara valor, prazo e reputação lado a lado e aceita uma. Prestadores mantêm perfil e ofertas, encontram Oportunidades e enviam Propostas. Só quem contratou pela plataforma avalia (Avaliação verificada). Contas são de Cliente ou de Prestador. Pagamento, contrato e chat ficam fora do escopo (ADR 0003): depois do Aceite, as partes recebem o contato uma da outra.
+
+MVP 2: spec em `docs/tasks/mvp2/spec.md`, decisões em `docs/adr/0003-mvp2-contas-e-triagem.md`, roteiro da apresentação em `docs/tasks/mvp2/ROTEIRO.md`.
 
 
 ## Produção — Supabase e Vercel
