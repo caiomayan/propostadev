@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { boolean, check, index, integer, numeric, pgEnum, pgTable, primaryKey, smallint, text, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
+import { type AnyPgColumn, boolean, check, index, integer, numeric, pgEnum, pgTable, primaryKey, smallint, text, timestamp, uniqueIndex, uuid, varchar } from "drizzle-orm/pg-core";
 import { user } from "./auth-schema";
 
 export const providerTypes = ["PESSOA_FISICA", "PESSOA_JURIDICA"] as const;
@@ -44,15 +44,30 @@ export const projects = pgTable("projeto", {
   serviceTypeId: uuid("tipo_servico_id").notNull().references(() => serviceTypes.id, { onDelete: "restrict" }),
   title: varchar("titulo", { length: 120 }).notNull(), description: text("descricao").notNull(),
   budgetType: budgetType("orcamento_tipo").notNull(), budgetMin: numeric("orcamento_min", { precision: 10, scale: 2 }), budgetMax: numeric("orcamento_max", { precision: 10, scale: 2 }),
-  desiredDays: integer("prazo_desejado_dias"), status: projectStatus("status").default("ABERTO").notNull(), acceptedProposalId: uuid("proposta_aceita_id"), ...dates(),
+  desiredDays: integer("prazo_desejado_dias"), status: projectStatus("status").default("ABERTO").notNull(), acceptedProposalId: uuid("proposta_aceita_id").references((): AnyPgColumn => proposals.id, { onDelete: "set null" }), ...dates(),
 }, (t) => [index("projeto_cliente_status_idx").on(t.clientId, t.status), index("projeto_tipo_status_idx").on(t.serviceTypeId, t.status),
-  check("projeto_titulo_valido", sql`char_length(btrim(${t.title})) between 5 and 120`), check("projeto_descricao_valida", sql`char_length(btrim(${t.description})) between 30 and 5000`),
+  check("projeto_titulo_valido", sql`char_length(btrim(${t.title})) between 5 and 120`), check("projeto_descricao_valida", sql`char_length(btrim(${t.description})) between 30 and 2000`),
   check("projeto_prazo_valido", sql`${t.desiredDays} IS NULL OR ${t.desiredDays} BETWEEN 1 AND 3650`),
   check("projeto_orcamento_valido", sql`(${t.budgetType} = 'NAO_SEI' AND ${t.budgetMin} IS NULL AND ${t.budgetMax} IS NULL) OR (${t.budgetType} = 'ATE' AND ${t.budgetMin} IS NULL AND ${t.budgetMax} IS NOT NULL AND ${t.budgetMax} > 0) OR (${t.budgetType} = 'FAIXA' AND ${t.budgetMin} IS NOT NULL AND ${t.budgetMax} IS NOT NULL AND ${t.budgetMin} > 0 AND ${t.budgetMax} >= ${t.budgetMin})`),
   check("projeto_aceite_so_encerrado", sql`${t.acceptedProposalId} IS NULL OR ${t.status} = 'ENCERRADO'`)]);
 // Objetivos em linguagem simples da Triagem e os Tipos de serviço que sugerem (seed versionado em scripts/seed.ts).
 export const triageGoals = pgTable("objetivo_triagem", { id: uuid("id").defaultRandom().primaryKey(), slug: varchar("slug", { length: 80 }).notNull(), label: varchar("rotulo", { length: 120 }).notNull(), hint: varchar("dica", { length: 200 }), position: smallint("ordem").notNull(), ...dates() }, (t) => [uniqueIndex("objetivo_triagem_slug_unique").on(t.slug), check("objetivo_triagem_texto_valido", sql`btrim(${t.slug}) <> '' AND btrim(${t.label}) <> ''`)]);
 export const triageGoalServices = pgTable("objetivo_triagem_tipo", { goalId: uuid("objetivo_id").notNull().references(() => triageGoals.id, { onDelete: "cascade" }), serviceTypeId: uuid("tipo_servico_id").notNull().references(() => serviceTypes.id, { onDelete: "cascade" }), position: smallint("ordem").notNull() }, (t) => [primaryKey({ columns: [t.goalId, t.serviceTypeId], name: "objetivo_triagem_tipo_pk" })]);
+export const proposalStatuses = ["ENVIADA", "PRE_SELECIONADA", "RECUSADA", "ACEITA", "RETIRADA"] as const;
+export const proposalStatus = pgEnum("proposta_status", proposalStatuses);
+// Proposta (ticket 05): resposta de um Prestador a um Projeto. Uma por par projeto/prestador; no máximo uma ACEITA por projeto.
+export const proposals = pgTable("proposta", {
+  id: uuid("id").defaultRandom().primaryKey(), projectId: uuid("projeto_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  providerId: uuid("prestador_id").notNull().references(() => providers.id, { onDelete: "cascade" }),
+  amount: numeric("valor", { precision: 10, scale: 2 }).notNull(), days: integer("prazo_dias").notNull(), message: text("mensagem").notNull(),
+  status: proposalStatus("status").default("ENVIADA").notNull(), ...dates(),
+}, (t) => [uniqueIndex("proposta_projeto_prestador_unique").on(t.projectId, t.providerId), uniqueIndex("proposta_aceita_por_projeto_unique").on(t.projectId).where(sql`${t.status} = 'ACEITA'`),
+  index("proposta_projeto_status_idx").on(t.projectId, t.status), index("proposta_prestador_status_idx").on(t.providerId, t.status),
+  check("proposta_valor_valido", sql`${t.amount} > 0 AND ${t.amount} <= 99999999.99`), check("proposta_prazo_valido", sql`${t.days} BETWEEN 1 AND 3650`),
+  check("proposta_mensagem_valida", sql`char_length(btrim(${t.message})) between 30 and 3000`)]);
+// Convite (ticket 05): chamado de um Cliente a um Prestador compatível. Limite de 10 por Projeto, validado no servidor.
+export const invites = pgTable("convite", { id: uuid("id").defaultRandom().primaryKey(), projectId: uuid("projeto_id").notNull().references(() => projects.id, { onDelete: "cascade" }), providerId: uuid("prestador_id").notNull().references(() => providers.id, { onDelete: "cascade" }), createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull() },
+  (t) => [uniqueIndex("convite_projeto_prestador_unique").on(t.projectId, t.providerId), index("convite_prestador_idx").on(t.providerId)]);
 export type Provider = typeof providers.$inferSelect;
 export type Offer = typeof offers.$inferSelect;
 export type Category = typeof categories.$inferSelect;

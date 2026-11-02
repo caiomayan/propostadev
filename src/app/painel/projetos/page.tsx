@@ -18,7 +18,7 @@ export default async function ProjectsPage() {
         <div><Link className="button" href="/triagem">Descrever um projeto <ArrowRight aria-hidden="true"/></Link></div>
         <ul className="project-list">{projects.map((project) => <li key={project.id} className="project-row">
           <div><h2><Link href={`/painel/projetos/${project.id}`}>{project.title}</Link></h2><p className="project-meta"><span>{project.serviceName}</span><span>{budgetLabel({ tipo: project.budgetType, min: project.budgetMin, max: project.budgetMax })}</span><span>Prazo: {desiredDeadlineLabel(project.desiredDays)}</span><span>Criado em <time dateTime={project.createdAt.toISOString()}>{dateLabel(project.createdAt)}</time></span></p></div>
-          <span className={`status ${project.status.toLowerCase()}`}>{projectStatusLabels[project.status]}</span>
+          <span className="chips-row"><span className="chip neutral">{project.proposalCount} {project.proposalCount === 1 ? "proposta recebida" : "propostas recebidas"}</span><span className={`status ${project.status.toLowerCase()}`}>{projectStatusLabels[project.status]}</span></span>
         </li>)}</ul>
       </>}
   </section>;

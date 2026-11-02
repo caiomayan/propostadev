@@ -21,8 +21,8 @@ export function posicaoOrcamento(orcamento: Budget, faixa: Range | null): Budget
   return decimalCents(orcamento.min) > high ? "ACIMA" : "DENTRO";
 }
 
-export const positionText: Record<Exclude<BudgetPosition, "INDEFINIDO">, string> = {
-  ABAIXO: "Seu orçamento está abaixo da faixa anunciada.",
-  DENTRO: "Seu orçamento está dentro da faixa anunciada.",
-  ACIMA: "Seu orçamento está acima da faixa anunciada.",
-};
+const positionWord = { ABAIXO: "abaixo da", DENTRO: "dentro da", ACIMA: "acima da" } as const;
+/** Frase da posição. "orcamento" (Cliente) ou "valor" (Proposta do Prestador). */
+export function positionSentence(position: Exclude<BudgetPosition, "INDEFINIDO">, subject: "orcamento" | "valor" = "orcamento") {
+  return `Seu ${subject === "valor" ? "valor" : "orçamento"} está ${positionWord[position]} faixa anunciada.`;
+}

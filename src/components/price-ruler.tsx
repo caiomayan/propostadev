@@ -1,8 +1,8 @@
 import { money } from "@/lib/format";
-import { positionText, type BudgetPosition, type Range } from "@/modules/triage/position";
+import { positionSentence, type BudgetPosition, type Range } from "@/modules/triage/position";
 import type { Budget } from "@/modules/triage/validation";
 
-export type RulerData = { faixa: Range | null; media: string | null; n: number; orcamento?: Budget; posicao?: BudgetPosition };
+export type RulerData = { faixa: Range | null; media: string | null; n: number; orcamento?: Budget; posicao?: BudgetPosition; /** "valor" quando o desenho posiciona o valor de uma Proposta. */ sujeito?: "orcamento" | "valor" };
 
 /**
  * Régua de preço, a assinatura visual do produto.
@@ -30,7 +30,7 @@ function DataRuler({ data }: { data: RulerData }) {
   const description = [
     faixa ? `Faixa anunciada de ${money(faixa.min)} a ${money(faixa.max)}.` : "Dados insuficientes para uma faixa de preços.",
     media ? `Média dos preços fixos: ${money(media)}.` : "",
-    posicao && posicao !== "INDEFINIDO" ? positionText[posicao] : "",
+    posicao && posicao !== "INDEFINIDO" ? positionSentence(posicao, data.sujeito) : "",
   ].filter(Boolean).join(" ");
   return <figure className="data-ruler">
     <div className="ruler-track" role="img" aria-label={description}>
@@ -41,8 +41,8 @@ function DataRuler({ data }: { data: RulerData }) {
     <ul className="ruler-legend">
       <li><span className="swatch band" aria-hidden="true"/>{faixa ? <>Faixa anunciada: <strong>{money(faixa.min)} a {money(faixa.max)}</strong></> : <>Faixa anunciada: <strong>dados insuficientes</strong></>}</li>
       {media && <li><span className="swatch average" aria-hidden="true"/>Média dos preços fixos: <strong>{money(media)}</strong></li>}
-      {orcamento && orcamento.tipo !== "NAO_SEI" && budgetHigh !== null && <li><span className="swatch budget" aria-hidden="true"/>Seu orçamento: <strong>{orcamento.tipo === "ATE" ? `até ${money(orcamento.max)}` : `${money(orcamento.min)} a ${money(orcamento.max)}`}</strong></li>}
+      {orcamento && orcamento.tipo !== "NAO_SEI" && budgetHigh !== null && <li><span className="swatch budget" aria-hidden="true"/>{data.sujeito === "valor" ? "Seu valor" : "Seu orçamento"}: <strong>{orcamento.tipo === "ATE" ? `até ${money(orcamento.max)}` : `${money(orcamento.min)} a ${money(orcamento.max)}`}</strong></li>}
     </ul>
-    <figcaption className="ruler-caption">{posicao && posicao !== "INDEFINIDO" ? <strong>{positionText[posicao]} </strong> : orcamento?.tipo === "NAO_SEI" ? "Você ainda não definiu um orçamento: use a faixa como ponto de partida. " : ""}Baseado em {data.n} {data.n === 1 ? "prestador" : "prestadores"} com preço por projeto. Preço de referência não é orçamento.</figcaption>
+    <figcaption className="ruler-caption">{posicao && posicao !== "INDEFINIDO" ? <strong>{positionSentence(posicao, data.sujeito)} </strong> : orcamento?.tipo === "NAO_SEI" ? "Você ainda não definiu um orçamento: use a faixa como ponto de partida. " : ""}Baseado em {data.n} {data.n === 1 ? "prestador" : "prestadores"} com preço por projeto. Preço de referência não é orçamento.</figcaption>
   </figure>;
 }

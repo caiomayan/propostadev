@@ -43,7 +43,7 @@ describe("rascunho da Triagem", () => {
     expect(again).toEqual(parsed);
   });
   it("valida limites de título, descrição e prazo sem lançar", () => {
-    for (const patch of [{ titulo: "abc" }, { titulo: "x".repeat(121) }, { descricao: "curta" }, { descricao: "x".repeat(5001) }, { prazo: "0" }, { prazo: "3651" }, { prazo: "abc" }, { prazo: "" }]) {
+    for (const patch of [{ titulo: "abc" }, { titulo: "x".repeat(121) }, { descricao: "curta" }, { descricao: "x".repeat(2001) }, { prazo: "0" }, { prazo: "3651" }, { prazo: "abc" }, { prazo: "" }]) {
       expect(() => parseDraft({ ...valid, ...patch })).not.toThrow();
       expect(parseDraft({ ...valid, ...patch }).ok).toBe(false);
     }

@@ -106,7 +106,7 @@ async function ResultStep({ serviceType, draft, goalSlug }: { serviceType: Servi
     </section>
 
     <section className="panel tone stack" aria-labelledby="publicar">
-      <h2 id="publicar">Publicar o projeto</h2>
+      <h2 id="publicar">Publicar o projeto</h2><p className="muted">Depois de publicar, você poderá convidar até 10 prestadores compatíveis para enviar proposta.</p>
       <PublishPanel session={session} draft={draft} query={query} goalSlug={goalSlug}/>
     </section>
   </div>;
