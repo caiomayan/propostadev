@@ -43,6 +43,6 @@ function DataRuler({ data }: { data: RulerData }) {
       {media && <li><span className="swatch average" aria-hidden="true"/>Média dos preços fixos: <strong>{money(media)}</strong></li>}
       {orcamento && orcamento.tipo !== "NAO_SEI" && budgetHigh !== null && <li><span className="swatch budget" aria-hidden="true"/>{subjectLabel(data.sujeito)}: <strong>{orcamento.tipo === "ATE" ? `até ${money(orcamento.max)}` : orcamento.min === orcamento.max ? money(orcamento.max) : `${money(orcamento.min)} a ${money(orcamento.max)}`}</strong></li>}
     </ul>
-    <figcaption className="ruler-caption">{posicao && posicao !== "INDEFINIDO" ? <strong>{positionSentence(posicao, data.sujeito)} </strong> : orcamento?.tipo === "NAO_SEI" ? "Você ainda não definiu um orçamento: use a faixa como ponto de partida. " : ""}Baseado em {data.n} {data.n === 1 ? "prestador" : "prestadores"} com preço por projeto. Preço de referência não é orçamento.</figcaption>
+    <figcaption className="ruler-caption">{posicao && posicao !== "INDEFINIDO" ? <strong>{positionSentence(posicao, data.sujeito)} </strong> : orcamento?.tipo === "NAO_SEI" ? (data.sujeito === "cliente" ? "O Cliente ainda não definiu um orçamento: use a faixa como ponto de partida. " : "Você ainda não definiu um orçamento: use a faixa como ponto de partida. ") : ""}Baseado em {data.n} {data.n === 1 ? "prestador" : "prestadores"} com preço por projeto. Preço de referência não é orçamento.</figcaption>
   </figure>;
 }
