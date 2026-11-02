@@ -11,7 +11,7 @@ import type { Budget } from "@/modules/triage/validation";
 
 const statusLabel = { ENVIADA: "Enviada", PRE_SELECIONADA: "Pré-selecionada", RECUSADA: "Recusada", ACEITA: "Aceita", RETIRADA: "Retirada" } as const;
 const statusClass = { ENVIADA: "enviada", PRE_SELECIONADA: "pre", RECUSADA: "recusada", ACEITA: "aceita", RETIRADA: "cancelado" } as const;
-const budgetPositionText: Record<Exclude<BudgetPosition, "INDEFINIDO">, string> = { ABAIXO: "Abaixo do orçamento do Cliente", DENTRO: "Dentro do orçamento do Cliente", ACIMA: "Acima do orçamento do Cliente" };
+const budgetPositionText: Record<Exclude<BudgetPosition, "INDEFINIDO">, string> = { ABAIXO: "Abaixo do seu orçamento", DENTRO: "Dentro do seu orçamento", ACIMA: "Acima do seu orçamento" };
 const PREVIEW = 220;
 
 /** Faixa do orçamento do Cliente como Range (ATE vai de 0 ao teto); null quando o Cliente não informou orçamento. */
@@ -51,7 +51,7 @@ export function ProposalCard({ proposal, reference, budget, desiredDays, actions
     </dl>
     {reference.suficiente
       ? <PriceRuler data={{ faixa: reference.faixa, media: reference.mediaFixos, n: reference.n, orcamento: { tipo: "FAIXA", min: proposal.amount, max: proposal.amount }, posicao: posicaoValor(proposal.amount, reference.faixa), sujeito: "proposta", compact: true }}/>
-      : <p className="muted no-reference">Sem Preço de referência para este tipo de serviço (poucos prestadores anunciam). Compare com o orçamento do Cliente: <strong>{budgetLabel(budget)}</strong>.</p>}
+      : <p className="muted no-reference">Sem Preço de referência para este tipo de serviço (poucos prestadores anunciam). Compare com o seu orçamento: <strong>{budgetLabel(budget)}</strong>.</p>}
     <Message text={proposal.message}/>
     {actions && active && <ProposalActions proposalId={proposal.id} status={proposal.status as "ENVIADA" | "PRE_SELECIONADA"} providerName={proposal.providerName}/>}
   </article>;
