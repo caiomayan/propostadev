@@ -1,4 +1,4 @@
-Ticket 07 do MVP 2 do Proposta.dev: Avaliações verificadas. A worktree nasce de `mvp2`, que já contém os tickets 02, 03, 04, 05, 06, 08 e 09 parte A.
+Ticket 07 do MVP 2 do Proposta.dev: Avaliações verificadas. A worktree nasce de `mvp2`, que já contém os tickets 02, 03, 04, 05, 06, 08 e 09 parte A. O relatório do 06 está em docs/tasks/mvp2/reports/06-triagem-e-aceite.md.
 
 Leia:
 - docs/tasks/mvp2/issues/07-avaliacoes-verificadas.md;

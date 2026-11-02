@@ -4,7 +4,7 @@
 
 **Blocked by:** 05
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] Aceite transacional; teste de dois aceites concorrentes resultando em um só — `acceptProposal` (src/modules/proposals/actions.ts): trava a linha do Projeto (`FOR UPDATE`), UPDATE condicional da Proposta, recusa das demais ativas e Projeto ENCERRADO com proposta_aceita_id numa transação; 23505/40P01 viram mensagem amigável. tests/integration/acceptance.test.ts: três rodadas de `Promise.all` com dois aceites (exatamente um ACEITA, Projeto ENCERRADO, demais RECUSADA, o perdedor recebe `{ error }` sem lançar), a mesma Proposta aceita três vezes ao mesmo tempo e o índice único parcial como última barreira
 - [x] Transições inválidas recusadas no servidor (Projeto não ABERTO, não dono) — tests/integration/acceptance.test.ts: Projeto ENCERRADO/CANCELADO, outro Cliente (inclusive com campos forjados no formulário), Prestador, conta sem tipo, visitante, Proposta retirada/recusada, e recusa → pré-seleção (RECUSADA é definitiva). O e-mail do Cliente só aparece ao Prestador da Proposta ACEITA (listMyProposals com CASE no SQL; testado para o vencedor, o recusado do mesmo Projeto, outra Proposta do vencedor em Projeto aberto e quem não propôs)
