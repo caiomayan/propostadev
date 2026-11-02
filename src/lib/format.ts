@@ -26,7 +26,11 @@ export const formatDeadline = deadline;
 export function location(provider: { city: string | null; state: string | null; country: string }) {
   return [provider.city, provider.state, provider.country !== "BR" ? provider.country : null].filter(Boolean).join(", ") || "Localização não informada";
 }
-export function reputation(rating: string | null, count: number) {
-  return count ? `${Number(rating).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}/5 · ${count} ${count === 1 ? "avaliação" : "avaliações"}` : "Ainda não recebeu avaliações";
+/** "4,5/5 · 6 avaliações · 4 verificadas". Sem `verified`, só nota e total (a Triagem mostra as verificadas como motivo). */
+export function reputation(rating: string | null, count: number, verified?: number) {
+  if (!count) return "Ainda não recebeu avaliações";
+  const base = `${Number(rating).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}/5 · ${count} ${count === 1 ? "avaliação" : "avaliações"}`;
+  if (verified === undefined) return base;
+  return `${base} · ${verified === 0 ? "nenhuma verificada" : `${verified} ${verified === 1 ? "verificada" : "verificadas"}`}`;
 }
 export const priceLabels = { FIXO: "Preço fixo", A_PARTIR_DE: "A partir de", INTERVALO: "Faixa de preço", POR_HORA: "Por hora", SOB_CONSULTA: "Sob consulta" };

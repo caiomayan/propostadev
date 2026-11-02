@@ -5,13 +5,15 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { providers } from "@/lib/db/schema";
 import { getSession } from "@/lib/auth/session";
+import { accountTypeDenial } from "@/lib/auth/account-type";
 import { mutationAllowed, mutationError } from "@/lib/auth/mutation-limit";
 import type { ActionState } from "@/lib/auth/action-state";
 import { providerSchema } from "./validation";
 
 export async function saveProvider(_: ActionState, form: FormData): Promise<ActionState> {
   const session = await getSession();
-  if (!session) return { error: "Entre para editar seu perfil." };
+  const denied = accountTypeDenial(session, "PRESTADOR");
+  if (!session || denied) return { error: denied ?? "Entre para editar seu perfil." };
   const parsed = providerSchema.safeParse({ ...Object.fromEntries(form), contactConsent: form.get("contactConsent") === "on" });
   if (!parsed.success) return { error: "Confira os campos do perfil.", fields: parsed.error.flatten().fieldErrors };
   if (!await mutationAllowed(session.user.id, "provider")) return { error: "Muitas alterações. Aguarde um minuto." };
@@ -30,7 +32,8 @@ export async function saveProvider(_: ActionState, form: FormData): Promise<Acti
 }
 export async function setProviderActive(_: ActionState, form: FormData): Promise<ActionState> {
   const session = await getSession();
-  if (!session) return { error: "Entre para alterar o perfil." };
+  const denied = accountTypeDenial(session, "PRESTADOR");
+  if (!session || denied) return { error: denied ?? "Entre para alterar o perfil." };
   if (form.get("active") !== "true" && form.get("active") !== "false") return { error: "Estado inválido." };
   if (!await mutationAllowed(session.user.id, "provider")) return { error: "Muitas alterações. Aguarde um minuto." };
   try {

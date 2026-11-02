@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { Pool } from "pg";
 
 const password = "Proposta-test-password-2026";
 const changedPassword = "Proposta-changed-password-2026";
@@ -9,11 +10,12 @@ async function login(page: Page, email: string, secret = password) {
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await expect(page).toHaveURL(/\/painel$/);
 }
-async function register(page: Page, name: string, email: string) {
+async function register(page: Page, name: string, email: string, type: "CLIENTE" | "PRESTADOR" = "PRESTADOR") {
   await page.goto("/cadastro");
   await page.getByLabel("Nome", { exact: true }).fill(name);
   await page.getByLabel("E-mail", { exact: true }).fill(email);
   await page.getByLabel("Senha", { exact: true }).fill(password);
+  await page.getByRole("radio", { name: type === "CLIENTE" ? /Quero contratar/ : /Quero oferecer serviços/ }).check();
   await page.getByRole("button", { name: "Criar conta", exact: true }).click();
   await expect(page).toHaveURL(/\/painel$/);
 }
@@ -99,7 +101,7 @@ test("account, provider and offers persist; ownership is enforced across account
   await page.goto("/painel/conta");
   await page.getByLabel("Nome", { exact: true }).fill("Nome atualizado");
   await page.getByRole("button", { name: "Salvar", exact: true }).click();
-  await expect(page.getByRole("status")).toContainText("Nome atualizado");
+  await expect(page.getByRole("status").filter({ hasText: "Nome atualizado" })).toBeVisible();
   await page.getByLabel("Senha atual", { exact: true }).fill(password);
   await page.getByLabel("Nova senha", { exact: true }).fill(changedPassword);
   await page.getByRole("button", { name: "Alterar senha", exact: true }).click();
@@ -115,7 +117,7 @@ test("account, provider and offers persist; ownership is enforced across account
   await page.getByLabel("Senha", { exact: true }).fill(changedPassword);
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await expect(page).toHaveURL(/\/painel$/);
-  await expect(page.getByRole("heading", { name: "Olá, Nome atualizado." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Olá, Nome." })).toBeVisible();
   await page.goto("/painel/ofertas");
   await expect(page.getByRole("heading", { name: `Oferta editada ${suffix}` })).toBeVisible();
   await page.getByText("Excluir oferta", { exact: true }).click();
@@ -134,3 +136,44 @@ test("login returns a generic error and rejects an external destination", async 
   await expect(page.locator("main").getByRole("alert")).toContainText("Não foi possível entrar");
 });
 
+
+test("cadastro como Cliente leva ao painel de Cliente, sem Perfil nem Ofertas", async ({ page }) => {
+  await register(page, "Cliente de teste", `cliente-${Date.now()}-${Math.random().toString(16).slice(2, 8)}@example.test`, "CLIENTE");
+  await expect(page.getByRole("heading", { name: "Comece descrevendo o que você precisa" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Descrever um projeto" })).toHaveAttribute("href", "/triagem");
+  const nav = page.getByRole("navigation", { name: "Painel" });
+  await expect(nav.getByRole("link", { name: "Conta", exact: true })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "Perfil", exact: true })).toHaveCount(0);
+  await expect(nav.getByRole("link", { name: "Ofertas", exact: true })).toHaveCount(0);
+  await page.goto("/painel/perfil");
+  await expect(page).toHaveURL(/\/painel$/);
+  await page.goto("/painel/ofertas/nova");
+  await expect(page).toHaveURL(/\/painel$/);
+});
+
+test("cadastro como Prestador leva ao painel de Prestador", async ({ page }) => {
+  await register(page, "Prestador de painel", `prestador-${Date.now()}-${Math.random().toString(16).slice(2, 8)}@example.test`, "PRESTADOR");
+  const nav = page.getByRole("navigation", { name: "Painel" });
+  for (const name of ["Perfil", "Ofertas", "Conta"]) await expect(nav.getByRole("link", { name, exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Apresente o que você faz." })).toBeVisible();
+  await page.goto("/boas-vindas");
+  await expect(page).toHaveURL(/\/painel$/);
+});
+
+test("conta sem tipo é enviada para /boas-vindas e escolhe uma única vez", async ({ page }) => {
+  const email = `semtipo-${Date.now()}-${Math.random().toString(16).slice(2, 8)}@example.test`;
+  await register(page, "Conta sem tipo", email, "CLIENTE");
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL_TEST });
+  try {
+    // Simula a entrada via OAuth (ticket 08): usuário existente com tipo nulo.
+    await pool.query('ALTER TABLE "user" DISABLE TRIGGER user_tipo_conta_imutavel');
+    await pool.query('UPDATE "user" SET tipo_conta=NULL WHERE email=$1', [email]);
+    await pool.query('ALTER TABLE "user" ENABLE TRIGGER user_tipo_conta_imutavel');
+  } finally { await pool.end(); }
+  await page.goto("/painel/conta");
+  await expect(page).toHaveURL(/\/boas-vindas$/);
+  await page.getByRole("radio", { name: /Quero oferecer serviços/ }).check();
+  await page.getByRole("button", { name: "Continuar", exact: true }).click();
+  await expect(page).toHaveURL(/\/painel$/);
+  await expect(page.getByRole("navigation", { name: "Painel" }).getByRole("link", { name: "Ofertas", exact: true })).toBeVisible();
+});

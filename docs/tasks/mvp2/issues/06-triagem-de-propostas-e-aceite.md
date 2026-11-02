@@ -1,0 +1,14 @@
+# 06: Triagem de Propostas e Aceite
+
+**What to build:** o Cliente vê as Propostas de um Projeto lado a lado: valor vs Preço de referência, prazo vs desejado, nota e verificadas. Ele ordena, pré-seleciona, filtra, recusa e aceita uma, com confirmação. O Aceite encerra o Projeto, recusa as demais e libera os contatos: o Cliente vê os do Prestador, e o Prestador vê nome e e-mail do Cliente.
+
+**Blocked by:** 05
+
+**Status:** done
+
+- [x] Aceite transacional; teste de dois aceites concorrentes resultando em um só — `acceptProposal` (src/modules/proposals/actions.ts): trava a linha do Projeto (`FOR UPDATE`), UPDATE condicional da Proposta, recusa das demais ativas e Projeto ENCERRADO com proposta_aceita_id numa transação; 23505/40P01 viram mensagem amigável. tests/integration/acceptance.test.ts: três rodadas de `Promise.all` com dois aceites (exatamente um ACEITA, Projeto ENCERRADO, demais RECUSADA, o perdedor recebe `{ error }` sem lançar), a mesma Proposta aceita três vezes ao mesmo tempo e o índice único parcial como última barreira
+- [x] Transições inválidas recusadas no servidor (Projeto não ABERTO, não dono) — tests/integration/acceptance.test.ts: Projeto ENCERRADO/CANCELADO, outro Cliente (inclusive com campos forjados no formulário), Prestador, conta sem tipo, visitante, Proposta retirada/recusada, e recusa → pré-seleção (RECUSADA é definitiva). O e-mail do Cliente só aparece ao Prestador da Proposta ACEITA (listMyProposals com CASE no SQL; testado para o vencedor, o recusado do mesmo Projeto, outra Proposta do vencedor em Projeto aberto e quem não propôs)
+- [x] E2E: publicar → propor → aceitar → contatos liberados — tests/e2e/acceptance.spec.ts (dois Prestadores propõem; o Cliente ordena por links, pré-seleciona, filtra, abre a confirmação, aceita; vê os contatos do escolhido; o Prestador aceito vê nome e e-mail do Cliente e o recusado não)
+- [x] Tela de triagem: cartões com régua de preço (PriceRuler `sujeito="proposta"`, `compact`), prazo comparado ao desejado (`compareDeadline`, unitário), reputação (ponto do ticket 07 marcado em `proposal-card.tsx` e `verifiedCount` em proposals/queries.ts), mensagem recolhida, ordenação `ordem` e filtro `pre=1` por URL. Verificada no browser do Orca em 375 e 1440 (triagem aberta, sem referência, pós-aceite e "Minhas propostas" do Prestador): sem overflow horizontal, console e rede sem erros
+
+**Estado na pausa (02/11/2026):** implementação e testes concluídos e verdes (lint, typecheck, unit 62, integração 58, E2E 23; browser em 375 e 1440 ok), worker_done já enviado. Falta o coordenador integrar a branch caiomayan/mvp2-06-aceite em mvp2, decidir sobre contatos de Perfil desativado após o Aceite (ver docs/tasks/mvp2/reports/06-triagem-e-aceite.md) e rodar a bateria no integrado; o ponto de "verificadas" é do ticket 07.

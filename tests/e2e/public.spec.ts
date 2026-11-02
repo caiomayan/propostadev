@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { test, expect, type Page } from "@playwright/test";
 import { Pool } from "pg";
+import { grantAcceptance } from "../integration/support";
 
 const demoPassword = process.env.DEMO_PASSWORD ?? "Demo-local-2026!";
 async function login(page: Page, email: string) {
@@ -99,14 +100,26 @@ test("usuário cria, edita e exclui avaliação sem publicar e-mail privado", as
   await page.getByLabel("Nome", { exact: true }).fill(name);
   await page.getByLabel("E-mail", { exact: true }).fill(privateEmail);
   await page.getByLabel("Senha", { exact: true }).fill("Proposta-test-password-2026");
+  await page.getByRole("radio", { name: /Quero contratar/ }).check();
   await page.getByRole("button", { name: "Criar conta", exact: true }).click();
   await expect(page).toHaveURL(/\/painel$/);
   await page.goto("/prestadores/prestador-demo-3");
+  // Sem Aceite do Prestador, o Cliente não vê o formulário
+  await expect(page.getByRole("button", { name: "Publicar avaliação", exact: true })).toHaveCount(0);
+  await expect(page.locator(".review-section")).toContainText("Só quem contratou este prestador por uma Proposta aceita pode avaliar");
+  const pool = testPool();
+  try {
+    const author = await pool.query<{ id: string }>('SELECT id FROM "user" WHERE email=$1', [privateEmail]);
+    const target = await pool.query<{ id: string }>("SELECT id FROM perfil_prestador WHERE slug='prestador-demo-3'");
+    await grantAcceptance(pool, author.rows[0].id, target.rows[0].id);
+  } finally { await pool.end(); }
+  await page.reload();
   await page.getByLabel("Nota", { exact: true }).selectOption("5");
   await page.getByLabel("Comentário (opcional)").fill("Avaliação inicial do fluxo completo.");
   await page.getByRole("button", { name: "Publicar avaliação", exact: true }).click();
   await expect(page.locator(".review-item").filter({ hasText: name })).toContainText("Avaliação inicial do fluxo completo.");
   await expect(page.locator(".review-item").filter({ hasText: name })).toContainText("5/5");
+  await expect(page.locator(".review-item").filter({ hasText: name })).toContainText("Contratado pela Proposta.dev");
   await page.reload();
   await page.getByLabel("Nota", { exact: true }).selectOption("3");
   await page.getByLabel("Comentário (opcional)").fill("Comentário revisado sem dados pessoais.");
@@ -116,39 +129,22 @@ test("usuário cria, edita e exclui avaliação sem publicar e-mail privado", as
   await expect(page.locator(".review-item").filter({ hasText: name })).toContainText("Editada");
   await expect(page.locator("body")).not.toContainText(privateEmail);
   expect(await page.content()).not.toContain(privateEmail);
-  await page.getByRole("button", { name: "Excluir minha avaliação", exact: true }).click();
+  await page.getByText("Excluir minha avaliação", { exact: true }).click();
+  await page.getByRole("button", { name: "Confirmar exclusão", exact: true }).click();
   await expect(page.locator(".review-item").filter({ hasText: name })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Publicar avaliação", exact: true })).toBeVisible();
+  const cleanup = testPool();
+  try { await cleanup.query('DELETE FROM "user" WHERE email=$1', [privateEmail]); } finally { await cleanup.end(); }
 });
 
-test("perfil próprio impede autoavaliação", async ({ page }) => {
+test("perfil próprio impede autoavaliação e Prestador não avalia outros", async ({ page }) => {
   await login(page, "prestador1@demo.example");
   await page.goto("/prestadores/prestador-demo-1");
-  await expect(page.getByText("Você pode acompanhar suas avaliações aqui.", { exact: false })).toBeVisible();
+  await expect(page.getByText("Você pode acompanhar as avaliações do seu perfil aqui.", { exact: false })).toBeVisible();
   await expect(page.getByRole("button", { name: "Publicar avaliação", exact: true })).toHaveCount(0);
-  const pool = testPool();
-  try {
-    const own = await pool.query<{ id: string; userId: string }>("SELECT id,usuario_id AS \"userId\" FROM perfil_prestador WHERE slug='prestador-demo-1'");
-    const target = await pool.query<{ id: string }>("SELECT id FROM perfil_prestador WHERE slug='prestador-demo-2'");
-    await pool.query("DELETE FROM avaliacao WHERE usuario_id=$1 AND prestador_id=$2", [own.rows[0].userId, target.rows[0].id]);
-    await page.goto("/prestadores/prestador-demo-2");
-    await page.getByLabel("Nota", { exact: true }).selectOption("5");
-    let tampered = false;
-    await page.route("**/prestadores/prestador-demo-2", async (route) => {
-      const request = route.request();
-      if (request.method() !== "POST") return route.continue();
-      const body = request.postData() ?? "";
-      const modified = body.replaceAll(target.rows[0].id, own.rows[0].id);
-      tampered = modified !== body;
-      await route.continue({ postData: modified });
-    });
-    await page.getByRole("button", { name: "Publicar avaliação", exact: true }).click();
-    await expect(page.locator("main").getByRole("alert")).toContainText("seu próprio perfil");
-    expect(tampered).toBe(true);
-  } finally {
-    await pool.query("DELETE FROM avaliacao WHERE usuario_id=(SELECT usuario_id FROM perfil_prestador WHERE slug='prestador-demo-1') AND prestador_id=(SELECT id FROM perfil_prestador WHERE slug='prestador-demo-2')");
-    await pool.end();
-  }
+  await page.goto("/prestadores/prestador-demo-2");
+  await expect(page.locator(".review-section")).toContainText("Contas de Prestador não avaliam outros prestadores");
+  await expect(page.getByRole("button", { name: "Publicar avaliação", exact: true })).toHaveCount(0);
 });
 
 test("mobile abre filtros em modal sem overflow horizontal", async ({ page }) => {
@@ -172,8 +168,8 @@ test("foto HTTPS indisponível mantém iniciais no perfil e na busca", async ({ 
     await pool.query("UPDATE perfil_prestador SET foto_url=$1 WHERE slug='prestador-demo-3'", [photoUrl]);
     await page.route(photoUrl, (route) => route.abort("failed"));
     await page.goto("/prestadores/prestador-demo-3");
-    await expect(page.locator(".profile-heading span.provider-avatar")).toHaveText("NS");
-    await expect(page.locator(".profile-heading img.provider-avatar")).toHaveCount(0);
+    await expect(page.locator(".profile-hero span.provider-avatar")).toHaveText("NS");
+    await expect(page.locator(".profile-hero img.provider-avatar")).toHaveCount(0);
     await page.goto("/buscar?q=nexo");
     const result = page.locator(".provider-result").filter({ has: page.getByRole("heading", { name: "Nexo Studio — Demo", exact: true }) });
     await expect(result.locator("span.provider-avatar")).toHaveText("NS");

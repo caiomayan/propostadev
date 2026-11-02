@@ -1,45 +1,45 @@
-# Identidade e design system — Proposta.dev
+# Identidade e design system — Proposta.dev (MVP 2)
+
+Substitui a versão do MVP 1 ("diretório editorial sóbrio"), por decisão do dono do produto registrada em docs/adr/0003-mvp2-contas-e-triagem.md (item 7). A descrição visual e os tokens estruturados estão em `DESIGN.md`. Este documento diz **como usar**.
 
 ## Direção
-Diretório editorial de profissionais: discreto, legível, concreto. A busca é o principal elemento. A marca é wordmark tipográfico `Proposta.dev`; .dev pode ter contraste secundário. Sem logotipo complexo necessário para começar. A estética deve aparecer no produto inteiro, não apenas na home.
+"Régua de preço". O produto mostra quanto um serviço costuma custar; a marca é uma barra com a faixa central em limão, e o gesto se repete: ilustração da home, avatar, nota, estatística de preço. Papel esverdeado, tinta verde-floresta, um destaque limão. Títulos grandes em Bricolage Grotesque, texto em Figtree. Moderno e direto, sem aparência de template: sem gradientes, brilhos, sombras em repouso ou métricas fictícias.
 
-## Tokens iniciais (light)
-| Token | Valor | Uso |
-|---|---|---|
-| background | #FAFAF9 | Fundo geral |
-| surface/card | #FFFFFF | Superfícies |
-| foreground | #18181B | Texto e CTA principal |
-| muted | #F4F4F5 | Estados secundários |
-| muted-foreground | #52525B | Metadados |
-| border/input | #E4E4E7 | Divisórias e campos |
-| primary | #18181B | CTA |
-| primary-foreground | #FFFFFF | Texto em CTA |
-| focus/ring | #52525B | Foco visível |
-| destructive | #B91C1C | Erros/ações destrutivas |
-| success | #166534 | Confirmações pontuais |
+## Tokens (`src/app/globals.css`)
+| Token | Claro | Escuro | Uso |
+|---|---|---|---|
+| background | #F1F3EC | #0B1410 | Fundo |
+| card | #FAFBF6 | #121E18 | Superfícies |
+| foreground | #10231A | #E9EFE3 | Texto |
+| muted | #E4E8DC | #1A2A21 | Superfície secundária |
+| muted-foreground | #46574D | #A0B3A6 | Metadados |
+| border | #C9D1C0 | #2C3F34 | Campos, separadores |
+| primary | #0F3D2E | #D4F25A | Botão, destaque escuro, rodapé |
+| accent-fill / accent-ink | #D4F25A / #10231A | #D4F25A / #0B1410 | Destaque limão |
+| ring | #0F3D2E | #D4F25A | Foco (outline 3px) |
+| destructive / success | #A8261C / #17653A | #FF8F84 / #7FDC9F | Erro / confirmação |
 
-Mapear tokens para variáveis CSS do shadcn, não espalhar hex por componentes. Verificar contraste real; border não comunica sozinho estados. Sem dark mode na V1. Uma única fonte sans (Geist ou equivalente local), com fallback system; sem depender de rede para build. Texto 14–16px, corpo 16px; heading de página 28–36px. Peso 400/500/600; sem títulos gigantes.
+Mapeados para o tema Tailwind/shadcn via `@theme inline`; não espalhar hex. O tema segue `prefers-color-scheme`.
 
-Spacing: 4, 8, 12, 16, 24, 32, 48, 64px. Contêiner público máximo 1200px, gutters 16px mobile/24px desktop. Radius 6–8px (botões 6, cards 8); sombras leves apenas para menus/dialogs. Divisórias e alinhamento prevalecem. Ícones Lucide consistentes 16/20px, sempre junto a rótulo onde o significado não é universal.
+## Tipografia
+`next/font/google`: Bricolage Grotesque (`--font-bricolage`: títulos, marca, preços) e Figtree (`--font-figtree`: corpo). h1 fluido (`clamp`), h2 22–30px, h3 18px, corpo 16px/1.6. Inputs com 16px no mobile.
+
+## Forma e espaço
+Escala 4, 8, 12, 16, 24, 32, 48, 64. Contêiner 1240px, gutter 16/24px. Pílula para botões e etiquetas, 18px para superfícies, 10px para campos. Superfícies separadas por degrau de tom.
+
+## Componentes base
+`Wordmark`, `SiteHeader`, `SiteFooter`, `Button`, `Card`, `Badge`, `Input`, `Textarea`, `Skeleton`, `Sheet`, `PriceRuler` (decorativa sem props; com dados mostra faixa, média e a posição do orçamento ou do valor da Proposta; `sujeito="proposta"` marca o valor com um ponto na triagem do Cliente e `compact` reduz a régua e a legenda para o cartão de Proposta); classes `.button(.secondary|.accent|.danger)`, `.panel(.tone)`, `.field`, `.badge(.accent)`, `.empty`, `.stack`, `.inline`, `.form-grid`, `.checkbox`. Cadastro, entrada e painel herdam o visual por esses nomes. Próximos tickets: reutilizar, não recriar.
 
 ## Composição por página
-- Header compacto com marca, Buscar desenvolvedores, Oferecer serviços e conta. Mobile menu acessível.
-- Home: título “Encontre quem desenvolve sua próxima ideia”, texto curto, busca, tipos de serviço; abaixo explicação de preço/prazo e convite a prestadores. Sem banners decorativos e números fictícios.
-- Busca desktop: filtros laterais 240px + lista; mobile filtros em Sheet, chips de filtros ativos e contagem. Resultados em linhas/cards horizontais discretos, não grade gigante de cartões vazios.
-- Resultado: avatar/initials, nome, PF/PJ, experiência, localização/remoto, avaliação + total, oferta contextual, preço formatado, prazo, ver perfil e comparar.
-- Comparação: tabela de até 3 prestadores, nome/serviço/preço/modelo de cobrança/prazo/experiência/reputação/contato. Em mobile permitir scroll horizontal com cabeçalhos claros. Unidades incompatíveis explicitamente indicadas.
-- Perfil: identidade e contato no topo; descrição e ofertas; avaliações em seção própria. Email/WhatsApp/site são CTAs distintos e sinceros, nunca “Contratar agora”.
-- Painel: navegação Perfil / Minhas ofertas / Conta; formulários agrupados em seções com labels, exemplos e erros por campo.
+- **Header** sticky: marca, 3 links, "Minha conta". No mobile, links em segunda linha.
+- **Home**: título grande à esquerda; à direita o **slot da Triagem** (cartão verde `.triage-slot` com a entrada da Triagem: atalhos de objetivo e "Começar a Triagem"; a busca é o link secundário); abaixo, catálogo por categoria, explicação e convite a prestadores em limão.
+- **Busca**: filtros em cartão lateral (Sheet no mobile), estatística de preço em cartão escuro, resultados como cartões horizontais com preço em destaque.
+- **Perfil**: avatar circular em limão, contato em cartão, ofertas e avaliações em cartões. Avaliação verificada: borda `--primary` e selo `.verified-seal` (limão, ícone de check, "Contratado pela Proposta.dev"). Avaliação anterior: borda tracejada, sem fundo, nota `.previous-note` em itálico discreto; nunca mostra o selo.
+- **Comparação**: tabela em cartão, rolagem horizontal só dentro dela; bandeja flutuante escura (só busca e perfil).
+- **Footer**: bloco verde com três colunas e o aviso de que pagamento e contrato são combinados entre Cliente e Prestador.
 
-## shadcn/ui
-Usar Button, Input, Textarea, Select, Form/Field conforme versão, Dialog/AlertDialog, Sheet, Badge, Avatar, Separator, Table, Skeleton, Tooltip, Checkbox e feedback toast quando útil. Customizar composições/tokens. Não instalar bibliotecas concorrentes de componentes. Toast complementa estado visível, não substitui erro de campo.
+## Acessibilidade e QA
+Foco visível, contraste AA nos dois temas, alvos de 44px, labels persistentes, skip link, `prefers-reduced-motion`. Verificar 375/768/1440 sem overflow horizontal (só a tabela de comparação rola). Microcopy em pt-BR direta: "Buscar serviços", "Ver perfil", "Comparar", "Entrar em contato".
 
-## Evitar IA slop
-Sem gradientes roxos/azuis, glow, blobs, glassmorphism, emojis como ícones, animações de entrada repetidas, dashboard com métricas fictícias, hero gigantesco, bento grid arbitrária, badges “revolucionário”, depoimentos inventados ou excesso de pílulas/cartões. Sem cores especiais para cada categoria. Não encher vazio com decoração. Não transformar o produto em landing page de agência.
-
-Microcopy direta: “Buscar serviços”, “Ver perfil”, “Comparar”, “Publicar oferta”, “Pausar oferta”, “Entrar em contato”. Data e números pt-BR; BRL via Intl.NumberFormat, valores por hora com /hora. “Ainda não recebeu avaliações”, nunca estrelas 0 interpretadas como nota ruim.
-
-## Estados e QA
-Todas as rotas precisam de loading, vazio, erro recuperável e sucesso quando aplicável. Enter envia formulário, teclado percorre controles, Dialog devolve foco e Escape fecha. Labels persistentes, aria para estrelas, erros associados, foco visível. Inputs no mínimo 16px no mobile e alvos interativos confortáveis (aprox. 44px). Respeitar reduced-motion; transições 120–180ms apenas utilitárias.
-
-Inspecionar screenshots em 375px, 768px e 1440px com dados reais do seed. Sem overflow da página; somente a tabela de comparação pode rolar. Confirmar textos longos, e-mail longo, avatar ausente, preço sob consulta e nota ausente.
+## Triagem de Propostas (ticket 06)
+Cartão `.proposal-card` em grade de 1 a 2 colunas: Prestador e status, valor e prazo em destaque, régua compacta, mensagem recolhida em `<details>` e ações. Ordenação e filtro são links (`.filter-link`, `aria-current`); aceitar e recusar abrem `details.confirm` (o aceite usa `.confirm.accept`, em verde, não em vermelho). O Prestador escolhido aparece em `.accepted-provider`; o contato do Cliente, em `.client-contact`.

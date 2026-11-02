@@ -15,6 +15,41 @@
       "when": 1791336009131,
       "tag": "0001_domain-rules",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793569076188,
+      "tag": "0002_tipo-conta",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793571496133,
+      "tag": "0003_projeto-triagem",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793573360301,
+      "tag": "0004_propostas-convites",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793648242717,
+      "tag": "0005_avaliacao-verificada",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793649519444,
+      "tag": "0006_rls-tabelas-mvp2",
+      "breakpoints": true
     }
   ]
 }

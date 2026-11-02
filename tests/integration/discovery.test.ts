@@ -5,6 +5,7 @@ import { user } from "../../src/lib/db/auth-schema";
 import { searchProviders, getComparison } from "../../src/modules/search/queries";
 import { getPriceAverage } from "../../src/modules/catalog/queries";
 import { searchSchema } from "../../src/modules/search/validation";
+import { grantAcceptance } from "./support";
 
 const categoryId = randomUUID();
 const typeId = randomUUID();
@@ -29,6 +30,8 @@ describe.skipIf(!process.env.DATABASE_URL_TEST)("descoberta e agregados público
         await connection.query("INSERT INTO oferta_servico(id,prestador_id,tipo_servico_id,titulo,descricao,tipo_preco,preco_minimo,tipo_prazo,prazo_minimo_dias,ativo) VALUES($1,$2,$3,'Oferta principal','Descrição completa do serviço de desenvolvimento para teste.',$4,$5,'FIXO',30,true)", [offerIds[i], providerIds[i], typeId, i === 3 ? "POR_HORA" : "FIXO", ["800", "1000", "1200", "90"][i]]);
       }
       await connection.query("INSERT INTO oferta_servico(id,prestador_id,tipo_servico_id,titulo,descricao,tipo_preco,preco_minimo,tipo_prazo,prazo_minimo_dias,ativo) VALUES($1,$2,$3,'Outra oferta rápida','Descrição completa do outro serviço de desenvolvimento para teste.','FIXO',100,'FIXO',5,true)", [offerIds[4], providerIds[0], secondTypeId]);
+      await grantAcceptance(connection, userIds[2], providerIds[0], typeId);
+      await grantAcceptance(connection, userIds[3], providerIds[0], typeId);
       await connection.query("INSERT INTO avaliacao(usuario_id,prestador_id,nota) VALUES($1,$3,3),($2,$3,5)", [userIds[2], userIds[3], providerIds[0]]);
       await connection.query("COMMIT");
       created = true;

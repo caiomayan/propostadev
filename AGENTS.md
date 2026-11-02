@@ -3,7 +3,7 @@
 ## Autoridade e execução
 Requisitos explícitos do usuário prevalecem. Para este pacote: SCOPE/PRD definem produto; specs definem comportamento; schema define persistência; design system define apresentação; backlog define execução. Divergências entre documentos devem ser resolvidas antes de implementar o comportamento afetado e registradas em ADR. O .mwb e o board originais são históricos e não prevalecem sobre este pacote.
 
-Não solicite aprovação para escolhas reversíveis já abrangidas. Não acrescente funcionalidades por iniciativa própria. Preserve instruções anteriores do repositório e reporte conflitos. Use docs/tasks/BACKLOG.md como tracker local. Atualize status e evidência, não apenas marque tarefas como prontas.
+Não solicite aprovação para escolhas reversíveis já abrangidas. Não acrescente funcionalidades por iniciativa própria. Preserve instruções anteriores do repositório e reporte conflitos. Use o tracker local descrito em docs/agents/issue-tracker.md (docs/tasks/BACKLOG.md é o registro histórico do MVP 1). Atualize status e evidência, não apenas marque tarefas como prontas.
 
 ## Código
 - TypeScript strict, sem any para ocultar erro; nomes de domínio conforme GLOSSARY.
@@ -21,6 +21,20 @@ Não solicite aprovação para escolhas reversíveis já abrangidas. Não acresc
 
 ## Conclusão
 Cada tarefa tem evidência de aceite; se teste bloquear, registrar causa e continuar no independente. Não marcar implementação parcial como concluída. Atualizar README, progresso e decisões ao retomar sessões. Não criar commits, issues ou deploy externos sem instrução do usuário para isso. Nenhum coautor de IA deve ser acrescentado a commits.
+
+## Agent skills
+
+### Issue tracker
+
+Markdown local versionado em `docs/tasks/<feature>/` (spec + uma issue por arquivo). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Os cinco papéis canônicos com nomes padrão, na linha `Status:` de cada issue. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `GLOSSARY.md` e `docs/adr/` na raiz. See `docs/agents/domain.md`.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

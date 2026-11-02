@@ -1,206 +1,101 @@
 ---
 name: Proposta.dev
-description: Diretório editorial neutro para descobrir, comparar e contatar prestadores.
+description: Diretório de desenvolvedores com identidade "régua de preço": papel esverdeado, tinta verde-floresta e um único destaque limão.
 colors:
-  background: "#fafaf9"
-  card: "#fff"
-  foreground: "#18181b"
-  muted: "#f4f4f5"
-  muted-foreground: "#52525b"
-  border: "#e4e4e7"
-  primary: "#18181b"
-  primary-foreground: "#fff"
-  ring: "#52525b"
-  destructive: "#b91c1c"
-  success: "#166534"
+  background: "#f1f3ec"
+  card: "#fafbf6"
+  foreground: "#10231a"
+  muted: "#e4e8dc"
+  muted-foreground: "#46574d"
+  border: "#c9d1c0"
+  primary: "#0f3d2e"
+  primary-foreground: "#f1f3ec"
+  accent-fill: "#d4f25a"
+  accent-ink: "#10231a"
+  destructive: "#a8261c"
+  success: "#17653a"
+  dark-background: "#0b1410"
+  dark-card: "#121e18"
+  dark-foreground: "#e9efe3"
+  dark-muted: "#1a2a21"
+  dark-muted-foreground: "#a0b3a6"
+  dark-border: "#2c3f34"
+  dark-primary: "#d4f25a"
+  dark-destructive: "#ff8f84"
+  dark-success: "#7fdc9f"
 typography:
-  headline:
-    fontFamily: "Arial, Helvetica, sans-serif"
-    fontSize: "36px"
-    fontWeight: 600
-    lineHeight: 1.22
+  display:
+    fontFamily: "Bricolage Grotesque (next/font/google), Trebuchet MS, sans-serif"
+    fontWeight: 700
     letterSpacing: "-0.03em"
-  section-title:
-    fontFamily: "Arial, Helvetica, sans-serif"
-    fontSize: "24px"
-    fontWeight: 600
-    lineHeight: 1.3
-    letterSpacing: "-0.02em"
-  title:
-    fontFamily: "Arial, Helvetica, sans-serif"
-    fontSize: "18px"
-    fontWeight: 600
   body:
-    fontFamily: "Arial, Helvetica, sans-serif"
+    fontFamily: "Figtree (next/font/google), system-ui, sans-serif"
     fontSize: "16px"
-    fontWeight: 400
     lineHeight: 1.6
-  label:
-    fontFamily: "Arial, Helvetica, sans-serif"
-    fontSize: "14px"
-    fontWeight: 500
 rounded:
-  label: "4px"
-  control: "6px"
-  surface: "8px"
-spacing:
-  xs: "8px"
-  sm: "12px"
-  md: "16px"
-  lg: "24px"
-  xl: "32px"
-  section: "48px"
-  spacious: "64px"
-components:
-  button-primary:
-    backgroundColor: "{colors.primary}"
-    textColor: "{colors.primary-foreground}"
-    typography: "{typography.label}"
-    rounded: "{rounded.control}"
-    padding: "10px 18px"
-  button-secondary:
-    backgroundColor: "{colors.card}"
-    textColor: "{colors.foreground}"
-    typography: "{typography.label}"
-    rounded: "{rounded.control}"
-    padding: "10px 18px"
-  field:
-    backgroundColor: "{colors.card}"
-    textColor: "{colors.foreground}"
-    rounded: "{rounded.control}"
-    padding: "10px 12px"
-  panel:
-    backgroundColor: "{colors.card}"
-    textColor: "{colors.foreground}"
-    rounded: "{rounded.surface}"
-    padding: "24px"
-  domain-label:
-    backgroundColor: "{colors.muted}"
-    textColor: "{colors.foreground}"
-    rounded: "{rounded.label}"
-    padding: "3px 8px"
+  control: "10px"
+  surface: "18px"
+  pill: "999px"
 ---
 
 # Design System: Proposta.dev
 
+Fonte de verdade da apresentação do MVP 2 (ADR 0003, item 7). Substitui o "diretório editorial sóbrio". Detalhes de uso em `docs/DESIGN-SYSTEM.md`; os tokens vivem em `src/app/globals.css`.
+
 ## Overview
 
-**Creative North Star: "Operate — diretório editorial neutro"**
+O produto responde a uma pergunta: "quanto isso costuma custar e quem faz?". A identidade parte disso: **a régua de preço**. A marca é uma barra com a faixa central destacada em limão; a mesma faixa aparece como ilustração na home e como cor de destaque (avatar, nota, convite). Papel esverdeado, tinta verde-floresta, tipografia grande e firme, superfícies separadas por degrau de tom em vez de linhas.
 
-O sistema construído organiza identidade, oferta e ação com texto legível, divisórias e uma paleta neutra. A busca e os dados do prestador conduzem a leitura; o produto não usa uma composição de agência como identidade. A marca é um wordmark tipográfico, com `.dev` em contraste secundário.
-
-Este registro descreve o código atual em `src/app/globals.css`, `src/app/buscar/public.css` e componentes compartilhados. `PRODUCT.md` fornece os compromissos duráveis de português brasileiro, sobriedade e acesso por teclado; `docs/DESIGN-SYSTEM.md` continua sendo a autoridade de apresentação do pacote. Não há comp visual aprovada separada: a referência desta implementação é o brief baseado nos documentos e no código.
-
-**Key Characteristics:**
-- Paleta neutra com cores semânticas pontuais.
-- Hierarquia compacta, metadados próximos à informação principal.
-- Resultados em linhas, comparação em tabela e formulários em seções.
-- Bordas e alinhamento como separadores; elevação reservada a elementos sobrepostos.
+**Direção escolhida (design-taste-frontend):** "Type and nothing else" adaptada a um app: a primeira tela é título enorme em Bricolage Grotesque, uma frase de apoio e a ação; a única ilustração é a régua. Descartadas "Dressed as something else" e "The printed annual" por não carregarem a ideia de preço/faixa.
 
 ## Colors
 
-A ação principal compartilha o tom escuro do texto; a cor não diferencia categorias de serviços.
+Uma base, uma tinta, um destaque. Tokens claro e escuro (seguem `prefers-color-scheme`; sem seletor manual).
 
-### Primary
+- **Papel** (`background`) e **Superfície** (`card`): degrau de tom, sem borda.
+- **Tinta** (`foreground`) para texto corrido; `muted-foreground` só para metadados.
+- **Primary**: verde-floresta no claro (botão, cartão de destaque, rodapé); no escuro vira limão com texto escuro.
+- **Accent-fill** limão: avatar, nota, faixa da régua, convite a prestadores, botão `.accent`. Nunca como cor de texto sobre papel claro.
+- `destructive` e `success` só para erro e confirmação.
 
-- **Grafite principal** (`primary`, `foreground`): texto, marca, divisórias de grupos de catálogo e CTA preenchido.
-- **Branco de contraste** (`primary-foreground`): texto sobre o CTA escuro.
-
-### Neutral
-
-- **Papel neutro** (`background`): fundo geral.
-- **Branco de superfície** (`card`): campos, painéis e header.
-- **Cinza suave** (`muted`): convite ao prestador, avatar sem foto e estados secundários.
-- **Cinza de metadados** (`muted-foreground`): descrição, localização, experiência e `.dev`.
-- **Cinza de divisória** (`border`): listas, campos, tabelas e contornos.
-- **Cinza de foco** (`ring`): indicação de foco.
-
-Erros e ações destrutivas usam `destructive`; confirmações usam `success`. Esses papéis semânticos não constituem uma segunda identidade cromática.
-
-**The Semantic Color Rule.** Cor semântica comunica estado; categorias compartilham a paleta neutra.
+**Regra da faixa única.** Limão é o único destaque; sem cores por categoria, gradientes ou brilho.
 
 ## Typography
 
-A fonte observada é Arial, Helvetica, sans-serif, sem carregamento externo. É o estado atual do build, não uma nova escolha de fonte display para futuras telas. Não há fonte display ou mono distinta.
+Duas famílias via `next/font/google` (self-hosted no build): **Bricolage Grotesque** para marca, títulos e preços; **Figtree** para o resto. Títulos 700 com tracking negativo; h1 fluido de 32px (telas internas) a 76px (home). Corpo 16px/1.6, metadados 14–15px.
 
-### Hierarchy
+## Elevation
 
-- **Headline:** título principal conforme frontmatter; passa a 30px até 768px. Autenticação usa 28px.
-- **Section title:** seções de catálogo e conteúdo; contagem de busca e nome em resultado usam o título compacto de 18px.
-- **Title:** subtítulos e identidade; o título de oferta em resultado usa 17px.
-- **Body:** parágrafos gerais; metadados e descrições de resultado usam 14px. A descrição de perfil preserva quebras de linha e usa entrelinha 1.75.
-- **Label:** controles e labels persistentes. Campos preservam 16px no mobile.
-
-O wordmark usa 23px, peso 600 e tracking compacto. Rótulos de serviço e tipo permanecem como informação de domínio; não são um padrão de kicker decorativo para headings.
-
-**The Information Hierarchy Rule.** Título, metadados e ação têm papéis separados; não acrescentar uma linha decorativa para anunciar cada heading.
-
-## Layout
-
-O contêiner público tem largura máxima de 1200px, centralizado, com gutters de 24px. Até 768px, os gutters são 16px. O header ocupa ao menos 80px em desktop e 72px em mobile; a navegação quebra para uma segunda linha no mobile. O build usa links visíveis com quebra de linha, não um menu mobile oculto.
-
-A home limita seu bloco inicial a 800px, com título até 650px e parágrafo até 630px. O catálogo tem três colunas e vira uma coluna até 768px. Explicações em duas colunas e convites horizontais empilham na mesma faixa. Seções usam 48px de padding vertical em desktop e 32px em mobile.
-
-A busca separa filtros de 240px e conteúdo com gap de 32px. Os resultados têm três áreas: identidade, oferta e ação. Até 1100px, identidade e oferta ficam numa coluna e ações numa coluna de 180px; até 767px, todas empilham e as ações podem quebrar em linha. Abaixo de 768px, filtros laterais dão lugar a um botão que abre Sheet à direita, limitado a 400px e com scroll próprio.
-
-A tabela de comparação mantém largura mínima de 650px e scroll horizontal dentro do contêiner. Formulários usam duas colunas com gap de 20px e passam a uma coluna até 768px. Painéis usam 24px de padding, reduzido a 20px no mobile. A diferença entre os limites de 767px e 768px vem das media queries existentes; não é uma nova escala de breakpoints.
-
-## Elevation & Depth
-
-O conteúdo usa superfícies claras, contornos e divisórias. A bandeja de comparação possui sombra suave (`0 4px 16px #18181b0d`) para se distinguir enquanto acompanha a rolagem. O Sheet aplica backdrop escuro e a elevação do componente shadcn. Primitivos shadcn também carregam sombras discretas de botão/input: o build não é estritamente sem sombras.
-
-**The Content Plane Rule.** Linhas de resultados permanecem no plano da página; a bandeja e o Sheet podem se sobrepor ao conteúdo.
+Sem sombras em repouso. Só flutuam a bandeja de comparação e o Sheet.
 
 ## Shapes
 
-Controles usam cantos discretos de 6px; painéis, avatar de iniciais e bandeja usam 8px. Labels neutros usam 4px. Divisórias são de 1px; cabeçalhos de grupos de catálogo usam linha de 2px. A forma do avatar é quadrada com cantos arredondados, não circular.
+Botões e etiquetas em pílula (999px). Superfícies 18px. Campos 10px com borda de 1.5px (mantêm contorno por usabilidade). Avatar circular com iniciais em limão.
 
 ## Components
 
-### Buttons
+Compartilhados e reutilizados pelos próximos tickets (triagem, propostas, painéis):
 
-CTA principal escuro com texto branco, altura mínima de 44px, label de 14px, peso 500 e padding conforme frontmatter. A variante secundária é branca com contorno neutro. Hover da composição `.button` reduz opacidade para .88; foco global usa outline de 2px com offset de 3px. Botão desabilitado perde opacidade e apresenta estado de espera.
-
-Os componentes shadcn mantêm suas variantes e focus ring locais. Nas composições existentes, a classe `.button` complementa essas variantes; não assumir que todo Button isolado tem os mesmos 44px. A variante destrutiva deve acompanhar uma ação destrutiva real.
-
-### Labels and filters
-
-Labels neutros mostram informações de domínio e filtros ativos. Não são pílulas promocionais. Filtros possuem labels persistentes, seletor e campos de valor lado a lado quando houver espaço; erros permanecem próximos à interação.
-
-### Cards / Containers
-
-Painéis brancos têm borda neutra e canto de superfície. Resultados de busca são linhas divididas por borda inferior, com 28px de padding vertical. A descrição de resultado limita a exibição a três linhas; perfil preserva o texto completo. Vazio usa contorno tracejado, mensagem e ação contextual.
-
-### Inputs / Fields
-
-Campo com contorno neutro, canto de controle e altura mínima de 44px na composição global. Label e ajuda permanecem fora do placeholder. Textarea tem altura mínima de 130px e resize vertical. Foco é visível; erros e confirmações usam texto semântico. Primitivos Input têm focus ring próprio e sombra discreta.
-
-### Navigation
-
-Marca à esquerda, links centrais e conta à direita. Links usam underline no hover. Em mobile, o header quebra e mantém navegação textual visível. O link “Pular para o conteúdo” aparece ao receber foco. O painel privado usa navegação horizontal com quebra de linha e divisória.
-
-### Comparison
-
-Bandeja sticky exibe contagem, “Ver comparação” e “Limpar” apenas com seleção em busca ou perfil de prestador. Sua posição é 16px acima do fundo em desktop e 8px em mobile. A comparação usa tabela com cabeçalhos claros e remoção por prestador, até três seleções. Não inserir a bandeja na home, autenticação ou painel.
-
-### Filter Sheet
-
-Painel à direita com padding de 24px, fechamento explícito e título. A composição de filtro limita a duração de transição a 180ms; `prefers-reduced-motion` desativa transições e animações globalmente. O backdrop efetivo é o do Sheet shadcn; o CSS de dialog nativo não é a aparência deste componente.
+- `Wordmark` / `BrandMark` (`src/components/wordmark.tsx`).
+- `SiteHeader`, `SiteFooter` (shell; footer em verde-floresta).
+- `Button` (`ui/button`): default, outline, secondary, ghost, destructive; 44px. Classes `.button`, `.button.secondary`, `.button.accent`, `.button.danger` seguem o mesmo visual.
+- `Card` (`ui/card`): `tone` default | muted | accent | brand. Equivalente em classe: `.panel` / `.panel.tone`.
+- `Badge`, `Input`, `Textarea`, `Skeleton`, `Sheet` restilizados pelos tokens.
+- `PriceRuler` (`components/price-ruler.tsx`): sem props é a ilustração decorativa da home (sem dados); com `data` mostra a faixa anunciada em limão, a média dos preços fixos e o orçamento do Cliente (ou o valor de uma Proposta, com `sujeito: "valor"`) na mesma escala, sempre com os valores também como texto na legenda. Usada na Triagem, no Projeto, nas Oportunidades e no formulário de Proposta.
+- Slot da Triagem na home: `.triage-slot[data-slot="triagem"]` traz a entrada "O que você precisa?" (atalhos de objetivo e "Começar a Triagem"); a busca virou o link secundário "Buscar prestadores".
+- Triagem, Projeto, Oportunidades e Propostas: `src/app/triagem/triagem.css` (`.triage-card`, `.chip`, `.status`, `.project-row`, `.data-ruler`, `.compatible-card`, `.confirm`). Selo "Convite" é um `.chip` limão; contadores de Propostas são `.chip.neutral`.
+- Busca, perfil e comparação: `.provider-result`, `.price-statistic`, tabela e bandeja de comparação em `src/app/buscar/public.css`.
 
 ## Do's and Don'ts
 
-### Do:
+### Do
+- Ler cores só de tokens; nunca hex em componentes.
+- Mostrar preço em destaque tipográfico, sempre com unidade (R$/hora, por projeto).
+- Foco visível (outline 3px `--ring`), alvos de 44px, contraste AA nos dois temas.
+- Respeitar `prefers-reduced-motion` (transições utilitárias de 150ms).
 
-- **Do** preservar a paleta neutra, labels persistentes e foco visível.
-- **Do** organizar identidade, oferta e ação em linhas legíveis que empilham no mobile.
-- **Do** usar rótulos de serviço e tipo somente quando acrescentam informação de domínio.
-- **Do** limitar o scroll horizontal ao contêiner da comparação.
-- **Do** manter contato e negociação com texto direto em português brasileiro.
-
-### Don't:
-
-- **Don't** adicionar kickers decorativos acima dos títulos.
-- **Don't** criar cores de categoria, gradientes, glow ou glassmorphism para esta identidade.
-- **Don't** transformar resultados em uma grade de cartões promocionais ou inventar métricas.
-- **Don't** estender a bandeja de comparação para rotas fora de busca e perfil.
-- **Don't** tratar dimensões e sombras dos primitivos shadcn como substitutas automáticas das composições existentes.
+### Don't
+- Gradientes, glow, glassmorphism, emojis como ícone, métricas inventadas.
+- Limão como texto sobre fundo claro.
+- Estender a bandeja de comparação além de busca e perfil.
+- Criar variantes de botão ou cor para telas isoladas; evolua o token.

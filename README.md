@@ -1,6 +1,8 @@
 # Proposta.dev
 
-Diretório de prestadores de desenvolvimento. Visitantes pesquisam, filtram, comparam até três prestadores e acessam contatos públicos. Uma conta pode publicar perfil PF/PJ, administrar ofertas e avaliar outros prestadores. Negociação externa; sem pagamentos ou contratação interna.
+Marketplace de serviços de desenvolvimento. O Cliente descreve o projeto na Triagem e vê, antes de criar conta, o Preço de referência do tipo de serviço e os Prestadores compatíveis. Depois publica o projeto, convida prestadores, recebe Propostas, compara valor, prazo e reputação lado a lado e aceita uma. Prestadores mantêm perfil e ofertas, encontram Oportunidades e enviam Propostas. Só quem contratou pela plataforma avalia (Avaliação verificada). Contas são de Cliente ou de Prestador. Pagamento, contrato e chat ficam fora do escopo (ADR 0003): depois do Aceite, as partes recebem o contato uma da outra.
+
+MVP 2: spec em `docs/tasks/mvp2/spec.md`, decisões em `docs/adr/0003-mvp2-contas-e-triagem.md`, roteiro da apresentação em `docs/tasks/mvp2/ROTEIRO.md`.
 
 
 ## Produção — Supabase e Vercel
@@ -12,12 +14,12 @@ Variáveis sensíveis na Vercel: DATABASE_URL (transaction pooler, porta 6543), 
 Build Command na Vercel:
 
 ```sh
-curl -fsS https://supabase-downloads.s3-ap-southeast-1.amazonaws.com/prod/ssl/prod-ca-2021.crt -o supabase-ca.crt && pnpm db:migrate && node --conditions=react-server --import tsx scripts/seed.ts && pnpm build
+curl -fsS https://supabase-downloads.s3-ap-southeast-1.amazonaws.com/prod/ssl/prod-ca-2021.crt -o supabase-ca.crt && if [ "$VERCEL_ENV" = production ]; then pnpm db:migrate && node --conditions=react-server --import tsx scripts/seed.ts; fi && pnpm build
 ```
 
-A CA pública vem do endereço oficial apresentado pelo dashboard do Supabase. next.config.ts inclui supabase-ca.crt no tracing das funções. O arquivo é baixado em cada build; a verificação TLS permanece ativa. O comando do seed usa as variáveis do ambiente de hospedagem, sem exigir um .env local. Migrations e catálogo são incrementais/idempotentes; previews neste projeto usam a mesma base de produção e não devem executar alterações experimentais de schema.
+A CA pública vem do endereço oficial apresentado pelo dashboard do Supabase. next.config.ts inclui supabase-ca.crt no tracing das funções. O arquivo é baixado em cada build; a verificação TLS permanece ativa. O comando do seed usa as variáveis do ambiente de hospedagem, sem exigir um .env local. Migrations e catálogo são incrementais/idempotentes; previews neste projeto usam a mesma base de produção; por isso migrations e seed rodam apenas quando VERCEL_ENV=production (01/11/2026), e um preview com schema novo pode falhar até o merge na main.
 
-As 11 tabelas public têm RLS habilitada, sem políticas de acesso para anon/authenticated. Privilégios de tabelas/sequências atuais e futuras desses papéis foram restringidos. O acesso do aplicativo acontece somente no servidor pelo PostgreSQL; Better Auth continua responsável pelas contas/sessões. Não usar Supabase Auth no frontend deste projeto.
+As tabelas public têm RLS habilitada, sem políticas de acesso para anon/authenticated: as 11 do MVP 1 foram configuradas direto no Supabase e as 5 do MVP 2 pela migration 0006. Privilégios de tabelas/sequências atuais e futuras desses papéis foram restringidos. O acesso do aplicativo acontece somente no servidor pelo PostgreSQL; Better Auth continua responsável pelas contas/sessões. Não usar Supabase Auth no frontend deste projeto.
 
 Deploy, migrations e catálogo foram confirmados. Home, busca e redirecionamento privado foram validados no ambiente publicado; testes de autenticação usam uma conta QA sem perfil/oferta pública. Após um redeploy, recarregue formulários antigos antes de enviá-los, pois os identificadores das Server Actions podem mudar.
 
@@ -33,6 +35,24 @@ Copy-Item .env.example .env
 
 Preencha BETTER_AUTH_SECRET com uma sequência aleatória de pelo menos 32 caracteres. Gere uma com `node -e "console.log(require('node:crypto').randomBytes(48).toString('base64'))"`. Nunca publique .env. Os valores locais de POSTGRES_USER/PASSWORD/DB/PORT e DATABASE_URL devem coincidir. A porta do banco neste projeto é 5434; a do aplicativo é 3000.
 
+### Login social e e-mail (opcionais)
+
+| Variável | Para quê | Padrão |
+| --- | --- | --- |
+| `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | Login com GitHub. O botão só aparece com as duas. | vazio (sem botão) |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Login com Google. O botão só aparece com as duas. | vazio (sem botão) |
+| `SMTP_HOST` | Servidor SMTP. | `smtp.gmail.com` |
+| `SMTP_PORT` | Porta SMTP (465 usa TLS direto). | `465` |
+| `SMTP_USER` / `SMTP_PASS` | Credenciais SMTP. No Gmail, use senha de app. | vazio |
+| `EMAIL_FROM` | Endereço do remetente. | igual a `SMTP_USER` |
+
+URLs de callback OAuth (registre no app do GitHub e no cliente OAuth do Google):
+
+- GitHub: `https://propostadev-one.vercel.app/api/auth/callback/github` (produção) e `http://localhost:3000/api/auth/callback/github` (desenvolvimento).
+- Google: `https://propostadev-one.vercel.app/api/auth/callback/google` (produção) e `http://localhost:3000/api/auth/callback/google` (desenvolvimento).
+
+Comportamento sem configuração (ADR 0003): sem credenciais OAuth, os botões não são renderizados. Sem `SMTP_USER`/`SMTP_PASS`, em desenvolvimento o link de recuperação e de verificação aparece no console do servidor (`[e-mail em desenvolvimento]`); em produção nenhum e-mail é enviado, o link "Esqueci minha senha" não aparece, `/esqueci-senha` informa que a recuperação está indisponível e o aviso "Confirme seu e-mail" não é exibido. Quem entra pela primeira vez por OAuth cai em `/boas-vindas` para escolher o tipo de conta. O vínculo automático de uma conta social a uma conta existente com o mesmo e-mail só acontece quando o provedor marca o e-mail como verificado e a conta local já confirmou o e-mail; senão o login social é recusado. O link de redefinição vale 1 hora, só funciona uma vez e encerra as demais sessões. O E2E usa um SMTP fictício em porta fechada apenas para habilitar os fluxos e lê os tokens da tabela `verification`.
+
 ```powershell
 docker compose up -d --wait
 pnpm db:migrate
@@ -44,14 +64,21 @@ Abra http://localhost:3000. Cadastre uma conta, crie o perfil e publique uma ofe
 
 ## Demonstração opcional
 
-O seed demo é recusado em produção e exige opt-in. Ele cria oito perfis fictícios, identificados como Demo, com preços variados e uma avaliação sintética. Use apenas para exploração local. Para identificar o ambiente inteiro, ajuste DEMO_MODE=true antes de iniciar/buildar o aplicativo.
+O seed demo exige opt-in (`ALLOW_DEMO_SEED=true`) e é recusado com `NODE_ENV=production`. Ele cria:
+- oito Prestadores fictícios, identificados como Demo, com Ofertas e preços variados;
+- três Clientes (Mariana Costa, Rafael Lima e Juliana Alves);
+- seis Projetos: três abertos, dois encerrados com Aceite e um cancelado;
+- Propostas em todos os status (enviada, pré-selecionada, recusada, aceita e retirada) e Convites;
+- duas Avaliações verificadas (feitas depois do Aceite) e uma Avaliação anterior, sem contratação verificada.
+
+O seed é idempotente: cada Projeto só é criado uma vez. Para voltar a demo ao estado inicial depois de ensaios (Aceites e Propostas feitos ao vivo), rode com `DEMO_RESET=true`: os Projetos e as Avaliações verificadas dos Clientes demo são recriados. Os cenários estão em `scripts/demo-scenarios.ts`. Para identificar o ambiente inteiro como demonstração, ajuste DEMO_MODE=true antes de iniciar ou buildar o aplicativo.
 
 ```powershell
 $env:ALLOW_DEMO_SEED='true'
 pnpm db:seed:demo
 ```
 
-Login local: prestador1@demo.example, senha Demo-local-2026! (ou DEMO_PASSWORD definido antes da primeira execução). Repetir o seed não redefine a senha de uma conta já existente. Não use essas credenciais em serviços públicos.
+Login local: prestador1@demo.example a prestador8@demo.example (Prestadores) ou cliente1@demo.example a cliente3@demo.example (Clientes), senha Demo-local-2026! (ou DEMO_PASSWORD definido antes da primeira execução). Repetir o seed não redefine a senha de uma conta já existente. Não use essas credenciais em serviços públicos.
 
 ## Testes e produção local
 
