@@ -34,7 +34,7 @@ Escala 4, 8, 12, 16, 24, 32, 48, 64. Contêiner 1240px, gutter 16/24px. Pílula 
 - **Header** sticky: marca, 3 links, "Minha conta". No mobile, links em segunda linha.
 - **Home**: título grande à esquerda; à direita o **slot da Triagem** (cartão verde `.triage-slot` com a entrada da Triagem: atalhos de objetivo e "Começar a Triagem"; a busca é o link secundário); abaixo, catálogo por categoria, explicação e convite a prestadores em limão.
 - **Busca**: filtros em cartão lateral (Sheet no mobile), estatística de preço em cartão escuro, resultados como cartões horizontais com preço em destaque.
-- **Perfil**: avatar circular em limão, contato em cartão, ofertas e avaliações em cartões.
+- **Perfil**: avatar circular em limão, contato em cartão, ofertas e avaliações em cartões. Avaliação verificada: borda `--primary` e selo `.verified-seal` (limão, ícone de check, "Contratado pela Proposta.dev"). Avaliação anterior: borda tracejada, sem fundo, nota `.previous-note` em itálico discreto; nunca mostra o selo.
 - **Comparação**: tabela em cartão, rolagem horizontal só dentro dela; bandeja flutuante escura (só busca e perfil).
 - **Footer**: bloco verde com três colunas e aviso de que o produto é um diretório.
 

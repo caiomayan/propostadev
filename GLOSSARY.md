@@ -81,7 +81,7 @@ _Evitar_: contratação, fechamento de contrato
 Nota de 1 a 5 e comentário de um Cliente sobre um Prestador.
 
 **Avaliação verificada**:
-Avaliação feita por Cliente que teve Proposta aceita daquele Prestador.
+Avaliação feita por Cliente que teve Proposta aceita daquele Prestador. É derivada (não há coluna): existe Proposta ACEITA do autor com o Prestador. Aparece com o selo "Contratado pela Proposta.dev". As do MVP 1 sem esse Aceite aparecem como "Avaliação anterior, sem contratação verificada".
 _Evitar_: avaliação confirmada
 
 **Comparação**:

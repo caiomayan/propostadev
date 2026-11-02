@@ -19,6 +19,6 @@ export function ReviewInvite({ providerId, providerName, providerActive, own }: 
           <details className="confirm edit"><summary>Editar avaliação</summary><ReviewForm providerId={providerId} own={own} showDelete={false} bare/></details>
           <details className="confirm"><summary>Excluir avaliação</summary><div className="stack"><p>A avaliação deixa de aparecer no perfil de {providerName}. Você pode avaliar de novo depois.</p><ActionForm action={deleteReview} label="Confirmar exclusão"><input type="hidden" name="providerId" value={providerId}/></ActionForm></div></details>
         </div></>
-      : <div className="stack"><p>Você aceitou a proposta de {providerName}. Conte como foi: sua avaliação ajuda outros Clientes e aparece no perfil com o selo “Contratado pela Proposta.dev”.</p><ReviewForm providerId={providerId} own={null} heading={`Avalie ${providerName}`} bare/></div>}
+      : <div className="stack"><p>Você aceitou a proposta de {providerName}. Conte como foi: sua avaliação ajuda outros Clientes a escolher.</p><ReviewForm providerId={providerId} own={null} heading={`Avalie ${providerName}`} bare/></div>}
   </section>;
 }

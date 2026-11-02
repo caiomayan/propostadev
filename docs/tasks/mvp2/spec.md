@@ -110,7 +110,8 @@ Cada conta é Cliente ou Prestador desde o cadastro. O Cliente faz uma Triagem: 
 
 ### Avaliações
 - A criação exige a sessão de um CLIENTE com Proposta ACEITA daquele Prestador, verificada no servidor e no banco (trigger). "Verificada" é derivada da existência dessa Proposta ACEITA. Avaliações do MVP 1 permanecem e aparecem como "Avaliação anterior, sem contratação verificada".
-- O Perfil mostra a média geral e a contagem de verificadas. O texto "contratação não verificada" vale só para as antigas.
+- O Perfil mostra a média geral e a contagem de verificadas ("4,5/5 · 6 avaliações · 4 verificadas"; sem nenhuma, "nenhuma verificada"). O texto "sem contratação verificada" vale só para as antigas. A mesma linha aparece na busca, na comparação e nos cartões de Proposta; na Triagem as verificadas são um motivo ("3 avaliações verificadas").
+- Editar e excluir valem para o autor de qualquer Avaliação própria, inclusive as antigas e inclusive de conta Prestador (que herdou Avaliações do MVP 1); a exigência de Aceite vale só para criar (trigger BEFORE INSERT da migration 0005). Os agregados usam EXISTS, não JOIN, para que dois Aceites do mesmo Cliente não dupliquem a Avaliação.
 
 ### Infra e visual
 - Produção: Vercel (projeto `propostadev`, já ligado ao GitHub) + Supabase Postgres. O app usa o pooler com SSL e as migrations rodam pela conexão de sessão/direta. As migrations Drizzle são aplicadas antes do deploy. `unaccent` é verificado no schema de extensões do Supabase.
