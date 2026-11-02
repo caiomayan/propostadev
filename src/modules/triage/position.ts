@@ -22,7 +22,13 @@ export function posicaoOrcamento(orcamento: Budget, faixa: Range | null): Budget
 }
 
 const positionWord = { ABAIXO: "abaixo da", DENTRO: "dentro da", ACIMA: "acima da" } as const;
-/** Frase da posição. "orcamento" (Cliente) ou "valor" (Proposta do Prestador). */
-export function positionSentence(position: Exclude<BudgetPosition, "INDEFINIDO">, subject: "orcamento" | "valor" = "orcamento") {
-  return `Seu ${subject === "valor" ? "valor" : "orçamento"} está ${positionWord[position]} faixa anunciada.`;
+export type Subject = "orcamento" | "valor" | "preco";
+const subjectWord: Record<Subject, string> = { orcamento: "orçamento", valor: "valor", preco: "preço" };
+/** Rótulo do que a régua posiciona: orçamento do Cliente, valor de uma Proposta ou preço de uma Oferta. */
+export function subjectLabel(subject: Subject = "orcamento") {
+  return `Seu ${subjectWord[subject]}`;
+}
+/** Frase da posição. */
+export function positionSentence(position: Exclude<BudgetPosition, "INDEFINIDO">, subject: Subject = "orcamento") {
+  return `${subjectLabel(subject)} está ${positionWord[position]} faixa anunciada.`;
 }

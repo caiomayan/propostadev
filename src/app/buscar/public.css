@@ -27,9 +27,6 @@
 .comparison-table .button { margin: 8px 0; }
 .comparison-table td strong { font-family: var(--font-display); font-size: 1.125rem; }
 
-.profile-heading { display: flex; gap: 24px; align-items: center; margin-bottom: 32px; }
-.profile-heading .provider-avatar { width: 88px; height: 88px; font-size: 1.875rem; }
-.profile-heading h1 { margin: 4px 0 8px; }
 .profile-description { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 760px; line-height: 1.75; margin-top: 12px; }
 .profile-offer { padding: 28px; background: var(--card); border-radius: var(--radius-lg); margin-top: 16px; }
 .profile-offer h3 { margin: 8px 0; font-size: 1.25rem; }
@@ -77,8 +74,6 @@
   .provider-actions strong, .provider-actions > span { width: 100%; }
   .provider-actions > .button, .provider-actions > div { flex: 1; }
   .comparison-tray { gap: 8px; flex-wrap: wrap; justify-content: center; bottom: 8px; border-radius: var(--radius-lg); padding: 12px; font-size: .9375rem; }
-  .profile-heading { gap: 16px; }
-  .profile-heading .provider-avatar { width: 60px; height: 60px; font-size: 1.375rem; }
   .review-heading { flex-wrap: wrap; }
   .profile-offer { padding: 20px; }
   .profile-offer .inline { align-items: flex-start; flex-direction: column; }

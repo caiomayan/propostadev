@@ -1,3 +1,2 @@
-export default function Loading() {
-  return <section className="container section" aria-busy="true"><h1>Carregando comparação…</h1><p className="muted" role="status">Conferindo se as ofertas selecionadas continuam disponíveis.</p></section>;
-}
+import { LoadingScreen } from "@/components/loading-screen";
+export default function Loading() { return <LoadingScreen label="Conferindo se as ofertas selecionadas continuam disponíveis…" cards={1} />; }

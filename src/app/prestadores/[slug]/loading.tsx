@@ -1,3 +1,2 @@
-export default function Loading() {
-  return <section className="container section" aria-busy="true"><h1>Carregando prestador…</h1><p className="muted" role="status">Consultando perfil, serviços e avaliações.</p></section>;
-}
+import { LoadingScreen } from "@/components/loading-screen";
+export default function Loading() { return <LoadingScreen label="Carregando perfil, serviços e avaliações…" cards={2} />; }

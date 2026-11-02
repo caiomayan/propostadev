@@ -173,8 +173,8 @@ test("foto HTTPS indisponível mantém iniciais no perfil e na busca", async ({ 
     await pool.query("UPDATE perfil_prestador SET foto_url=$1 WHERE slug='prestador-demo-3'", [photoUrl]);
     await page.route(photoUrl, (route) => route.abort("failed"));
     await page.goto("/prestadores/prestador-demo-3");
-    await expect(page.locator(".profile-heading span.provider-avatar")).toHaveText("NS");
-    await expect(page.locator(".profile-heading img.provider-avatar")).toHaveCount(0);
+    await expect(page.locator(".profile-hero span.provider-avatar")).toHaveText("NS");
+    await expect(page.locator(".profile-hero img.provider-avatar")).toHaveCount(0);
     await page.goto("/buscar?q=nexo");
     const result = page.locator(".provider-result").filter({ has: page.getByRole("heading", { name: "Nexo Studio — Demo", exact: true }) });
     await expect(result.locator("span.provider-avatar")).toHaveText("NS");
