@@ -17,7 +17,7 @@ curl -fsS https://supabase-downloads.s3-ap-southeast-1.amazonaws.com/prod/ssl/pr
 
 A CA pública vem do endereço oficial apresentado pelo dashboard do Supabase. next.config.ts inclui supabase-ca.crt no tracing das funções. O arquivo é baixado em cada build; a verificação TLS permanece ativa. O comando do seed usa as variáveis do ambiente de hospedagem, sem exigir um .env local. Migrations e catálogo são incrementais/idempotentes; previews neste projeto usam a mesma base de produção; por isso migrations e seed rodam apenas quando VERCEL_ENV=production (01/11/2026), e um preview com schema novo pode falhar até o merge na main.
 
-As 11 tabelas public têm RLS habilitada, sem políticas de acesso para anon/authenticated. Privilégios de tabelas/sequências atuais e futuras desses papéis foram restringidos. O acesso do aplicativo acontece somente no servidor pelo PostgreSQL; Better Auth continua responsável pelas contas/sessões. Não usar Supabase Auth no frontend deste projeto.
+As tabelas public têm RLS habilitada, sem políticas de acesso para anon/authenticated: as 11 do MVP 1 foram configuradas direto no Supabase e as 5 do MVP 2 pela migration 0006. Privilégios de tabelas/sequências atuais e futuras desses papéis foram restringidos. O acesso do aplicativo acontece somente no servidor pelo PostgreSQL; Better Auth continua responsável pelas contas/sessões. Não usar Supabase Auth no frontend deste projeto.
 
 Deploy, migrations e catálogo foram confirmados. Home, busca e redirecionamento privado foram validados no ambiente publicado; testes de autenticação usam uma conta QA sem perfil/oferta pública. Após um redeploy, recarregue formulários antigos antes de enviá-los, pois os identificadores das Server Actions podem mudar.
 

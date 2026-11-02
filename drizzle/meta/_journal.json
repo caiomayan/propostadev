@@ -43,6 +43,13 @@
       "when": 1793648242717,
       "tag": "0005_avaliacao-verificada",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793649519444,
+      "tag": "0006_rls-tabelas-mvp2",
+      "breakpoints": true
     }
   ]
 }
