@@ -6,8 +6,9 @@
 - A pendência dos "espaços faltando" ("3prestadores") era um artefato da árvore de acessibilidade do browser de teste. O texto real tem os espaços.
 
 ## Em andamento
-- **06 Triagem de Propostas e Aceite**: pausado no meio do trabalho. O worker do Orca (worktree `mvp2-06-aceite`) recebeu ordem de fazer commit WIP e push no branch dele. O estado está no ticket 06 desse branch.
-  - Para retomar, abra um worker novo na mesma worktree com o brief `docs/tasks/mvp2/briefs/06-worker.md`, mais a instrução de continuar a partir do WIP.
+- **06 Triagem de Propostas e Aceite**: **entregue** no branch `caiomayan/mvp2-06-aceite` (c35dc69, publicado), ainda NÃO integrado. O worker relata lint, typecheck, unitários 62, integração 58 e E2E 23 verdes, e browser em 375 e 1440 limpo.
+  - Falta: merge em mvp2 + bateria completa (`pnpm build` antes do E2E).
+  - Falta decidir a pendência registrada no relatório do ticket 06: contatos de Perfil desativado depois do Aceite.
 
 ## Próximos
 - 07: o brief está pronto em `docs/tasks/mvp2/briefs/07-worker.md`. Despache-o depois do merge do 06.
