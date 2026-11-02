@@ -9,7 +9,7 @@ O Cliente logado publica o Projeto. O visitante entra ou se cadastra como Client
 
 **Blocked by:** 03
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] Tabela projeto com checks; seed com mapeamento objetivo → tipos — drizzle/0003_projeto-triagem.sql; scripts/seed.ts (8 objetivos); constraints cobertas em tests/integration/triage.test.ts
 - [x] Testes do Preço de referência (inclui n < 3) e da ordem dos compatíveis — tests/integration/triage.test.ts, tests/unit/triage.test.ts

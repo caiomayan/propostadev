@@ -4,7 +4,7 @@
 
 **Blocked by:** 04
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] Tabelas proposta e convite com UNIQUE e checks — drizzle/0004_propostas-convites.sql (UNIQUE projeto+prestador, índice único parcial de ACEITA, checks, FK proposta_aceita_id SET NULL, convite UNIQUE); coberto em tests/integration/proposals.test.ts ("banco: ...")
 - [x] Testes: uma Proposta por par, edição só em estados permitidos, Prestador sem Oferta no tipo não vê nem propõe — tests/integration/proposals.test.ts (Proposta, Oportunidades, Convites); E2E tests/e2e/proposals.spec.ts
