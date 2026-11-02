@@ -31,12 +31,12 @@ export default async function DashboardPage() {
   return <section className="stack dash">
     <header className="dash-heading"><h1>Olá, {firstName}.</h1><p className="muted">{next ? "Faltam poucos passos para você aparecer na busca." : "Seu perfil está no ar. Mantenha preços e prazos atualizados."}</p></header>
     {next ? <div className="panel dash-next stack"><h2>{next.title}</h2><p>{next.text}</p><Link className="button" href={next.href}>{next.cta}</Link></div>
-      : <div className="panel dash-next stack"><h2>Tudo pronto por aqui</h2><p>Seu perfil e suas ofertas estão publicados.</p>{provider && <Link className="button" href={`/prestadores/${provider.slug}`}>Ver meu perfil público</Link>}</div>}
+      : <div className="panel dash-next stack"><h2>Tudo pronto por aqui</h2><p>Seu perfil e suas ofertas estão publicados. Veja os projetos abertos que combinam com o que você oferece.</p><Link className="button" href="/painel/oportunidades">Ver oportunidades</Link></div>}
     <ol className="dash-steps" aria-label="Primeiros passos">{steps.map((step, index) => <li key={step.title} className={step.done ? "done" : step === next ? "current" : ""} aria-current={step === next ? "step" : undefined}><span className="dash-step-mark" aria-hidden="true">{step.done ? <Check /> : index + 1}</span><div><strong>{step.title}</strong><small>{step.done ? "Concluído" : step === next ? "Próximo passo" : "Depois"}</small></div></li>)}</ol>
     {provider && <div className="panel stack"><h2>Situação</h2><dl className="dash-status">
       <div><dt>Perfil</dt><dd><span className={`badge ${provider.active ? "accent" : ""}`}>{provider.active ? "Ativo" : "Desativado"}</span> <Link href="/painel/perfil">Editar</Link></dd></div>
       <div><dt>Ofertas</dt><dd>{activeOffers} {activeOffers === 1 ? "ativa" : "ativas"}{pausedOffers > 0 && <> · {pausedOffers} {pausedOffers === 1 ? "pausada" : "pausadas"}</>} <Link href="/painel/ofertas">Gerenciar</Link></dd></div>
-      {provider.active && <div><dt>Página pública</dt><dd><Link href={`/prestadores/${provider.slug}`}>/prestadores/{provider.slug}</Link></dd></div>}
+      {provider.active && <div><dt>Página pública</dt><dd><Link href={`/prestadores/${provider.slug}`}>Ver meu perfil público</Link></dd></div>}
     </dl></div>}
     <p><Link href="/buscar">Explorar prestadores →</Link></p>
   </section>;

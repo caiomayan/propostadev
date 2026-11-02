@@ -101,7 +101,7 @@ test("account, provider and offers persist; ownership is enforced across account
   await page.goto("/painel/conta");
   await page.getByLabel("Nome", { exact: true }).fill("Nome atualizado");
   await page.getByRole("button", { name: "Salvar", exact: true }).click();
-  await expect(page.getByRole("status")).toContainText("Nome atualizado");
+  await expect(page.getByRole("status").filter({ hasText: "Nome atualizado" })).toBeVisible();
   await page.getByLabel("Senha atual", { exact: true }).fill(password);
   await page.getByLabel("Nova senha", { exact: true }).fill(changedPassword);
   await page.getByRole("button", { name: "Alterar senha", exact: true }).click();
@@ -117,7 +117,7 @@ test("account, provider and offers persist; ownership is enforced across account
   await page.getByLabel("Senha", { exact: true }).fill(changedPassword);
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await expect(page).toHaveURL(/\/painel$/);
-  await expect(page.getByRole("heading", { name: "Olá, Nome atualizado." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Olá, Nome." })).toBeVisible();
   await page.goto("/painel/ofertas");
   await expect(page.getByRole("heading", { name: `Oferta editada ${suffix}` })).toBeVisible();
   await page.getByText("Excluir oferta", { exact: true }).click();

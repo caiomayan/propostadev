@@ -4,6 +4,7 @@ import { MobileMenu } from "@/components/mobile-menu";
 import { getSession } from "@/lib/auth/session";
 
 export const siteLinks = [
+  { href: "/triagem", label: "Triagem" },
   { href: "/buscar", label: "Buscar desenvolvedores" },
   { href: "/painel/perfil", label: "Oferecer serviços" },
   { href: "/comparar", label: "Comparar" },
