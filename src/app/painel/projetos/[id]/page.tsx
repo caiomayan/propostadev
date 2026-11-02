@@ -14,6 +14,8 @@ import { AcceptedProviderBlock } from "@/components/proposals/accepted-provider"
 import { ProposalCard } from "@/components/proposals/proposal-card";
 import { TriageControls } from "@/components/proposals/triage-controls";
 import { CompatibleCard } from "@/components/triage/compatible-card";
+import { ReviewInvite } from "@/components/reviews/review-invite";
+import { getOwnReview } from "@/modules/reviews/queries";
 import { InviteButton } from "@/components/projects/invite-button";
 import { MAX_INVITES } from "@/modules/proposals/validation";
 import { posicaoOrcamento } from "@/modules/triage/position";
@@ -55,6 +57,7 @@ export default async function ProjectDetailPage({ params, searchParams }: { para
       </> : <div className="insufficient"><strong>Dados insuficientes</strong><p>Só {reference.n} {reference.n === 1 ? "prestador anuncia" : "prestadores anunciam"} preço por projeto neste tipo de serviço. São necessários pelo menos 3.</p></div>}
     </section>
     {accepted && <AcceptedProviderBlock provider={accepted}/>}
+    {accepted && <ReviewInvite providerId={accepted.providerId} providerName={accepted.displayName} providerActive={accepted.active} own={await getOwnReview(session.user.id, accepted.providerId)}/>}
     <section className="stack" aria-labelledby="propostas">
       <div><p className="eyebrow">Propostas</p><h2 id="propostas">{open ? `${project.proposalCount} ${project.proposalCount === 1 ? "proposta ativa" : "propostas ativas"}` : `${proposals.length} ${proposals.length === 1 ? "proposta recebida" : "propostas recebidas"}`}</h2>
         {!open && <p className="muted">{project.status === "ENCERRADO" ? "O projeto foi encerrado com o aceite de uma proposta. A lista é somente leitura." : "O projeto foi cancelado. A lista é somente leitura."}</p>}</div>

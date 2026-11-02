@@ -2,6 +2,7 @@ import "server-only";
 import { sql, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { reputationSubquery } from "@/modules/reviews/queries";
 import { uuidSchema } from "./validation";
 
 export type ProposalStatus = "ENVIADA" | "PRE_SELECIONADA" | "RECUSADA" | "ACEITA" | "RETIRADA";
@@ -110,12 +111,10 @@ export type TriageProposal = {
   id: string; providerId: string; providerSlug: string; providerName: string; providerPhotoUrl: string | null; providerActive: boolean;
   amount: string; days: number; message: string; status: ProposalStatus; createdAt: Date;
   rating: string | null; reviewCount: number;
-  /** Avaliações verificadas do Prestador. Ticket 07: troque somente a expressão `verifiedCount` abaixo. */
+  /** Avaliações verificadas do Prestador (autor com Proposta ACEITA dele). */
   verifiedCount: number;
 };
 
-// Verificadas = avaliações ligadas a uma Proposta aceita. Até o ticket 07 é 0 (mesmo ponto de troca de modules/triage/queries.ts).
-const verifiedCount = sql`0::int`;
 // Fragmentos de ORDER BY fixos (nunca montados a partir da entrada). Recusadas por último; pr.id desempata.
 const orderings: Record<TriageOrder | "padrao", SQL> = {
   padrao: sql`CASE pr.status WHEN 'ACEITA' THEN 0 WHEN 'PRE_SELECIONADA' THEN 1 WHEN 'ENVIADA' THEN 2 ELSE 3 END, pr.created_at DESC, pr.id`,
@@ -134,16 +133,16 @@ export async function listProposalsForTriage(clientId: string, projectId: string
   const result = await db.execute<TriageProposal>(sql`
     SELECT pr.id, pf.id AS "providerId", pf.slug AS "providerSlug", pf.nome_exibicao AS "providerName", pf.foto_url AS "providerPhotoUrl", pf.ativo AS "providerActive",
       pr.valor::text AS amount, pr.prazo_dias AS days, pr.mensagem AS message, pr.status, pr.created_at AS "createdAt",
-      r.rating, coalesce(r.count, 0)::int AS "reviewCount", ${verifiedCount} AS "verifiedCount"
+      r.rating, coalesce(r.count, 0)::int AS "reviewCount", coalesce(r.verified, 0)::int AS "verifiedCount"
     FROM proposta pr JOIN projeto p ON p.id = pr.projeto_id JOIN perfil_prestador pf ON pf.id = pr.prestador_id
-    LEFT JOIN (SELECT prestador_id, avg(nota)::text AS rating, count(*)::int AS count FROM avaliacao GROUP BY prestador_id) r ON r.prestador_id = pf.id
+    LEFT JOIN ${reputationSubquery} r ON r.prestador_id = pf.id
     WHERE p.id = ${projectId}::uuid AND p.cliente_id = ${clientId} AND pr.status <> 'RETIRADA' ${options.soPre ? sql`AND pr.status = 'PRE_SELECIONADA'` : sql``}
     ORDER BY ${orderings[options.ordem ?? "padrao"]}`);
   return result.rows.map((row) => ({ ...row, createdAt: new Date(row.createdAt) }));
 }
 
 export type AcceptedProvider = {
-  proposalId: string; slug: string; displayName: string; active: boolean;
+  proposalId: string; providerId: string; slug: string; displayName: string; active: boolean;
   contactEmail: string; phone: string | null; whatsapp: string | null; siteUrl: string | null; githubUrl: string | null; linkedinUrl: string | null;
 };
 /**
@@ -153,7 +152,7 @@ export type AcceptedProvider = {
 export async function getAcceptedProvider(clientId: string, projectId: string): Promise<AcceptedProvider | null> {
   if (!uuidSchema.safeParse(projectId).success) return null;
   const result = await db.execute<AcceptedProvider>(sql`
-    SELECT pr.id AS "proposalId", pf.slug, pf.nome_exibicao AS "displayName", pf.ativo AS active, pf.email_contato AS "contactEmail", pf.telefone AS phone, pf.whatsapp AS whatsapp,
+    SELECT pr.id AS "proposalId", pf.id AS "providerId", pf.slug, pf.nome_exibicao AS "displayName", pf.ativo AS active, pf.email_contato AS "contactEmail", pf.telefone AS phone, pf.whatsapp AS whatsapp,
       pf.site_url AS "siteUrl", pf.github_url AS "githubUrl", pf.linkedin_url AS "linkedinUrl"
     FROM projeto p JOIN proposta pr ON pr.id = p.proposta_aceita_id AND pr.status = 'ACEITA' JOIN perfil_prestador pf ON pf.id = pr.prestador_id
     WHERE p.id = ${projectId}::uuid AND p.cliente_id = ${clientId} AND p.status = 'ENCERRADO'`);

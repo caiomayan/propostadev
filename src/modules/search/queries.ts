@@ -1,14 +1,15 @@
 import "server-only";
 import { and, eq, sql, type SQL } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { providers, reviews } from "@/lib/db/schema";
+import { providers } from "@/lib/db/schema";
 import type { Offer } from "@/lib/db/schema";
 import type { SearchInput } from "./validation";
+import { canCreateReview, getOwnReview, reputationSubquery, reviewIsVerified } from "@/modules/reviews/queries";
 
 export type PublicOffer = Pick<Offer, "id" | "title" | "description" | "priceType" | "priceMin" | "priceMax" | "deadlineType" | "deadlineMinDays" | "deadlineMaxDays"> & {
   providerId: string; slug: string; displayName: string; type: "PESSOA_FISICA" | "PESSOA_JURIDICA"; yearsExperience: number;
   city: string | null; state: string | null; country: string; photoUrl: string | null;
-  serviceName: string; serviceSlug: string; rating: string | null; reviewCount: number;
+  serviceName: string; serviceSlug: string; rating: string | null; reviewCount: number; verifiedCount: number;
 };
 
 const projection = sql`o.id, o.titulo AS title, o.descricao AS description,
@@ -16,10 +17,10 @@ const projection = sql`o.id, o.titulo AS title, o.descricao AS description,
   o.tipo_prazo AS "deadlineType", o.prazo_minimo_dias AS "deadlineMinDays", o.prazo_maximo_dias AS "deadlineMaxDays",
   p.id AS "providerId", p.slug, p.nome_exibicao AS "displayName", p.tipo AS type, p.anos_experiencia AS "yearsExperience",
   p.cidade AS city, p.uf AS state, p.pais AS country, p.foto_url AS "photoUrl", t.nome AS "serviceName", t.slug AS "serviceSlug",
-  r.rating, coalesce(r.count, 0)::int AS "reviewCount"`;
+  r.rating, coalesce(r.count, 0)::int AS "reviewCount", coalesce(r.verified, 0)::int AS "verifiedCount"`;
 const fromPublic = sql`FROM oferta_servico o JOIN perfil_prestador p ON p.id = o.prestador_id
   JOIN tipo_servico t ON t.id = o.tipo_servico_id JOIN categoria c ON c.id = t.categoria_id
-  LEFT JOIN (SELECT prestador_id, avg(nota)::text AS rating, count(*)::int AS count FROM avaliacao GROUP BY prestador_id) r ON r.prestador_id = p.id`;
+  LEFT JOIN ${reputationSubquery} r ON r.prestador_id = p.id`;
 const active = sql`o.ativo AND p.ativo AND t.ativo AND c.ativo AND o.deleted_at IS NULL`;
 
 function searchConditions(input: SearchInput) {
@@ -69,16 +70,20 @@ export async function getPublicProvider(slug: string) {
   if (!provider) return null;
   const [offerRows, stats] = await Promise.all([
     db.execute<PublicOffer>(sql`SELECT ${projection} ${fromPublic} WHERE ${active} AND p.id = ${provider.id}::uuid ORDER BY o.titulo, o.id`),
-    db.execute<{ rating: string | null; count: number }>(sql`SELECT avg(nota)::text AS rating, count(*)::int AS count FROM avaliacao WHERE prestador_id = ${provider.id}::uuid`),
+    db.execute<{ rating: string | null; count: number; verified: number }>(sql`SELECT r.rating, r.count, r.verified FROM ${reputationSubquery} r WHERE r.prestador_id = ${provider.id}::uuid`),
   ]);
-  return { ...provider, offers: offerRows.rows, rating: stats.rows[0]?.rating ?? null, reviewCount: stats.rows[0]?.count ?? 0 };
+  return { ...provider, offers: offerRows.rows, rating: stats.rows[0]?.rating ?? null, reviewCount: stats.rows[0]?.count ?? 0, verifiedCount: stats.rows[0]?.verified ?? 0 };
 }
 
+export type ProviderReview = { id: string; name: string; rating: number; comment: string | null; createdAt: Date; updatedAt: Date; verified: boolean };
+
+/** Página de Avaliações do Prestador, cada uma com a flag derivada `verified`, mais a situação do usuário da sessão. */
 export async function getProviderReviews(providerId: string, page: number, userId?: string) {
-  const [rows, own, owner] = await Promise.all([
-    db.execute<{ id: string; name: string; rating: number; comment: string | null; createdAt: Date; updatedAt: Date }>(sql`SELECT a.id, u.name, a.nota AS rating, a.comentario AS comment, a.created_at AS "createdAt", a.updated_at AS "updatedAt" FROM avaliacao a JOIN "user" u ON u.id = a.usuario_id WHERE a.prestador_id = ${providerId}::uuid ORDER BY a.created_at DESC, a.id DESC LIMIT 10 OFFSET ${(page - 1) * 10}`),
-    userId ? db.select({ id: reviews.id, rating: reviews.rating, comment: reviews.comment }).from(reviews).where(and(eq(reviews.providerId, providerId), eq(reviews.userId, userId))).limit(1) : Promise.resolve([]),
+  const [rows, own, owner, canCreate] = await Promise.all([
+    db.execute<ProviderReview>(sql`SELECT a.id, u.name, a.nota AS rating, a.comentario AS comment, a.created_at AS "createdAt", a.updated_at AS "updatedAt", ${reviewIsVerified("a")} AS verified FROM avaliacao a JOIN "user" u ON u.id = a.usuario_id WHERE a.prestador_id = ${providerId}::uuid ORDER BY a.created_at DESC, a.id DESC LIMIT 10 OFFSET ${(page - 1) * 10}`),
+    userId ? getOwnReview(userId, providerId) : Promise.resolve(null),
     userId ? db.select({ id: providers.id }).from(providers).where(and(eq(providers.id, providerId), eq(providers.userId, userId))).limit(1) : Promise.resolve([]),
+    userId ? canCreateReview(userId, providerId) : Promise.resolve(false),
   ]);
-  return { reviews: rows.rows, own: own[0] ?? null, isOwner: owner.length > 0 };
+  return { reviews: rows.rows, own, isOwner: owner.length > 0, canCreate };
 }

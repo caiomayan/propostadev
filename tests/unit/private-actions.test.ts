@@ -45,8 +45,11 @@ describe("autorização por tipo de conta", () => {
   });
   it("Prestador não avalia", async () => {
     mocks.getSession.mockResolvedValue({ user: { id: "prestador", accountType: "PRESTADOR" } });
+    // Quem já tem Avaliação (do MVP 1) ainda edita; quem não tem, como aqui, não cria.
+    const provider = { id: "550e8400-e29b-41d4-a716-446655440000", userId: "outro", active: true };
+    mocks.select.mockReturnValueOnce({ from: () => ({ where: () => ({ limit: async () => [provider] }) }) }).mockReturnValueOnce({ from: () => ({ where: () => ({ limit: async () => [] }) }) });
     expect((await saveReview({}, forged())).error).toContain("Cliente");
-    untouched();
+    for (const mock of [mocks.insert, mocks.update, mocks.delete]) expect(mock).not.toHaveBeenCalled();
   });
   it.each([saveProvider, saveOffer, saveReview])("conta sem tipo é recusada", async (action) => {
     mocks.getSession.mockResolvedValue({ user: { id: "novo", accountType: null } });

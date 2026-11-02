@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { Pool } from "pg";
+import { grantAcceptance } from "./support";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ getSession: vi.fn() }));
@@ -102,11 +103,13 @@ describe.skipIf(!testUrl)("Triagem, Preço de referência e Projeto (ticket 04)"
       const empateA = await newProvider(types.ordem, { price: "FIXO", min: "800", days: 20, name: "F empate" });
       const notaBoa = await newProvider(types.ordem, { price: "FIXO", min: "800", days: 20, name: "Z nota alta" });
       const reviewer = [await newUser("CLIENTE"), await newUser("CLIENTE")];
+      await grantAcceptance(pool, reviewer[0], notaBoa.id, types.ordem);
+      await grantAcceptance(pool, reviewer[1], notaBoa.id, types.ordem);
       await pool.query("INSERT INTO avaliacao(usuario_id,prestador_id,nota) VALUES($1,$3,5),($2,$3,4)", [reviewer[0], reviewer[1], notaBoa.id]);
       const result = await prestadoresCompativeis({ tipoServicoId: types.ordem, orcamento: { tipo: "ATE", min: null, max: "1000.00" }, prazoDias: 30 });
       expect(result.map((item) => item.providerId)).toEqual([notaBoa.id, cabeEPrazo.id, empateA.id, cabeNaoPrazo.id, sobConsulta.id, porHora.id, caro.id]);
       const byId = new Map(result.map((item) => [item.providerId, item]));
-      expect(byId.get(notaBoa.id)).toMatchObject({ cabeOrcamento: true, cabePrazo: true, reviewCount: 2, rating: "4.5000000000000000", verificadas: 0 });
+      expect(byId.get(notaBoa.id)).toMatchObject({ cabeOrcamento: true, cabePrazo: true, reviewCount: 2, rating: "4.5000000000000000", verificadas: 2 });
       expect(byId.get(cabeNaoPrazo.id)).toMatchObject({ cabeOrcamento: true, cabePrazo: false });
       expect(byId.get(sobConsulta.id)).toMatchObject({ cabeOrcamento: null, cabePrazo: true });
       expect(byId.get(porHora.id)?.cabeOrcamento).toBeNull();
