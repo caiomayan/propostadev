@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { Pool } from "pg";
+import { grantAcceptance } from "./support";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ getSession: vi.fn() }));
@@ -233,6 +234,7 @@ describe.skipIf(!testUrl)("Triagem de Propostas e Aceite (ticket 06)", () => {
       await newProposal(project, gone.id, { status: "RETIRADA" });
       const pRefused = await newProposal(project, refused.id, { valor: "500", prazo: 5, status: "RECUSADA" });
       const reviewer = await newUser("CLIENTE");
+      await grantAcceptance(pool, reviewer.id, famous.id, typeA);
       await pool.query("INSERT INTO avaliacao(usuario_id,prestador_id,nota,comentario) VALUES($1,$2,5,'Excelente')", [reviewer.id, famous.id]);
       const ids = async (options: Parameters<typeof listProposalsForTriage>[2]) => (await listProposalsForTriage(client.id, project, options)).map((item) => item.id);
 
@@ -248,7 +250,7 @@ describe.skipIf(!testUrl)("Triagem de Propostas e Aceite (ticket 06)", () => {
       const first = (await listProposalsForTriage(client.id, project))[0];
       expect(first).toMatchObject({ status: "PRE_SELECIONADA", amount: "2000.00", days: 30, reviewCount: 0, verifiedCount: 0 });
       const famousRow = (await listProposalsForTriage(client.id, project)).find((item) => item.id === pFamous);
-      expect(famousRow).toMatchObject({ reviewCount: 1, rating: expect.stringMatching(/^5/) });
+      expect(famousRow).toMatchObject({ reviewCount: 1, verifiedCount: 1, rating: expect.stringMatching(/^5/) });
       // Outro Cliente não enxerga nada; a lista nunca carrega e-mails.
       expect(await listProposalsForTriage(stranger.id, project)).toEqual([]);
       expect(JSON.stringify(await listProposalsForTriage(client.id, project))).not.toContain("@");

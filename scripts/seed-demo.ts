@@ -1,9 +1,10 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { auth } from "../src/lib/auth/config";
 import { db, pool } from "../src/lib/db";
 import { user } from "../src/lib/db/auth-schema";
 import { offers, providers, reviews, serviceTypes } from "../src/lib/db/schema";
 import { setAccountType } from "../src/lib/auth/account-type";
+import { REVIEW_ACCEPTANCE_TRIGGER } from "../src/modules/reviews/rules";
 import { seedCatalog } from "./seed";
 import { seedDemoScenarios } from "./demo-scenarios";
 
@@ -31,7 +32,16 @@ async function seedDemo() {
   const clientAccount = client[0] ?? (await auth.api.signUpEmail({ body: { email: "cliente1@demo.example", password, name: "Cliente Demo" } })).user;
   await setAccountType(clientAccount.id, "CLIENTE");
   const targets = await db.select({ id: providers.id }).from(providers).where(eq(providers.slug, "prestador-demo-1"));
-  if (targets[0]) await db.insert(reviews).values({ userId: clientAccount.id, providerId: targets[0].id, rating: 4, comment: "Avaliação fictícia de demonstração; não representa uma contratação real." }).onConflictDoNothing();
+  if (targets[0]) {
+    // Exemplo de "Avaliação anterior, sem contratação verificada" (herança do MVP 1): sem Proposta ACEITA, então o trigger
+    // da migration 0005 a recusaria. Ele é desativado só neste INSERT, na mesma transação (mesma conexão), e reativado em seguida.
+    const [existing] = await db.select({ id: reviews.id }).from(reviews).where(and(eq(reviews.userId, clientAccount.id), eq(reviews.providerId, targets[0].id))).limit(1);
+    if (!existing) await db.transaction(async (tx) => {
+      await tx.execute(sql.raw(`ALTER TABLE avaliacao DISABLE TRIGGER ${REVIEW_ACCEPTANCE_TRIGGER}`));
+      await tx.insert(reviews).values({ userId: clientAccount.id, providerId: targets[0].id, rating: 4, comment: "Avaliação fictícia de demonstração; não representa uma contratação real." }).onConflictDoNothing();
+      await tx.execute(sql.raw(`ALTER TABLE avaliacao ENABLE TRIGGER ${REVIEW_ACCEPTANCE_TRIGGER}`));
+    });
+  }
   const scenarios = await seedDemoScenarios(password);
   console.info(`Demo pronta: 8 perfis fictícios, ${scenarios.clients} clientes e ${scenarios.projects} projetos (${scenarios.created} criados agora). Login prestador1@demo.example ou cliente1@demo.example; senha definida por DEMO_PASSWORD ou padrão local documentado.`);
 }

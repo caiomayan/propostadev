@@ -38,6 +38,10 @@
 .review-item p { white-space: pre-wrap; overflow-wrap: anywhere; }
 .review-heading { display: flex; justify-content: space-between; gap: 16px; }
 .review-heading span { font-weight: 700; background: var(--accent-fill); color: var(--accent-ink); border-radius: 999px; padding: 0 12px; }
+.review-item.previous { background: transparent; border: 1px dashed var(--border); padding: 20px 24px; }
+.review-item.verified { border: 1.5px solid var(--primary); }
+.review-item .review-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; margin-top: 4px; }
+.review-item .review-meta p { margin: 0; }
 .review-form { max-width: 620px; margin-block: 16px; }
 .review-section { margin-top: 56px; }
 .contact-links { flex-wrap: wrap; }

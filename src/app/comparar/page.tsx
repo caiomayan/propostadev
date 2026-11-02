@@ -22,7 +22,7 @@ export default async function ComparePage({ searchParams }: { searchParams: Prom
         <tr className="compare-key"><th scope="row">Prazo anunciado</th>{offers.map((offer) => <td key={offer.id}><strong className="compare-deadline">{deadline(offer)}</strong></td>)}</tr>
         <tr><th scope="row">Experiência</th>{offers.map((offer) => <td key={offer.id}>{offer.yearsExperience} anos <p className="muted">Autodeclarada</p></td>)}</tr>
         <tr><th scope="row">Localização</th>{offers.map((offer) => <td key={offer.id}>{location(offer)}</td>)}</tr>
-        <tr><th scope="row">Reputação</th>{offers.map((offer) => <td key={offer.id}>{reputation(offer.rating, offer.reviewCount)}</td>)}</tr>
+        <tr><th scope="row">Reputação</th>{offers.map((offer) => <td key={offer.id}>{reputation(offer.rating, offer.reviewCount, offer.verifiedCount)}</td>)}</tr>
         <tr><th scope="row">Contato</th>{offers.map((offer) => <td key={offer.id}><Link className="button" href={`/prestadores/${offer.slug}#contato`}>Entrar em contato</Link></td>)}</tr>
       </tbody></table></div><p><Link className="button secondary" href="/buscar">Adicionar ou trocar prestadores</Link></p>
     </>}

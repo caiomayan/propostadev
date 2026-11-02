@@ -3,6 +3,7 @@ import { Pool, type PoolClient } from "pg";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { afterAll, afterEach, beforeEach, describe, expect, it } from "vitest";
 import { user } from "../../src/lib/db/auth-schema";
+import { grantAcceptance } from "./support";
 
 const testUrl = process.env.DATABASE_URL_TEST;
 if (testUrl && process.env.DATABASE_URL_DEVELOPMENT && new URL(testUrl).pathname === new URL(process.env.DATABASE_URL_DEVELOPMENT).pathname) throw new Error("DATABASE_URL_TEST deve nomear banco diferente do desenvolvimento.");
@@ -44,6 +45,9 @@ describe.skipIf(!testUrl)("constraints reais do PostgreSQL", () => {
   it("recusa nota inválida e self-review em inserção e edição", async () => {
     await rejected("INSERT INTO avaliacao(usuario_id,prestador_id,nota) VALUES($1,$2,6)", [reviewer, provider]);
     await rejected("INSERT INTO avaliacao(usuario_id,prestador_id,nota) VALUES($1,$2,4)", [owner, provider]);
+    // Sem Aceite o trigger da migration 0005 recusa; o Aceite do Cliente (e só dele) libera a criação.
+    await rejected("INSERT INTO avaliacao(usuario_id,prestador_id,nota) VALUES($1,$2,4)", [reviewer, provider]);
+    await grantAcceptance(client, reviewer, provider, service);
     const saved = await client.query<{ id: string }>("INSERT INTO avaliacao(usuario_id,prestador_id,nota) VALUES($1,$2,4) RETURNING id", [reviewer, provider]);
     await client.query("SAVEPOINT duplicate_review");
     await expect(client.query("INSERT INTO avaliacao(usuario_id,prestador_id,nota) VALUES($1,$2,5)", [reviewer, provider])).rejects.toMatchObject({ code: "23505" });

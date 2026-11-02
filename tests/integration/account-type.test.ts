@@ -1,7 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { Pool } from "pg";
-import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { grantAcceptance } from "./support";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ getSession: vi.fn() }));
 vi.mock("@/lib/auth/session", () => ({ getSession: mocks.getSession }));
@@ -12,6 +13,8 @@ vi.mock("next/headers", () => ({ headers: async () => new Headers(), cookies: as
 const testUrl = process.env.DATABASE_URL_TEST;
 const pool = new Pool({ connectionString: testUrl });
 const created: string[] = [];
+const categoryId = randomUUID();
+const typeId = randomUUID();
 
 async function newUser(type: "CLIENTE" | "PRESTADOR" | null) {
   const id = randomUUID();
@@ -24,6 +27,10 @@ async function count(sql: string, params: unknown[]) { return Number((await pool
 async function tipoDe(id: string) { return (await pool.query<{ tipo_conta: string | null }>('SELECT tipo_conta FROM "user" WHERE id=$1', [id])).rows[0].tipo_conta; }
 
 describe.skipIf(!testUrl)("tipo de conta (ticket 03)", () => {
+  beforeAll(async () => {
+    await pool.query("INSERT INTO categoria(id,nome,slug) VALUES($1,'Conta teste',$2)", [categoryId, categoryId]);
+    await pool.query("INSERT INTO tipo_servico(id,categoria_id,nome,slug) VALUES($1,$2,'Serviço de conta',$3)", [typeId, categoryId, typeId]);
+  });
   beforeEach(() => { mocks.getSession.mockReset(); });
   afterEach(async () => {
     const ids = created.splice(0);
@@ -33,7 +40,11 @@ describe.skipIf(!testUrl)("tipo de conta (ticket 03)", () => {
     await pool.query("DELETE FROM perfil_prestador WHERE usuario_id = ANY($1)", [ids]);
     await pool.query('DELETE FROM "user" WHERE id = ANY($1)', [ids]);
   });
-  afterAll(async () => { await pool.end(); });
+  afterAll(async () => {
+    await pool.query("DELETE FROM tipo_servico WHERE id=$1", [typeId]);
+    await pool.query("DELETE FROM categoria WHERE id=$1", [categoryId]);
+    await pool.end();
+  });
 
   it("o banco aceita só CLIENTE, PRESTADOR ou nulo", async () => {
     await expect(newUser(null)).resolves.toBeTruthy();
@@ -116,9 +127,12 @@ describe.skipIf(!testUrl)("tipo de conta (ticket 03)", () => {
     form.set("rating", "5");
     expect((await saveReview({}, form)).error).toContain("Cliente");
     expect(await count("SELECT count(*) n FROM avaliacao WHERE usuario_id=$1", [reviewer])).toBe(0);
-    // Cliente continua podendo avaliar (a verificação por Aceite é o ticket 07).
+    // Cliente sem Aceite do Prestador também não avalia; com Aceite, avalia (ticket 07).
     const cliente = await newUser("CLIENTE");
     mocks.getSession.mockResolvedValue(sessionFor(cliente, "CLIENTE"));
+    expect((await saveReview({}, form)).error).toContain("Proposta aceita");
+    expect(await count("SELECT count(*) n FROM avaliacao WHERE usuario_id=$1", [cliente])).toBe(0);
+    await grantAcceptance(pool, cliente, providerId, typeId);
     expect((await saveReview({}, form)).success).toBeTruthy();
   });
 });

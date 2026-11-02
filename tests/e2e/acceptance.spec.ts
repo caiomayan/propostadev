@@ -115,6 +115,8 @@ test("Cliente pré-seleciona, filtra e aceita com confirmação; vê os contatos
   await client.getByRole("link", { name: "Todas" }).click();
   await expect(client.locator("article.proposal-card")).toHaveCount(2);
 
+  const hrefB = await client.locator("article.proposal-card", { hasText: nameB }).getByRole("link", { name: nameB }).getAttribute("href");
+
   // Aceitar pede confirmação explícita; abrir não aceita nada
   await cardA.getByText(`Aceitar proposta de ${nameA}`).click();
   await expect(cardA.getByText("Aceitar encerra o projeto e recusa todas as outras propostas.")).toBeVisible();
@@ -147,6 +149,47 @@ test("Cliente pré-seleciona, filtra e aceita com confirmação; vê os contatos
   await expect(b.page.locator("body")).not.toContainText("Souza");
   await b.page.goto(`/painel/oportunidades/${projectId}`);
   await expect(b.page.locator("body")).not.toContainText(clientEmail);
+
+  // Avaliação verificada (ticket 07): o Projeto ENCERRADO convida a avaliar; o Perfil mostra o selo e a contagem
+  const projectUrl = client.url();
+  const hrefA = await chosen.getByRole("link", { name: "Ver perfil público" }).getAttribute("href");
+  await expect(client.getByRole("heading", { name: `Avalie ${nameA}` })).toBeVisible();
+  await client.getByLabel("Nota", { exact: true }).selectOption("5");
+  await client.getByLabel("Comentário (opcional)").fill("Entrega excelente e comunicação clara.");
+  await client.getByRole("button", { name: "Publicar avaliação", exact: true }).click();
+  const own = client.locator(".own-review");
+  await expect(own).toContainText("Entrega excelente e comunicação clara.");
+  await expect(own).toContainText("Contratado pela Proposta.dev");
+  await expect(own).not.toContainText("sem contratação verificada");
+  await client.goto(hrefA!);
+  await expect(client.locator(".profile-reputation")).toContainText("5,0/5 · 1 avaliação · 1 verificada");
+  const item = client.locator(".review-item", { hasText: "Cliente Aceite Souza" });
+  await expect(item).toContainText("Contratado pela Proposta.dev");
+  await expect(item).not.toContainText("Avaliação anterior");
+  await expect(client.getByRole("heading", { name: "Sua avaliação" })).toBeVisible();
+  // Quem não contratou este Prestador não avalia: o Cliente vê a explicação; o Prestador também; o visitante é convidado a entrar
+  await client.goto(hrefB!);
+  await expect(client.getByRole("button", { name: "Publicar avaliação", exact: true })).toHaveCount(0);
+  await expect(client.locator(".review-section")).toContainText("Só quem contratou este prestador por uma Proposta aceita pode avaliar");
+  await a.page.goto(hrefB!);
+  await expect(a.page.locator(".review-section")).toContainText("Contas de Prestador não avaliam");
+  await expect(a.page.getByRole("button", { name: "Publicar avaliação", exact: true })).toHaveCount(0);
+  const visitor = await browser.newContext();
+  const visitorPage = await visitor.newPage();
+  await visitorPage.goto(hrefA!);
+  await expect(visitorPage.locator(".review-section")).toContainText("Entre como Cliente");
+  await expect(visitorPage.getByRole("button", { name: "Publicar avaliação", exact: true })).toHaveCount(0);
+  await visitor.close();
+  // Editar e excluir pelo Projeto
+  await client.goto(projectUrl);
+  await client.getByText("Editar avaliação", { exact: true }).click();
+  await client.getByLabel("Nota", { exact: true }).selectOption("4");
+  await client.getByRole("button", { name: "Atualizar avaliação", exact: true }).click();
+  await expect(client.locator(".own-review")).toContainText("4/5");
+  await client.getByText("Excluir avaliação", { exact: true }).click();
+  await client.getByRole("button", { name: "Confirmar exclusão" }).click();
+  await expect(client.getByRole("heading", { name: `Avalie ${nameA}` })).toBeVisible();
+  await expect(client.locator(".own-review")).toHaveCount(0);
 
   expect(errors.filter((text) => !/favicon/i.test(text))).toEqual([]);
   await a.context.close();

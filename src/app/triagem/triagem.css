@@ -86,6 +86,11 @@
 .status.aberto { background: var(--accent-fill); color: var(--accent-ink); }
 .status.cancelado { background: transparent; border: 1.5px solid var(--border); color: var(--muted-foreground); }
 .project-description { white-space: pre-wrap; overflow-wrap: anywhere; }
+.project-review { max-width: 620px; }
+.project-review .own-review { background: var(--card); border: 1.5px solid var(--primary); border-radius: var(--radius-lg); padding: 20px 24px; }
+.project-review .own-review p { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
+.project-review .review-manage { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+.project-review .review-manage .confirm { flex: 1 1 260px; }
 .confirm { border: 1.5px solid var(--border); border-radius: var(--radius); padding: 16px; }
 .confirm summary { cursor: pointer; font-weight: 600; min-height: 28px; }
 .confirm[open] summary { margin-bottom: 12px; }
@@ -166,6 +171,7 @@
 .proposal-message[open] > p { margin-top: 12px; }
 .proposal-actions { display: flex; flex-direction: column; gap: 12px; margin-top: auto; padding-top: 4px; }
 .quick-action { display: flex; flex-direction: column; gap: 6px; }
+.confirm.edit .button { background: var(--primary); border-color: var(--primary); color: var(--primary-foreground); }
 .confirm.accept { border-color: var(--primary); }
 .confirm.accept .button { background: var(--primary); border-color: var(--primary); color: var(--primary-foreground); }
 .accepted-provider .contact-links { margin-block: 4px; }

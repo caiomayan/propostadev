@@ -35,14 +35,12 @@ export function ProposalCard({ proposal, reference, budget, desiredDays, actions
   const deadline = compareDeadline(proposal.days, desiredDays);
   const relation = posicaoValor(proposal.amount, budgetRange(budget));
   const active = proposal.status === "ENVIADA" || proposal.status === "PRE_SELECIONADA";
-  const verified = proposal.verifiedCount;
   const headingId = `proposta-${proposal.id}`;
   return <article className={`proposal-card ${proposal.status.toLowerCase()}${highlight ? " highlight" : ""}`} aria-labelledby={headingId}>
     <header className="proposal-head">
       <div className="provider-identity"><ProviderAvatar name={proposal.providerName} photoUrl={proposal.providerPhotoUrl}/>
         <div><h3 id={headingId}>{proposal.providerActive ? <Link href={`/prestadores/${proposal.providerSlug}`}>{proposal.providerName}</Link> : proposal.providerName}</h3>
-          {/* Ticket 07: o texto das avaliações verificadas entra aqui (proposal.verifiedCount já chega da query). */}
-          <p className="muted">{reputation(proposal.rating, proposal.reviewCount)}{verified > 0 ? ` · ${verified} ${verified === 1 ? "verificada" : "verificadas"}` : ""}</p></div></div>
+          <p className="muted">{reputation(proposal.rating, proposal.reviewCount, proposal.verifiedCount)}</p></div></div>
       <span className={`status ${statusClass[proposal.status]}`}>{statusLabel[proposal.status]}</span>
     </header>
     <dl className="proposal-figures">
