@@ -28,7 +28,7 @@ Mapeados para o tema Tailwind/shadcn via `@theme inline`; não espalhar hex. O t
 Escala 4, 8, 12, 16, 24, 32, 48, 64. Contêiner 1240px, gutter 16/24px. Pílula para botões e etiquetas, 18px para superfícies, 10px para campos. Superfícies separadas por degrau de tom.
 
 ## Componentes base
-`Wordmark`, `SiteHeader`, `SiteFooter`, `Button`, `Card`, `Badge`, `Input`, `Textarea`, `Skeleton`, `Sheet`, `PriceRuler` (decorativa sem props; com dados mostra faixa, média e a posição do orçamento ou do valor da Proposta); classes `.button(.secondary|.accent|.danger)`, `.panel(.tone)`, `.field`, `.badge(.accent)`, `.empty`, `.stack`, `.inline`, `.form-grid`, `.checkbox`. Cadastro, entrada e painel herdam o visual por esses nomes. Próximos tickets: reutilizar, não recriar.
+`Wordmark`, `SiteHeader`, `SiteFooter`, `Button`, `Card`, `Badge`, `Input`, `Textarea`, `Skeleton`, `Sheet`, `PriceRuler` (decorativa sem props; com dados mostra faixa, média e a posição do orçamento ou do valor da Proposta; `sujeito="proposta"` marca o valor com um ponto na triagem do Cliente e `compact` reduz a régua e a legenda para o cartão de Proposta); classes `.button(.secondary|.accent|.danger)`, `.panel(.tone)`, `.field`, `.badge(.accent)`, `.empty`, `.stack`, `.inline`, `.form-grid`, `.checkbox`. Cadastro, entrada e painel herdam o visual por esses nomes. Próximos tickets: reutilizar, não recriar.
 
 ## Composição por página
 - **Header** sticky: marca, 3 links, "Minha conta". No mobile, links em segunda linha.
@@ -40,3 +40,6 @@ Escala 4, 8, 12, 16, 24, 32, 48, 64. Contêiner 1240px, gutter 16/24px. Pílula 
 
 ## Acessibilidade e QA
 Foco visível, contraste AA nos dois temas, alvos de 44px, labels persistentes, skip link, `prefers-reduced-motion`. Verificar 375/768/1440 sem overflow horizontal (só a tabela de comparação rola). Microcopy em pt-BR direta: "Buscar serviços", "Ver perfil", "Comparar", "Entrar em contato".
+
+## Triagem de Propostas (ticket 06)
+Cartão `.proposal-card` em grade de 1 a 2 colunas: Prestador e status, valor e prazo em destaque, régua compacta, mensagem recolhida em `<details>` e ações. Ordenação e filtro são links (`.filter-link`, `aria-current`); aceitar e recusar abrem `details.confirm` (o aceite usa `.confirm.accept`, em verde, não em vermelho). O Prestador escolhido aparece em `.accepted-provider`; o contato do Cliente, em `.client-contact`.

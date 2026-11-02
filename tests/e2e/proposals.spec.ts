@@ -112,7 +112,7 @@ test("Cliente publica e convida; Prestador vê o selo Convite, envia Proposta; C
   await client.goto(projectPath);
   await expect(client.getByRole("heading", { name: "1 proposta ativa" })).toBeVisible();
   await expect(client.getByText(providerName).first()).toBeVisible();
-  await expect(client.getByText("R$ 1.750,50")).toBeVisible();
+  await expect(client.locator(".proposal-card .figure", { hasText: "R$ 1.750,50" })).toBeVisible();
   await expect(client.getByText(/prestador-convite-.*@test\.example/)).toHaveCount(0);
 
   // Retirar: some do contador; a página do Prestador continua acessível, só leitura
