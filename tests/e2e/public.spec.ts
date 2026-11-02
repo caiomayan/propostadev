@@ -129,7 +129,8 @@ test("usuário cria, edita e exclui avaliação sem publicar e-mail privado", as
   await expect(page.locator(".review-item").filter({ hasText: name })).toContainText("Editada");
   await expect(page.locator("body")).not.toContainText(privateEmail);
   expect(await page.content()).not.toContain(privateEmail);
-  await page.getByRole("button", { name: "Excluir minha avaliação", exact: true }).click();
+  await page.getByText("Excluir minha avaliação", { exact: true }).click();
+  await page.getByRole("button", { name: "Confirmar exclusão", exact: true }).click();
   await expect(page.locator(".review-item").filter({ hasText: name })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Publicar avaliação", exact: true })).toBeVisible();
   const cleanup = testPool();
