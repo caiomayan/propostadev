@@ -112,3 +112,10 @@
   .triage-card svg { transition: none; }
   .triage-card:hover svg { transform: none; }
 }
+
+/* Oportunidades, Propostas e Convites (ticket 05) */
+.chips-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; }
+.opportunity-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px 24px; }
+.opportunity-head h2 { font-size: 1.375rem; overflow-wrap: anywhere; }
+.invite-form { display: flex; flex-direction: column; gap: 6px; }
+.proposal-ruler { margin-block: 4px; }

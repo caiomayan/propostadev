@@ -28,11 +28,11 @@ Mapeados para o tema Tailwind/shadcn via `@theme inline`; não espalhar hex. O t
 Escala 4, 8, 12, 16, 24, 32, 48, 64. Contêiner 1240px, gutter 16/24px. Pílula para botões e etiquetas, 18px para superfícies, 10px para campos. Superfícies separadas por degrau de tom.
 
 ## Componentes base
-`Wordmark`, `SiteHeader`, `SiteFooter`, `Button`, `Card`, `Badge`, `Input`, `Textarea`, `Skeleton`, `Sheet`, `PriceRuler`; classes `.button(.secondary|.accent|.danger)`, `.panel(.tone)`, `.field`, `.badge(.accent)`, `.empty`, `.stack`, `.inline`, `.form-grid`, `.checkbox`. Cadastro, entrada e painel herdam o visual por esses nomes. Próximos tickets: reutilizar, não recriar.
+`Wordmark`, `SiteHeader`, `SiteFooter`, `Button`, `Card`, `Badge`, `Input`, `Textarea`, `Skeleton`, `Sheet`, `PriceRuler` (decorativa sem props; com dados mostra faixa, média e a posição do orçamento ou do valor da Proposta); classes `.button(.secondary|.accent|.danger)`, `.panel(.tone)`, `.field`, `.badge(.accent)`, `.empty`, `.stack`, `.inline`, `.form-grid`, `.checkbox`. Cadastro, entrada e painel herdam o visual por esses nomes. Próximos tickets: reutilizar, não recriar.
 
 ## Composição por página
 - **Header** sticky: marca, 3 links, "Minha conta". No mobile, links em segunda linha.
-- **Home**: título grande à esquerda; à direita o **slot da Triagem** (cartão verde `.triage-slot`, hoje com a busca; o ticket 04 acrescenta a entrada da Triagem); abaixo, catálogo por categoria, explicação e convite a prestadores em limão.
+- **Home**: título grande à esquerda; à direita o **slot da Triagem** (cartão verde `.triage-slot` com a entrada da Triagem: atalhos de objetivo e "Começar a Triagem"; a busca é o link secundário); abaixo, catálogo por categoria, explicação e convite a prestadores em limão.
 - **Busca**: filtros em cartão lateral (Sheet no mobile), estatística de preço em cartão escuro, resultados como cartões horizontais com preço em destaque.
 - **Perfil**: avatar circular em limão, contato em cartão, ofertas e avaliações em cartões.
 - **Comparação**: tabela em cartão, rolagem horizontal só dentro dela; bandeja flutuante escura (só busca e perfil).
