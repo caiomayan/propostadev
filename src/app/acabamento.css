@@ -145,3 +145,10 @@ dialog.panel .stack { gap: 16px; }
 .mobile-menu > button:hover { background: var(--muted); }
 .mobile-menu > button svg { width: 20px !important; height: 20px !important; }
 .dash, .form-page { max-width: 880px; width: 100%; }
+/* Navegação do painel no celular: uma linha rolável em vez de quebrar com o "Sair" sozinho. */
+@media (max-width: 640px) {
+  .dashboard-nav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 4px 18px; mask-image: linear-gradient(to right, #000 85%, transparent); padding-right: 32px; }
+  .dashboard-nav::-webkit-scrollbar { display: none; }
+  .dashboard-nav a { white-space: nowrap; flex-shrink: 0; }
+  .dashboard-nav form { margin-left: 8px; flex-shrink: 0; }
+}

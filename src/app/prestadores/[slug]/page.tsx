@@ -34,7 +34,7 @@ export default async function ProviderPage({ params, searchParams }: { params: P
           {pages > 1 && <nav className="pagination" aria-label="Paginação de avaliações">{page > 1 ? <Link className="button secondary" href={`/prestadores/${slug}?pagina=${page - 1}#avaliacoes`}>Anterior</Link> : <span/>}<span className="muted">Página {page} de {pages}</span>{page < pages ? <Link className="button secondary" href={`/prestadores/${slug}?pagina=${page + 1}#avaliacoes`}>Próxima</Link> : <span/>}</nav>}
         </section>
       </div>
-      <aside id="contato" className="panel stack profile-contact"><h2>Entre em contato diretamente</h2><p className="muted">Combine escopo, prazo e valor com o prestador. O contato acontece fora da Proposta.dev.</p><ProviderContacts provider={provider}/><p className="muted">{provider.contactEmail}</p></aside>
+      <aside id="contato" className="panel stack profile-contact"><h2>Fale com o prestador</h2><p className="muted">Tire dúvidas pelos contatos publicados abaixo. Para receber uma proposta com valor e prazo, descreva seu projeto na <Link href="/triagem">Triagem</Link> e convide este prestador.</p><ProviderContacts provider={provider}/><p className="muted">{provider.contactEmail}</p></aside>
     </div>
   </section>;
 }
