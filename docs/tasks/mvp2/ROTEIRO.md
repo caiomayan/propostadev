@@ -15,12 +15,13 @@ Use uma janela anônima para cada conta (Cliente e Prestador) ou dois navegadore
 | prestador7@demo.example (Maré Sistemas) | Prestador | Oportunidade em aberto para enviar uma proposta ao vivo |
 
 ## 1. O problema e a Triagem (visitante, cerca de 2 min)
-1. Na home, clique em **Começar a Triagem** e escolha "Quero divulgar um produto ou campanha" → **Landing Page**.
-2. Preencha título, descrição, orçamento "Uma faixa" de R$ 800 a R$ 1.500 e prazo de 20 dias. Clique em **Ver preço de referência**.
-3. Mostre:
+1. Abra a home e use a régua: escolha **Site institucional** e arraste o orçamento. O número de prestadores muda na hora, com os preços reais anunciados.
+2. Clique em **Começar a Triagem** e escolha "Quero divulgar um produto ou campanha" → **Landing Page**.
+3. Preencha título, descrição, orçamento "Uma faixa" de R$ 800 a R$ 1.500 e prazo de 20 dias. A régua ao lado acompanha o que você digita. Clique em **Ver preço de referência**.
+4. Mostre:
    - o **Preço de referência**: média de R$ 1.000 entre 3 prestadores, faixa de R$ 800 a R$ 1.200 e a régua com o orçamento;
    - os **Prestadores compatíveis**, com os motivos ("Dentro do orçamento", "Prazo compatível", avaliações verificadas).
-4. Explique: sem conta, o visitante já sabe quanto custa e quem faz. Para publicar, precisa criar uma conta de Cliente, e o rascunho é mantido.
+5. Explique: sem conta, o visitante já sabe quanto custa e quem faz. Para publicar, precisa criar uma conta de Cliente, e o rascunho é mantido.
 
 ## 2. Contas separadas (cerca de 1 min)
 1. Em **Criar conta de Cliente**, mostre a escolha "Quero contratar" ou "Quero oferecer serviços". O tipo é definitivo.

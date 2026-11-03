@@ -3,7 +3,6 @@ import { PriceRuler } from "@/components/price-ruler";
 import { ComparisonHydrator, ComparisonRemove } from "@/components/comparison-selection";
 import { getComparison } from "@/modules/search/queries";
 import { deadline, location, price, priceLabels, reputation } from "@/lib/format";
-import "../buscar/public.css";
 
 export default async function ComparePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;

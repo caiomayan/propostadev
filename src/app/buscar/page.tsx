@@ -7,7 +7,6 @@ import { getCatalog, getPriceAverage } from "@/modules/catalog/queries";
 import { searchProviders } from "@/modules/search/queries";
 import { searchSchema } from "@/modules/search/validation";
 import { money, priceLabels } from "@/lib/format";
-import "./public.css";
 
 type Params = Record<string, string | string[] | undefined>;
 export default async function SearchPage({ searchParams }: { searchParams: Promise<Params> }) {

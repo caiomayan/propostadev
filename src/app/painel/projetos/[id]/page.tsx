@@ -21,7 +21,6 @@ import { MAX_INVITES } from "@/modules/proposals/validation";
 import { posicaoOrcamento } from "@/modules/triage/position";
 import { budgetLabel, dateLabel, desiredDeadlineLabel, projectStatusLabels } from "@/modules/triage/labels";
 import { precoReferencia, prestadoresCompativeis } from "@/modules/triage/queries";
-import "../../../triagem/triagem.css";
 
 export const metadata: Metadata = { title: "Projeto" };
 
@@ -48,14 +47,14 @@ export default async function ProjectDetailPage({ params, searchParams }: { para
     <div className="page-heading"><p className="eyebrow">{project.serviceName}</p><h1>{project.title}</h1>
       <p><span className={`status ${project.status.toLowerCase()}`}>{projectStatusLabels[project.status]}</span> <span className="muted">Criado em {dateLabel(project.createdAt)}</span></p></div>
     <dl className="triage-summary"><div><dt>Orçamento</dt><dd>{budgetLabel(budget)}</dd></div><div><dt>Prazo desejado</dt><dd>{desiredDeadlineLabel(project.desiredDays)}</dd></div></dl>
-    <div className="panel stack"><h2>Descrição</h2><p className="project-description">{project.description}</p></div>
-    <section className="panel stack" aria-labelledby="referencia">
+    <div className="project-overview"><div className="panel stack"><h2>Descrição</h2><p className="project-description">{project.description}</p></div>
+    <section className="panel on-forest stack" aria-labelledby="referencia">
       <div><p className="eyebrow">Preço de referência</p><h2 id="referencia">Quanto costuma custar {project.serviceName}</h2></div>
       {reference.suficiente ? <>
         {reference.mediaFixos && <p className="reference-average"><span>Média dos preços fixos</span><strong>{money(reference.mediaFixos)}</strong><small>{reference.fixosN} prestadores com preço fixo. Não é orçamento.</small></p>}
         <PriceRuler data={{ faixa: reference.faixa, media: reference.mediaFixos, n: reference.n, orcamento: budget, posicao: posicaoOrcamento(budget, reference.faixa) }}/>
       </> : <div className="insufficient"><strong>Dados insuficientes</strong><p>Só {reference.n} {reference.n === 1 ? "prestador anuncia" : "prestadores anunciam"} preço por projeto neste tipo de serviço. São necessários pelo menos 3.</p></div>}
-    </section>
+    </section></div>
     {accepted && <AcceptedProviderBlock provider={accepted}/>}
     {accepted && <ReviewInvite providerId={accepted.providerId} providerName={accepted.displayName} providerActive={accepted.active} own={await getOwnReview(session.user.id, accepted.providerId)}/>}
     <section className="stack" aria-labelledby="propostas">

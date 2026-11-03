@@ -6,5 +6,5 @@ const options: Record<AccountType, { title: string; description: string }> = {
 };
 
 export function AccountTypePicker({ name = "accountType" }: { name?: string }) {
-  return <fieldset className="stack" style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}><legend className="eyebrow" style={{ padding: 0, marginBottom: 12 }}>Tipo de conta</legend>{accountTypes.map((value) => <label key={value} className="panel" style={{ display: "flex", gap: 12, alignItems: "flex-start", cursor: "pointer" }}><input type="radio" name={name} value={value} required style={{ marginTop: 4 }} /><span className="stack" style={{ gap: 4 }}><strong>{options[value].title}</strong><span className="muted">{options[value].description}</span></span></label>)}</fieldset>;
+  return <fieldset className="account-choice"><legend>Tipo de conta</legend>{accountTypes.map((value) => <label key={value} className="choice-card"><input type="radio" name={name} value={value} required /><span><strong>{options[value].title}</strong><span className="muted">{options[value].description}</span></span></label>)}</fieldset>;
 }
