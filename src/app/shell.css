@@ -36,13 +36,22 @@
 .footer-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
 .footer-col a { display: inline-flex; align-items: center; min-height: 36px; font-weight: 500; }
 .footer-legal { grid-column: 1 / -1; font-size: .875rem; color: var(--on-forest-muted); max-width: 72ch; }
-.footer-giant { margin: 32px 0 -.2em; font-family: var(--font-display); font-weight: 800; font-size: 16.6vw; font-stretch: 90%; line-height: .8; letter-spacing: -.035em; white-space: nowrap; text-align: center; color: var(--lime); user-select: none; }
+.footer-giant { margin: 32px 0 -.2em; font-family: var(--font-display); font-weight: 800; font-size: 16.6vw; font-stretch: 90%; line-height: .8; letter-spacing: -.035em; white-space: nowrap; text-align: center; color: var(--lime); user-select: none; pointer-events: none; }
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
     .footer-giant { animation: footer-rise linear both; animation-timeline: view(); animation-range: entry 0% entry 100%; }
     @keyframes footer-rise { from { transform: translateY(28%); } }
   }
 }
+
+.footer-legal a { color: var(--on-forest); text-decoration-line: underline; text-decoration-color: currentColor; }
+
+/* ---------- texto legal ---------- */
+.legal { max-width: 760px; font-size: 1.0625rem; }
+.legal h2 { margin-block: 40px 12px; }
+.legal p + p { margin-top: 12px; }
+.legal ul { display: flex; flex-direction: column; gap: 8px; padding-left: 22px; margin: 0; list-style: disc; }
+.legal a { text-decoration-line: underline; text-decoration-color: currentColor; font-weight: 600; }
 
 /* ---------- painel ---------- */
 .dashboard-wrapper { display: grid; grid-template-columns: 228px minmax(0, 1fr); gap: 48px; padding-block: 32px 8px; align-items: start; }

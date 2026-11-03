@@ -179,3 +179,10 @@ test("foto HTTPS indisponível mantém iniciais no perfil e na busca", async ({ 
     await pool.end();
   }
 });
+
+test("a Política de Privacidade abre pelo rodapé e explica o login com Google", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("contentinfo").getByRole("link", { name: "Política de Privacidade" }).click();
+  await expect(page.getByRole("heading", { name: "Política de Privacidade", level: 1 })).toBeVisible();
+  await expect(page.locator("main")).toContainText("Login com Google");
+});
