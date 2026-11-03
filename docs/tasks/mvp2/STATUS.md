@@ -15,7 +15,7 @@ https://propostadev-one.vercel.app roda a `main` (merge 0dace58 do `mvp2`). Tick
 - O roteiro está em `docs/tasks/mvp2/ROTEIRO.md`.
 
 ## Ainda sem credenciais
-OAuth GitHub/Google e SMTP: os botões e a recuperação de senha só aparecem com as variáveis definidas na Vercel. Quem grava as variáveis sensíveis é o dono.
+OAuth GitHub/Google: os botões só aparecem com as variáveis definidas na Vercel. Quem grava as variáveis sensíveis é o dono. O SMTP está configurado em produção com Gmail e senha de app (03/11/2026).
 
 ## Frontend v3 (03/11/2026)
 Redesenho de todas as telas, com a marca mantida: régua arrastável com preços reais na home, jornada por rolagem, Triagem com régua ao vivo, painel com navegação lateral e figuras, autenticação em duas metades e movimento em todo o produto. Detalhes em `DESIGN.md`.
