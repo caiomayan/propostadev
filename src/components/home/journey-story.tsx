@@ -20,5 +20,6 @@ export function JourneyStory({ steps }: { steps: JourneyStep[] }) {
   return <div className="story">
     <div className="story-stage" aria-hidden="true"><div className="story-frames">{steps.map((step, index) => <div key={step.title} className={`story-frame${index === active ? " is-on" : ""}`}>{step.fragment}</div>)}</div><p className="story-count">{active + 1} de {steps.length}</p></div>
     <ol className="story-steps">{steps.map((step, index) => <li key={step.title} ref={(element) => { items.current[index] = element; }} className={`story-step${index === active ? " is-active" : ""}`}><div className="story-copy"><h3>{step.title}</h3><p>{step.text}</p></div><div className="story-inline">{step.fragment}</div></li>)}</ol>
+    <p className="story-note">Nomes e valores dos quadros são ilustrativos.</p>
   </div>;
 }
