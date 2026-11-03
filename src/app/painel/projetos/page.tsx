@@ -4,7 +4,6 @@ import { ArrowRight } from "lucide-react";
 import { requireCliente } from "@/lib/auth/session";
 import { listClientProjects } from "@/modules/projects/queries";
 import { budgetLabel, dateLabel, desiredDeadlineLabel, projectStatusLabels } from "@/modules/triage/labels";
-import "../../triagem/triagem.css";
 
 export const metadata: Metadata = { title: "Meus projetos" };
 

@@ -4,7 +4,6 @@ import { money } from "@/lib/format";
 import { requirePrestador } from "@/lib/auth/session";
 import { listMyProposals } from "@/modules/proposals/queries";
 import { dateLabel, projectStatusLabels } from "@/modules/triage/labels";
-import "../../triagem/triagem.css";
 
 export const metadata: Metadata = { title: "Minhas propostas" };
 const statusLabel = { ENVIADA: "Enviada", PRE_SELECIONADA: "Pré-selecionada", RECUSADA: "Recusada", ACEITA: "Aceita", RETIRADA: "Retirada" } as const;

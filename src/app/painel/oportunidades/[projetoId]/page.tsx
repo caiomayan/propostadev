@@ -11,7 +11,6 @@ import { submitProposal, updateProposal, withdrawProposal } from "@/modules/prop
 import { getOpportunity } from "@/modules/proposals/queries";
 import { budgetLabel, dateLabel, desiredDeadlineLabel, projectStatusLabels } from "@/modules/triage/labels";
 import { precoReferencia } from "@/modules/triage/queries";
-import "../../../triagem/triagem.css";
 
 export const metadata: Metadata = { title: "Oportunidade" };
 const statusLabel = { ENVIADA: "Enviada", PRE_SELECIONADA: "Pré-selecionada", RECUSADA: "Recusada", ACEITA: "Aceita", RETIRADA: "Retirada" } as const;
@@ -34,7 +33,7 @@ export default async function OpportunityPage({ params, searchParams }: { params
     <dl className="triage-summary"><div><dt>Orçamento</dt><dd>{budgetLabel(item.budget)}</dd></div><div><dt>Prazo desejado</dt><dd>{desiredDeadlineLabel(item.desiredDays)}</dd></div></dl>
     <div className="opportunity-layout"><div className="stack opportunity-main">
     <div className="panel stack"><h2>Descrição</h2><p className="project-description">{item.description}</p></div>
-    <section className="panel stack" aria-labelledby="referencia"><div><p className="eyebrow">Preço de referência</p><h2 id="referencia">Quanto costuma custar {item.serviceName}</h2></div><ReferenceBlock reference={reference} budget={item.budget} serviceName={item.serviceName}/></section>
+    <section className="panel on-forest stack" aria-labelledby="referencia"><div><p className="eyebrow">Preço de referência</p><h2 id="referencia">Quanto costuma custar {item.serviceName}</h2></div><ReferenceBlock reference={reference} budget={item.budget} serviceName={item.serviceName}/></section>
 
     </div><aside className="stack opportunity-side" aria-label="Sua proposta">
     {proposal && <section className="panel stack" aria-labelledby="minha"><div><p className="eyebrow">Minha proposta</p><h2 id="minha">{money(proposal.amount)} em {proposal.days} {proposal.days === 1 ? "dia" : "dias"}</h2><p><span className="status">{statusLabel[proposal.status]}</span></p></div><p className="project-description">{proposal.message}</p></section>}
