@@ -34,7 +34,7 @@ test("busca sem acento, filtros, preço médio por tipo e estados vazios", async
   await expect(page.getByRole("heading", { name: "Horizonte Digital — Demo" })).toBeVisible();
   await expect(page.locator(".provider-result")).toHaveCount(1);
   await expect(page.locator(".price-statistic")).toContainText("3 prestadores na amostra");
-  await page.goto("/buscar?tipo=site-institucional");
+  await page.goto("/buscar?tipo=integracao-de-sistemas");
   await expect(page.locator(".price-statistic")).toContainText("Dados insuficientes");
   await page.goto("/buscar?modelo_preco=POR_HORA&ordenar=preco");
   await expect(page.locator(".provider-result")).toHaveCount(1);

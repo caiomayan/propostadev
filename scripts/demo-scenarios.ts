@@ -2,7 +2,7 @@ import { and, eq, inArray, like, sql } from "drizzle-orm";
 import { auth } from "../src/lib/auth/config";
 import { db } from "../src/lib/db";
 import { user } from "../src/lib/db/auth-schema";
-import { invites, projects, proposals, providers, reviews, serviceTypes } from "../src/lib/db/schema";
+import { invites, offers, projects, proposals, providers, reviews, serviceTypes } from "../src/lib/db/schema";
 import { setAccountType } from "../src/lib/auth/account-type";
 
 /**
@@ -19,6 +19,60 @@ type ProjectSeed = {
   days: number | null; status: "ABERTO" | "ENCERRADO" | "CANCELADO"; daysAgo: number;
   invites?: string[]; proposals: ProposalSeed[]; review?: { rating: number; comment: string };
 };
+
+type OfferSeed = { service: string; title: string; description: string; price: ["FIXO" | "A_PARTIR_DE", string] | ["INTERVALO", string, string]; deadline: ["FIXO" | "A_PARTIR_DE", number] | ["INTERVALO", number, number] };
+type ProviderSeed = { n: number; name: string; kind: "PESSOA_FISICA" | "PESSOA_JURIDICA"; years: number; city?: [string, string]; about: string; offers: OfferSeed[] };
+
+/**
+ * Prestadores extras para a Triagem ter Preço de referência e compatíveis além de Landing Page.
+ * Restrições dos testes E2E sobre a demo: nada em Landing Page, nenhum preço POR_HORA, nenhum prazo mínimo <= 10 dias,
+ * nenhum nome parecido com "Clara Código" e Integração de sistemas com menos de 3 ofertas (exemplo de "Dados insuficientes").
+ */
+const extraProviders: ProviderSeed[] = [
+  { n: 9, name: "Vértice Commerce — Demo", kind: "PESSOA_JURIDICA", years: 6, city: ["Recife", "PE"], about: "Lojas virtuais para pequenos varejistas: catálogo, frete, meios de pagamento e painel de pedidos.",
+    offers: [{ service: "e-commerce", title: "Loja virtual completa", description: "Loja com catálogo, carrinho, cálculo de frete, pagamento por Pix e cartão e painel de pedidos. Inclui treinamento.", price: ["FIXO", "4500.00"], deadline: ["FIXO", 30] }] },
+  { n: 10, name: "Loja Viva — Demo", kind: "PESSOA_FISICA", years: 4, city: ["Natal", "RN"], about: "Desenvolvedora focada em lojas rápidas e bem otimizadas para celular.",
+    offers: [{ service: "e-commerce", title: "E-commerce sob medida", description: "Loja personalizada com integração a marketplace e relatórios de vendas. O valor varia com o número de produtos.", price: ["INTERVALO", "3000.00", "6000.00"], deadline: ["INTERVALO", 25, 45] }] },
+  { n: 11, name: "Carrinho Certo — Demo", kind: "PESSOA_JURIDICA", years: 8, city: ["João Pessoa", "PB"], about: "Agência de comércio eletrônico com foco em conversão e checkout simples.",
+    offers: [{ service: "e-commerce", title: "Loja com checkout otimizado", description: "Loja com checkout em uma página, recuperação de carrinho abandonado e integração com transportadoras.", price: ["FIXO", "5200.00"], deadline: ["FIXO", 35] }] },
+  { n: 12, name: "Sistema Ágil — Demo", kind: "PESSOA_JURIDICA", years: 7, city: ["Fortaleza", "CE"], about: "Sistemas web para clínicas, escritórios e prestadores de serviço: agenda, cadastro e relatórios.",
+    offers: [{ service: "sistema-web", title: "Sistema de gestão sob medida", description: "Sistema web com login, cadastro de clientes, agenda e relatórios, pensado para o fluxo do seu negócio.", price: ["FIXO", "8000.00"], deadline: ["FIXO", 60] }] },
+  { n: 13, name: "Fluxo Interno — Demo", kind: "PESSOA_FISICA", years: 5, about: "Automatizo processos internos que hoje vivem em planilhas.",
+    offers: [{ service: "sistema-web", title: "Sistema para substituir planilhas", description: "Transformo suas planilhas em um sistema web com permissões, histórico e exportação de dados.", price: ["A_PARTIR_DE", "6000.00"], deadline: ["A_PARTIR_DE", 45] }] },
+  { n: 14, name: "Base Sólida — Demo", kind: "PESSOA_JURIDICA", years: 10, city: ["Campina Grande", "PB"], about: "Equipe de engenharia de software com experiência em sistemas críticos e APIs.",
+    offers: [
+      { service: "sistema-web", title: "Plataforma web robusta", description: "Sistema web com arquitetura preparada para crescer, testes automatizados e implantação em nuvem.", price: ["FIXO", "9500.00"], deadline: ["FIXO", 75] },
+      { service: "backend", title: "Backend escalável", description: "Backend com banco de dados, autenticação, filas e monitoramento, documentado para sua equipe evoluir.", price: ["FIXO", "7000.00"], deadline: ["FIXO", 40] },
+    ] },
+  { n: 15, name: "Servidor Norte — Demo", kind: "PESSOA_FISICA", years: 6, city: ["Belém", "PA"], about: "Desenvolvedor backend: APIs, bancos de dados e integrações.",
+    offers: [
+      { service: "backend", title: "Backend para seu aplicativo", description: "Backend para app ou site, com cadastro de usuários, regras de negócio e painel administrativo simples.", price: ["FIXO", "6500.00"], deadline: ["FIXO", 30] },
+      { service: "api", title: "API REST documentada", description: "API REST com autenticação, documentação interativa e testes, pronta para ser consumida pelo seu front-end.", price: ["FIXO", "4200.00"], deadline: ["FIXO", 20] },
+    ] },
+  { n: 16, name: "Rota API — Demo", kind: "PESSOA_JURIDICA", years: 5, city: ["Salvador", "BA"], about: "Integrações e APIs para empresas que precisam conectar sistemas.",
+    offers: [
+      { service: "api", title: "API de integração", description: "API para conectar seu sistema a parceiros, com controle de acesso, registro de chamadas e documentação.", price: ["FIXO", "3800.00"], deadline: ["FIXO", 25] },
+      { service: "backend", title: "Backend de integrações", description: "Serviços de backend que sincronizam dados entre sistemas, com reprocessamento automático de falhas.", price: ["INTERVALO", "5000.00", "9000.00"], deadline: ["INTERVALO", 30, 60] },
+      { service: "integracao-de-sistemas", title: "Integração com ERP", description: "Integração entre loja virtual, ERP e planilhas, com sincronização de estoque e pedidos.", price: ["INTERVALO", "3000.00", "7000.00"], deadline: ["INTERVALO", 20, 45] },
+    ] },
+  { n: 17, name: "Cuidado Web — Demo", kind: "PESSOA_FISICA", years: 3, city: ["João Pessoa", "PB"], about: "Cuido de sites de pequenas empresas: atualizações, segurança e conteúdo.",
+    offers: [
+      { service: "manutencao-web", title: "Manutenção mensal de site", description: "Atualizações, backup, correções e pequenas mudanças de conteúdo no seu site, com relatório mensal.", price: ["FIXO", "600.00"], deadline: ["FIXO", 14] },
+      { service: "site-institucional", title: "Site institucional simples", description: "Site com até cinco páginas, formulário de contato e mapa, com textos revisados e publicação inclusa.", price: ["FIXO", "2200.00"], deadline: ["FIXO", 20] },
+    ] },
+  { n: 18, name: "Zelo Sites — Demo", kind: "PESSOA_FISICA", years: 2, city: ["Maceió", "AL"], about: "Sites institucionais bonitos e fáceis de atualizar.",
+    offers: [
+      { service: "manutencao-web", title: "Correções e atualizações", description: "Correção de erros, atualização de plugins e ajustes visuais em sites WordPress e similares.", price: ["FIXO", "450.00"], deadline: ["FIXO", 12] },
+      { service: "site-institucional", title: "Site para pequenas empresas", description: "Site responsivo com apresentação, serviços, depoimentos e botão de WhatsApp.", price: ["FIXO", "1900.00"], deadline: ["FIXO", 18] },
+    ] },
+  { n: 19, name: "Atalaia Digital — Demo", kind: "PESSOA_JURIDICA", years: 9, city: ["Recife", "PE"], about: "Agência digital com sites institucionais, manutenção e suporte contínuo.",
+    offers: [
+      { service: "manutencao-web", title: "Suporte e evolução contínua", description: "Pacote de suporte com melhorias mensais, monitoramento e atendimento em horário comercial.", price: ["A_PARTIR_DE", "800.00"], deadline: ["A_PARTIR_DE", 15] },
+      { service: "site-institucional", title: "Site institucional premium", description: "Site com identidade visual, textos otimizados para busca, blog e painel para atualizar conteúdo.", price: ["FIXO", "2600.00"], deadline: ["FIXO", 25] },
+    ] },
+  { n: 20, name: "Elo Integra — Demo", kind: "PESSOA_FISICA", years: 4, about: "Integro sistemas que não conversam entre si.",
+    offers: [{ service: "integracao-de-sistemas", title: "Integração entre sistemas", description: "Conecto CRM, ERP, planilhas e loja virtual para os dados circularem sem retrabalho manual.", price: ["FIXO", "3500.00"], deadline: ["FIXO", 30] }] },
+];
 
 const clients = [
   { email: "cliente1@demo.example", name: "Mariana Costa" },
@@ -84,9 +138,55 @@ const scenarios: ProjectSeed[] = [
       { provider: "prestador-demo-3", amount: "900.00", days: 8, status: "ENVIADA", message: "Página de evento com programação por horário, cards de palestrantes e formulário de inscrição com confirmação por e-mail." },
     ],
   },
+  {
+    client: "cliente2@demo.example", service: "e-commerce", title: "Loja virtual de cosméticos naturais",
+    description: "Quero vender meus cosméticos naturais pela internet, com fotos, kits promocionais, frete calculado e pagamento por Pix e cartão.",
+    budget: { tipo: "FAIXA", min: "3500.00", max: "6000.00" }, days: 40, status: "ENCERRADO", daysAgo: 50,
+    proposals: [
+      { provider: "prestador-demo-9", amount: "4500.00", days: 30, status: "ACEITA", message: "Já montei lojas de cosméticos e sei como apresentar kits. Entrego catálogo, frete, Pix e cartão em 30 dias, com treinamento." },
+      { provider: "prestador-demo-11", amount: "5800.00", days: 35, status: "RECUSADA", message: "Loja com checkout em uma página e recuperação de carrinho abandonado, ótimo para quem vende pelo Instagram." },
+    ],
+    review: { rating: 5, comment: "A loja ficou linda e as vendas começaram na primeira semana. Comunicação ótima durante todo o projeto." },
+  },
+  {
+    client: "cliente3@demo.example", service: "sistema-web", title: "Sistema de agendamento para o escritório",
+    description: "Preciso de um sistema para agendar consultas, cadastrar clientes e acompanhar processos, acessível pelos advogados do escritório.",
+    budget: { tipo: "ATE", max: "10000.00" }, days: 90, status: "ENCERRADO", daysAgo: 70,
+    proposals: [
+      { provider: "prestador-demo-12", amount: "8000.00", days: 60, status: "ACEITA", message: "Sistema com agenda compartilhada, cadastro de clientes e acompanhamento de processos, com acesso por perfil de usuário." },
+      { provider: "prestador-demo-14", amount: "9500.00", days: 75, status: "RECUSADA", message: "Plataforma robusta, com testes automatizados e trilha de auditoria de quem alterou cada processo." },
+    ],
+    review: { rating: 4, comment: "Sistema funciona bem e a equipe usa todo dia. Atrasou uma semana, mas avisaram com antecedência." },
+  },
+  {
+    client: "cliente1@demo.example", service: "sistema-web", title: "Sistema de encomendas da confeitaria",
+    description: "Quero um sistema para receber encomendas de bolos, controlar datas de entrega e avisar quando o pedido estiver pronto.",
+    budget: { tipo: "FAIXA", min: "5000.00", max: "9000.00" }, days: 60, status: "ABERTO", daysAgo: 2, invites: ["prestador-demo-12"],
+    proposals: [
+      { provider: "prestador-demo-13", amount: "6500.00", days: 50, status: "ENVIADA", message: "Transformo sua planilha de encomendas em um sistema com calendário de entregas e aviso por WhatsApp quando o pedido fica pronto." },
+      { provider: "prestador-demo-12", amount: "7800.00", days: 45, status: "ENVIADA", message: "Sistema de encomendas com agenda de produção, controle de sinal pago e relatório semanal de vendas." },
+    ],
+  },
 ];
 
 const ago = (days: number, hours = 0) => new Date(Date.now() - (days * 24 + hours) * 3_600_000);
+
+async function seedExtraProviders(password: string, types: Map<string, string>) {
+  for (const seed of extraProviders) {
+    const email = `prestador${seed.n}@demo.example`;
+    const [existing] = await db.select({ id: user.id }).from(user).where(eq(user.email, email)).limit(1);
+    const accountId = existing?.id ?? (await auth.api.signUpEmail({ body: { email, password, name: seed.name } })).user.id;
+    await setAccountType(accountId, "PRESTADOR");
+    const [provider] = await db.insert(providers).values({ userId: accountId, slug: `prestador-demo-${seed.n}`, type: seed.kind, displayName: seed.name, description: `${seed.about} Perfil fictício de demonstração; não representa um profissional real.`, yearsExperience: seed.years, contactEmail: email, contactsPublishedAt: new Date(), city: seed.city?.[0] ?? null, state: seed.city?.[1] ?? null }).onConflictDoUpdate({ target: providers.userId, set: { displayName: seed.name } }).returning({ id: providers.id });
+    for (const offer of seed.offers) {
+      const serviceTypeId = types.get(offer.service);
+      if (!serviceTypeId) throw new Error(`Tipo de serviço ausente na demo: ${offer.service}`);
+      const [exists] = await db.select({ id: offers.id }).from(offers).where(and(eq(offers.providerId, provider.id), eq(offers.serviceTypeId, serviceTypeId))).limit(1);
+      if (exists) continue;
+      await db.insert(offers).values({ providerId: provider.id, serviceTypeId, title: offer.title, description: offer.description, priceType: offer.price[0], priceMin: offer.price[1], priceMax: offer.price[0] === "INTERVALO" ? offer.price[2] : null, deadlineType: offer.deadline[0], deadlineMinDays: offer.deadline[1], deadlineMaxDays: offer.deadline[0] === "INTERVALO" ? offer.deadline[2] : null, active: true });
+    }
+  }
+}
 
 export async function seedDemoScenarios(password: string) {
   const ids = new Map<string, string>();
@@ -107,6 +207,7 @@ export async function seedDemoScenarios(password: string) {
     await db.delete(projects).where(inArray(projects.clientId, clientIds));
   }
   const types = new Map((await db.select({ id: serviceTypes.id, slug: serviceTypes.slug }).from(serviceTypes)).map((type) => [type.slug, type.id]));
+  await seedExtraProviders(password, types);
   const providerIds = new Map((await db.select({ id: providers.id, slug: providers.slug }).from(providers)).map((provider) => [provider.slug, provider.id]));
   let created = 0;
   for (const scenario of scenarios) {
