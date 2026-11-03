@@ -18,5 +18,5 @@ const body = Figtree({ subsets: ["latin"], variable: "--font-figtree", display: 
 
 export const metadata: Metadata = { title: { default: "Proposta.dev — encontre desenvolvedores", template: "%s | Proposta.dev" }, description: "Descreva o que você precisa, veja quanto costuma custar e encontre desenvolvedores." };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="pt-BR" className={`${display.variable} ${body.variable}`}><body><a className="skip-link" href="#conteudo">Pular para o conteúdo</a>{process.env.DEMO_MODE === "true" && <div className="demo-banner">Ambiente de demonstração · perfis e ofertas fictícios</div>}<SiteHeader/><main id="conteudo">{children}</main><ComparisonTray/><SiteFooter/><Suspense fallback={null}><MotionLayer/></Suspense></body></html>;
+  return <html lang="pt-BR" className={`${display.variable} ${body.variable}`}><body><a className="skip-link" href="#conteudo">Pular para o conteúdo</a><SiteHeader/><main id="conteudo">{children}</main><ComparisonTray/><SiteFooter/><Suspense fallback={null}><MotionLayer/></Suspense></body></html>;
 }

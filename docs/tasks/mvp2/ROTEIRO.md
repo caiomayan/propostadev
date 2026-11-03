@@ -2,7 +2,7 @@
 
 Endereço: https://propostadev-one.vercel.app
 
-A faixa "Ambiente de demonstração" indica que perfis, projetos e propostas são fictícios.
+Perfis, projetos e propostas da demo são fictícios; diga isso ao abrir a apresentação. Os prestadores demo têm "— Demo" no nome.
 
 Use uma janela anônima para cada conta (Cliente e Prestador) ou dois navegadores, porque a sessão é por navegador. A senha das contas demo é a combinada com a equipe; ela não fica no repositório.
 

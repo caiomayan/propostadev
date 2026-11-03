@@ -6,7 +6,6 @@ https://propostadev-one.vercel.app roda a `main` (merge 0dace58 do `mvp2`). Tick
 - Migrations 0000–0006 aplicadas pelo build da Vercel.
 - Seed demo rodado localmente contra o Supabase: 20 Prestadores em todos os tipos de serviço, 3 Clientes, 9 Projetos, 19 Propostas e 5 Avaliações (4 verificadas).
 - A senha das contas demo está no `.env.local` do coordenador (`DEMO_PASSWORD_PROD`), fora do repositório.
-- `DEMO_MODE=true` na Vercel mostra a faixa de demonstração.
 - Smoke test de escrita feito em produção. A demo foi restaurada em seguida com `DEMO_RESET=true`.
 - Os 5 usuários de teste da equipe (MVP 1) foram mantidos.
 - Em 02/11 à noite, amigos do dono testam com contas próprias. Antes da apresentação, limpe essas contas (se o dono quiser) e restaure a demo com `DEMO_RESET=true`.

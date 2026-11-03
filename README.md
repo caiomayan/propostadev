@@ -95,7 +95,7 @@ pnpm start
 
 Integração exige DATABASE_URL_TEST. O nome da base deve terminar em `_test` e ser diferente do banco de desenvolvimento. A preparação cria somente a base dedicada se ausente e aplica migrations. E2E usa essa base, seed demo e servidor de produção em http://localhost:3100; não reutiliza servidor existente. Os testes criam contas próprias e não limpam o banco de desenvolvimento. Não rode testes e script visual simultaneamente contra o servidor de teste.
 
-Para screenshots, mantenha um servidor separado em 3100 apontando ao DATABASE_URL_TEST, BETTER_AUTH_URL=http://localhost:3100 e DEMO_MODE=true, então execute `pnpm exec tsx scripts/visual-qa.ts`. O script captura 375/768/1440px em artifacts/visual-qa e verifica overflow/status; inspeção visual humana continua necessária.
+Para screenshots, mantenha um servidor separado em 3100 apontando ao DATABASE_URL_TEST e BETTER_AUTH_URL=http://localhost:3100, então execute `pnpm exec tsx scripts/visual-qa.ts`. O script captura 375/768/1440px em artifacts/visual-qa e verifica overflow/status; inspeção visual humana continua necessária.
 
 Resultados e limites reais: docs/VALIDATION.md. Escopo: docs/SCOPE.md. Regras: docs/specs/MVP.md e docs/DATABASE-RULES.md. Progresso: docs/tasks/BACKLOG.md. Decisões de implementação: docs/adr/0002-implementation.md.
 
