@@ -14,8 +14,8 @@ https://propostadev-one.vercel.app roda a `main` (merge 0dace58 do `mvp2`). Tick
 - Depois de ensaios, restaure a demo: rode o seed contra a produção com `DEMO_RESET=true` (veja o README).
 - O roteiro está em `docs/tasks/mvp2/ROTEIRO.md`.
 
-## Ainda sem credenciais
-OAuth GitHub/Google: os botões só aparecem com as variáveis definidas na Vercel. Quem grava as variáveis sensíveis é o dono. O SMTP está configurado em produção com Gmail e senha de app (03/11/2026).
+## Credenciais
+OAuth GitHub: o botão só aparece com as variáveis definidas na Vercel. Quem grava as variáveis sensíveis é o dono. Em produção desde 03/11/2026: login com Google, SMTP com Gmail e senha de app e a página `/privacidade`, exigida pelo Google.
 
 ## Frontend v3 (03/11/2026)
 Redesenho de todas as telas, com a marca mantida: régua arrastável com preços reais na home, jornada por rolagem, Triagem com régua ao vivo, painel com navegação lateral e figuras, autenticação em duas metades e movimento em todo o produto. Detalhes em `DESIGN.md`.
