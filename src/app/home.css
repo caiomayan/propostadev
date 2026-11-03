@@ -58,7 +58,7 @@
 .triage-slot { display: flex; flex-direction: column; gap: 14px; padding: 28px; border-radius: var(--radius-xl); min-width: 0; }
 .triage-slot h2 { font-size: clamp(1.75rem, 1.3rem + 1.1vw, 2.25rem); line-height: 1.02; letter-spacing: -.035em; }
 .triage-slot .goal-links { flex: 1; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
-.triage-slot .goal-links li + li { box-shadow: 0 -1.5px 0 color-mix(in srgb, var(--lime-ink) 16%, transparent); }
+.triage-slot .goal-links li + li { border-top: 1.5px solid color-mix(in srgb, var(--lime-ink) 16%, transparent); }
 .triage-slot .goal-links a { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; padding-block: 8px; font-weight: 600; line-height: 1.25; }
 .triage-slot .goal-links a:hover { text-decoration: none; }
 .triage-slot .goal-links svg { width: 18px; height: 18px; flex-shrink: 0; transition: transform var(--t-ui) var(--ease-out); }
@@ -146,7 +146,7 @@
 
 /* ---------- convite a prestadores ---------- */
 .provider-invite { padding-block: 96px 88px; }
-.provider-invite h2 { font-size: clamp(2.75rem, 1rem + 8.6vw, 8.5rem); line-height: .96; letter-spacing: -.035em; font-stretch: 90%; max-width: 12ch; }
+.provider-invite h2 { font-size: min(9.2vw, 7.75rem); line-height: .98; letter-spacing: -.035em; font-stretch: 90%; }
 .invite-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px 40px; flex-wrap: wrap; margin-top: 32px; }
 .invite-foot p { max-width: 46ch; font-size: 1.125rem; line-height: 1.5; }
 .invite-foot .button { min-height: 56px; padding-inline: 32px; font-size: 1rem; }
