@@ -14,18 +14,28 @@ async function seedDemo() {
   const password = process.env.DEMO_PASSWORD ?? "Demo-local-2026!";
   const types = await db.select().from(serviceTypes);
   const names = ["Aurora Web — Demo", "Horizonte Digital — Demo", "Nexo Studio — Demo", "Clara Código — Demo", "Ponte APIs — Demo", "Raiz Tecnologia — Demo", "Maré Sistemas — Demo", "Pixel Aberto — Demo"];
+  const profiles = [
+    { about: "Crio páginas de venda enxutas e rápidas para pequenos negócios, com texto, imagem e botão de contato no lugar certo.", city: ["João Pessoa", "PB"], title: "Landing Page enxuta para pequenos negócios", offer: "Página única responsiva com seção de depoimentos, formulário ou botão de WhatsApp e publicação inclusa." },
+    { about: "Estúdio focado em páginas de lançamento: estrutura de oferta, prova social e carregamento rápido no celular.", city: ["Recife", "PE"], title: "Landing Page de lançamento", offer: "Página de campanha com vídeo, depoimentos, perguntas frequentes e integração com sua ferramenta de vendas." },
+    { about: "Design e desenvolvimento no mesmo lugar, do layout às fotos de produto, para marcas que querem se destacar.", city: ["Campina Grande", "PB"], title: "Landing Page com design exclusivo", offer: "Layout criado para a sua marca, com tratamento de imagens, animações leves e duas rodadas de ajuste." },
+    { about: "Desenvolvedora independente. Trabalho por hora em sites institucionais de clínicas, consultórios e profissionais liberais.", city: ["Natal", "RN"], title: "Site institucional por hora", offer: "Ideal para quem já tem textos e identidade visual e quer pagar só pelas horas de desenvolvimento." },
+    { about: "Integrações e sites para empresas de serviços, com atenção a formulários que chegam certo ao seu sistema.", city: ["Fortaleza", "CE"], title: "Site institucional integrado", offer: "Site com formulários ligados ao seu e-mail ou CRM. O valor varia com o número de páginas e integrações." },
+    { about: "Sites institucionais com bons textos e estrutura para aparecer no Google, feitos para durar.", city: ["Teresina", "PI"], title: "Site institucional com blog", offer: "Site com páginas de serviço, blog e textos revisados, pronto para aparecer nas buscas da sua região." },
+    { about: "Empresa de software com projetos sob medida. O orçamento depende do escopo definido em uma conversa inicial.", city: ["João Pessoa", "PB"], title: "Site institucional sob medida", offer: "Levantamos o que a sua empresa precisa e definimos juntos as páginas, integrações e o cronograma." },
+    { about: "Desenvolvedor de APIs para lojas e sistemas internos, com documentação clara e monitoramento desde o início.", city: ["Salvador", "BA"], title: "API para integrar sistemas", offer: "API com autenticação, documentação e testes, pronta para conectar sua loja, seu ERP ou seu aplicativo." },
+  ];
   const priceModels = ["FIXO", "FIXO", "FIXO", "POR_HORA", "INTERVALO", "A_PARTIR_DE", "SOB_CONSULTA", "FIXO"] as const;
   for (let i = 0; i < names.length; i++) {
     const email = `prestador${i + 1}@demo.example`;
     const existing = await db.select({ id: user.id }).from(user).where(eq(user.email, email)).limit(1);
     const account = existing[0] ?? (await auth.api.signUpEmail({ body: { email, password, name: names[i] } })).user;
     await setAccountType(account.id, "PRESTADOR"); // no-op se o tipo já estiver definido
-    const [provider] = await db.insert(providers).values({ userId: account.id, slug: `prestador-demo-${i + 1}`, type: i % 2 === 0 ? "PESSOA_JURIDICA" : "PESSOA_FISICA", displayName: names[i], description: "Perfil fictício para explorar o catálogo de desenvolvimento web. Estes dados demonstram o funcionamento da plataforma e não representam um profissional real.", yearsExperience: i + 1, contactEmail: email, contactsPublishedAt: new Date(), city: i % 2 === 0 ? "João Pessoa" : null, state: i % 2 === 0 ? "PB" : null }).onConflictDoUpdate({ target: providers.userId, set: { displayName: names[i] } }).returning();
+    const [provider] = await db.insert(providers).values({ userId: account.id, slug: `prestador-demo-${i + 1}`, type: i % 2 === 0 ? "PESSOA_JURIDICA" : "PESSOA_FISICA", displayName: names[i], description: profiles[i].about, yearsExperience: i + 1, contactEmail: email, contactsPublishedAt: new Date(), city: profiles[i].city[0], state: profiles[i].city[1] }).onConflictDoUpdate({ target: providers.userId, set: { displayName: names[i] } }).returning();
     const service = types.find((type) => type.slug === (i < 3 ? "landing-page" : i === 7 ? "api" : "site-institucional"));
     if (!service) throw new Error("Catálogo de demonstração incompleto.");
     const exists = await db.select({ id: offers.id }).from(offers).where(and(eq(offers.providerId, provider.id), eq(offers.serviceTypeId, service.id), eq(offers.active, true), isNull(offers.deletedAt))).limit(1);
     if (!exists.length) {
-      await db.insert(offers).values({ providerId: provider.id, serviceTypeId: service.id, title: `${service.name} de demonstração`, description: "Oferta fictícia com escopo apresentado apenas para testar descoberta, filtros e comparação. A negociação de serviços reais acontece diretamente com cada prestador.", priceType: priceModels[i], priceMin: i === 6 ? null : i < 3 ? ["800.00", "1000.00", "1200.00"][i] : i === 3 ? "90.00" : "1500.00", priceMax: i === 4 ? "3000.00" : null, deadlineType: i === 3 || i === 6 ? "A_COMBINAR" : i === 4 ? "INTERVALO" : i === 5 ? "A_PARTIR_DE" : "FIXO", deadlineMinDays: i === 3 || i === 6 ? null : 7 + i, deadlineMaxDays: i === 4 ? 30 : null, active: true });
+      await db.insert(offers).values({ providerId: provider.id, serviceTypeId: service.id, title: profiles[i].title, description: profiles[i].offer, priceType: priceModels[i], priceMin: i === 6 ? null : i < 3 ? ["800.00", "1000.00", "1200.00"][i] : i === 3 ? "90.00" : "1500.00", priceMax: i === 4 ? "3000.00" : null, deadlineType: i === 3 || i === 6 ? "A_COMBINAR" : i === 4 ? "INTERVALO" : i === 5 ? "A_PARTIR_DE" : "FIXO", deadlineMinDays: i === 3 || i === 6 ? null : 7 + i, deadlineMaxDays: i === 4 ? 30 : null, active: true });
     }
   }
   const client = await db.select({ id: user.id }).from(user).where(eq(user.email, "cliente1@demo.example")).limit(1);
@@ -38,12 +48,12 @@ async function seedDemo() {
     const [existing] = await db.select({ id: reviews.id }).from(reviews).where(and(eq(reviews.userId, clientAccount.id), eq(reviews.providerId, targets[0].id))).limit(1);
     if (!existing) await db.transaction(async (tx) => {
       await tx.execute(sql.raw(`ALTER TABLE avaliacao DISABLE TRIGGER ${REVIEW_ACCEPTANCE_TRIGGER}`));
-      await tx.insert(reviews).values({ userId: clientAccount.id, providerId: targets[0].id, rating: 4, comment: "Avaliação fictícia de demonstração; não representa uma contratação real." }).onConflictDoNothing();
+      await tx.insert(reviews).values({ userId: clientAccount.id, providerId: targets[0].id, rating: 4, comment: "Bom atendimento em um trabalho feito antes de a contratação pela plataforma existir." }).onConflictDoNothing();
       await tx.execute(sql.raw(`ALTER TABLE avaliacao ENABLE TRIGGER ${REVIEW_ACCEPTANCE_TRIGGER}`));
     });
   }
   const scenarios = await seedDemoScenarios(password);
-  console.info(`Demo pronta: 20 perfis fictícios, ${scenarios.clients} clientes e ${scenarios.projects} projetos (${scenarios.created} criados agora). Login prestador1@demo.example ou cliente1@demo.example; senha definida por DEMO_PASSWORD ou padrão local documentado.`);
+  console.info(`Demo pronta: 20 perfis, ${scenarios.clients} clientes e ${scenarios.projects} projetos (${scenarios.created} criados agora). Login prestador1@demo.example ou cliente1@demo.example; senha definida por DEMO_PASSWORD ou padrão local documentado.`);
 }
 
 seedDemo().catch((error: unknown) => { console.error(error instanceof Error ? error.message : "Falha ao criar demonstração."); process.exitCode = 1; }).finally(() => pool.end());

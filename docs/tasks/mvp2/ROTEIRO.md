@@ -13,6 +13,7 @@ Use uma janela anônima para cada conta (Cliente e Prestador) ou dois navegadore
 | cliente3@demo.example (Juliana Alves) | Cliente | Projeto sem orçamento definido, com proposta retirada; projeto cancelado |
 | prestador2@demo.example (Horizonte Digital) | Prestador | Proposta pré-selecionada, proposta aceita com o contato do Cliente |
 | prestador7@demo.example (Maré Sistemas) | Prestador | Oportunidade em aberto para enviar uma proposta ao vivo |
+| cliente4, cliente5 e cliente6@demo.example | Cliente | Mais projetos abertos e encerrados, com avaliações verificadas |
 
 ## 1. O problema e a Triagem (visitante, cerca de 2 min)
 1. Abra a home e use a régua: escolha **Site institucional** e arraste o orçamento. O número de prestadores muda na hora, com os preços reais anunciados.
