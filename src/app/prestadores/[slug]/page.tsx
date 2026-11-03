@@ -9,7 +9,6 @@ import { ReviewForm } from "@/components/review-form";
 import { ReviewBadge } from "@/components/review-badge";
 import { REVIEW_NOT_ELIGIBLE, VERIFIED_SEAL } from "@/modules/reviews/rules";
 import { deadline, location, price, reputation } from "@/lib/format";
-import "../../buscar/public.css";
 
 export default async function ProviderPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const [{ slug }, query] = await Promise.all([params, searchParams]);
@@ -30,7 +29,7 @@ export default async function ProviderPage({ params, searchParams }: { params: P
   const experience = `${provider.yearsExperience} ${provider.yearsExperience === 1 ? "ano" : "anos"} de experiência`;
   return <section className="container section profile">
     <p><Link href="/buscar" className="back-link">← Voltar à busca</Link></p>
-    <header className="profile-hero panel"><ProviderAvatar name={provider.displayName} photoUrl={provider.photoUrl}/><div className="profile-hero-text"><div className="inline"><span className="badge">{provider.type === "PESSOA_FISICA" ? "Pessoa física" : "Pessoa jurídica"}</span><span className="badge">{experience}</span></div><h1>{provider.displayName}</h1><p className="muted">{location(provider)}</p><p className="profile-reputation">{reputation(provider.rating, provider.reviewCount, provider.verifiedCount)}</p></div><a className="button accent profile-hero-cta" href="#contato">Falar com o prestador</a></header>
+    <header className="profile-hero panel on-forest"><ProviderAvatar name={provider.displayName} photoUrl={provider.photoUrl}/><div className="profile-hero-text"><div className="inline"><span className="badge">{provider.type === "PESSOA_FISICA" ? "Pessoa física" : "Pessoa jurídica"}</span><span className="badge">{experience}</span></div><h1>{provider.displayName}</h1><p className="muted">{location(provider)}</p><p className="profile-reputation">{reputation(provider.rating, provider.reviewCount, provider.verifiedCount)}</p></div><a className="button accent profile-hero-cta" href="#contato">Falar com o prestador</a></header>
     <div className="profile-layout">
       <div className="profile-main">
         <section className="profile-section"><h2>Sobre o prestador</h2><p className="profile-description">{provider.description}</p><p className="muted">Tipo de prestador e experiência são informações autodeclaradas.</p></section>

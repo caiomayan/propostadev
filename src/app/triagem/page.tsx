@@ -13,8 +13,8 @@ import { posicaoOrcamento } from "@/modules/triage/position";
 import { budgetLabel, desiredDeadlineLabel } from "@/modules/triage/labels";
 import { findServiceType, getGoals, precoReferencia, prestadoresCompativeis, type ServiceTypeSummary } from "@/modules/triage/queries";
 import { draftKeys, draftQuery, parseDraft, rawDraft, type Draft, type SearchParams } from "@/modules/triage/validation";
+import { RollingFigure } from "@/components/rolling-figure";
 import { money } from "@/lib/format";
-import "./triagem.css";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Triagem do projeto", description: "Descreva o que você precisa, veja o preço de referência e os prestadores compatíveis." };
@@ -31,7 +31,9 @@ export default async function TriagePage({ searchParams }: { searchParams: Promi
   if (!serviceType) return <TypeStep goalSlug={goalSlug} listAll={one(params.etapa) === "tipo"} />;
   const touched = draftKeys.some((key) => key !== "tipo" && raw[key] !== "");
   const parsed = parseDraft(params);
-  if (!parsed.ok || one(params.etapa) === "detalhes") return <DetailsStep serviceType={serviceType} goalSlug={goalSlug} raw={raw} errors={!parsed.ok && touched ? parsed.errors : {}} />;
+  // Com etapa=detalhes o rascunho ainda está em preenchimento (edição ou vindo da régua da home): sem cobrar erros.
+  const editing = one(params.etapa) === "detalhes";
+  if (!parsed.ok || editing) return <DetailsStep serviceType={serviceType} goalSlug={goalSlug} raw={raw} errors={!parsed.ok && touched && !editing ? parsed.errors : {}} />;
   return <ResultStep serviceType={serviceType} draft={parsed.draft} goalSlug={goalSlug} />;
 }
 
@@ -66,13 +68,14 @@ async function TypeStep({ goalSlug, listAll }: { goalSlug: string; listAll: bool
   </div>;
 }
 
-function DetailsStep({ serviceType, goalSlug, raw, errors }: { serviceType: ServiceTypeSummary; goalSlug: string; raw: ReturnType<typeof rawDraft>; errors: Record<string, string> }) {
+async function DetailsStep({ serviceType, goalSlug, raw, errors }: { serviceType: ServiceTypeSummary; goalSlug: string; raw: ReturnType<typeof rawDraft>; errors: Record<string, string> }) {
+  const reference = await precoReferencia(serviceType.id);
   const back = goalSlug ? `/triagem?${new URLSearchParams({ objetivo: goalSlug })}` : "/triagem?etapa=tipo";
   return <div className="container triage stack">
     <Steps current={2}/>
     <header className="page-heading"><p className="eyebrow">Tipo de serviço: {serviceType.name}</p><h1>Conte sobre o seu projeto</h1><p>Com título, orçamento e prazo, mostramos onde você está em relação ao mercado e quem é compatível.</p></header>
     {Object.keys(errors).length > 0 && <div role="alert" className="form-error panel"><strong>Revise os campos abaixo.</strong></div>}
-    <DetailsForm tipo={serviceType.slug} objetivo={goalSlug || undefined} values={raw} errors={errors}/>
+    <DetailsForm tipo={serviceType.slug} objetivo={goalSlug || undefined} values={raw} errors={errors} serviceName={serviceType.name} reference={{ faixa: reference.faixa, media: reference.mediaFixos, n: reference.n }}/>
     <p><Link href={back} className="inline"><ArrowLeft size={16} aria-hidden="true"/> Trocar o tipo de serviço</Link></p>
   </div>;
 }
@@ -92,10 +95,10 @@ async function ResultStep({ serviceType, draft, goalSlug }: { serviceType: Servi
       <dl className="triage-summary"><div><dt>Orçamento</dt><dd>{budgetLabel(draft.orcamento)}</dd></div><div><dt>Prazo desejado</dt><dd>{desiredDeadlineLabel(draft.prazoDias)}</dd></div></dl>
       <Link href={`/triagem?${draftQuery(draft, { ...(goalSlug ? { objetivo: goalSlug } : {}), etapa: "detalhes" })}`} className="inline"><Pencil size={16} aria-hidden="true"/> Editar detalhes</Link></header>
 
-    <section className="panel stack" aria-labelledby="referencia">
+    <section className="panel on-forest stack result-reference" aria-labelledby="referencia">
       <div><p className="eyebrow">Preço de referência</p><h2 id="referencia">Quanto costuma custar {serviceType.name}</h2></div>
       {reference.suficiente ? <>
-        {reference.mediaFixos && <p className="reference-average"><span>Média dos preços fixos</span><strong>{money(reference.mediaFixos)}</strong><small>{reference.fixosN} prestadores com preço fixo. Não é orçamento.</small></p>}
+        {reference.mediaFixos && <p className="reference-average"><span>Média dos preços fixos</span><strong><RollingFigure value={money(reference.mediaFixos)}/></strong><small>{reference.fixosN} prestadores com preço fixo. Não é orçamento.</small></p>}
         <PriceRuler data={{ faixa: reference.faixa, media: reference.mediaFixos, n: reference.n, orcamento: draft.orcamento, posicao: position }}/>
       </> : <div className="insufficient"><strong>Dados insuficientes</strong><p>Só {reference.n} {reference.n === 1 ? "prestador anuncia" : "prestadores anunciam"} preço por projeto neste tipo de serviço. Precisamos de pelo menos 3 para mostrar uma média ou faixa sem enganar. Você ainda pode publicar o projeto e receber propostas.</p></div>}
     </section>
@@ -105,7 +108,7 @@ async function ResultStep({ serviceType, draft, goalSlug }: { serviceType: Servi
       {providers.length ? <div className="stack compatible-list">{providers.map((provider) => <CompatibleCard key={provider.providerId} provider={provider}/>)}</div> : <div className="empty"><h3>Nenhum prestador com oferta ativa agora</h3><p>Publique o projeto: quando alguém passar a oferecer este serviço, ele poderá ver o seu pedido.</p></div>}
     </section>
 
-    <section className="panel tone stack" aria-labelledby="publicar">
+    <section className="panel on-lime stack publish-panel" aria-labelledby="publicar">
       <h2 id="publicar">Publicar o projeto</h2><p className="muted">Depois de publicar, você poderá convidar até 10 prestadores compatíveis para enviar proposta.</p>
       <PublishPanel session={session} draft={draft} query={query} goalSlug={goalSlug}/>
     </section>

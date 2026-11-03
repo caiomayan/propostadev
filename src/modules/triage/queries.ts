@@ -117,3 +117,23 @@ export async function prestadoresCompativeis(input: { tipoServicoId: string; orc
     LIMIT ${COMPATIBLE_LIMIT}`);
   return result.rows;
 }
+
+/** Preço por projeto de cada Prestador, por slug do Tipo de serviço: o menor que ele anuncia (o mesmo piso de `cabeOrcamento`). */
+export async function precosAnunciados(): Promise<Map<string, number[]>> {
+  const result = await db.execute<{ slug: string; price: string }>(sql`
+    SELECT t.slug, min(o.preco_minimo)::text AS price
+    ${fromActive}
+    WHERE ${activeOffer} AND o.tipo_preco IN ('FIXO', 'A_PARTIR_DE', 'INTERVALO') AND o.preco_minimo IS NOT NULL
+    GROUP BY t.slug, p.id`);
+  const prices = new Map<string, number[]>();
+  // Number só para posicionar o desenho e comparar com o controle da home; nenhum valor é calculado daqui.
+  for (const row of result.rows) prices.set(row.slug, [...(prices.get(row.slug) ?? []), Number(row.price)]);
+  return prices;
+}
+
+/** Números públicos do mercado, para a home: só contagens reais do banco. */
+export async function numerosDoMercado() {
+  const result = await db.execute<{ prestadores: number; ofertas: number }>(sql`
+    SELECT count(DISTINCT p.id)::int AS prestadores, count(*)::int AS ofertas ${fromActive} WHERE ${activeOffer}`);
+  return result.rows[0] ?? { prestadores: 0, ofertas: 0 };
+}

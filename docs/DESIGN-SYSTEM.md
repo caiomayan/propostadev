@@ -43,3 +43,6 @@ Foco visível, contraste AA nos dois temas, alvos de 44px, labels persistentes, 
 
 ## Triagem de Propostas (ticket 06)
 Cartão `.proposal-card` em grade de 1 a 2 colunas: Prestador e status, valor e prazo em destaque, régua compacta, mensagem recolhida em `<details>` e ações. Ordenação e filtro são links (`.filter-link`, `aria-current`); aceitar e recusar abrem `details.confirm` (o aceite usa `.confirm.accept`, em verde, não em vermelho). O Prestador escolhido aparece em `.accepted-provider`; o contato do Cliente, em `.client-contact`.
+
+## Frontend v3 (03/11/2026)
+Mesma marca, execução nova: campos chapados (`.on-forest`, `.on-lime`), títulos em peso 800, painel com navegação lateral, autenticação em duas metades e a régua como peça central. Movimento, tokens e regras estão em `DESIGN.md`, seção Motion. Arquivos: `src/app/shell.css` (casca e estados), `src/app/home.css` (home) e `src/app/motion.css` (movimento).

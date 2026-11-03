@@ -7,7 +7,6 @@ import { requirePrestador } from "@/lib/auth/session";
 import { OfferForm } from "@/components/forms/offer-form";
 import { OfferPosition } from "@/components/offer-position";
 import { precoReferencia } from "@/modules/triage/queries";
-import "../../../../triagem/triagem.css";
 export default async function EditOfferPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await requirePrestador();
   const { id } = await params;

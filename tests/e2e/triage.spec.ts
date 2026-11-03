@@ -100,3 +100,19 @@ test("Prestador vê explicação em vez de publicar; tipo inválido volta ao in�
   await page.goto("/painel/projetos");
   await expect(page).toHaveURL(/\/painel$/);
 });
+
+test("a régua da home responde ao orçamento e leva o valor para a Triagem", async ({ page }) => {
+  await page.goto("/");
+  const budget = page.getByLabel("Seu orçamento", { exact: true });
+  await budget.focus();
+  const before = await budget.inputValue();
+  await page.keyboard.press("ArrowRight");
+  await expect(budget).not.toHaveValue(before);
+  await expect(page.locator(".lab-fit")).toContainText("prestadores começam em até");
+  const value = Number(await budget.inputValue());
+  await page.getByRole("link", { name: "Ver quem faz por esse valor" }).click();
+  await expect(page.getByRole("heading", { name: "Conte sobre o seu projeto" })).toBeVisible();
+  await expect(page.getByRole("radio", { name: /Um teto/ })).toBeChecked();
+  await expect(page.getByLabel("Teto do orçamento (R$)")).toHaveValue(`${value},00`);
+  await expect(page.locator(".form-error")).toHaveCount(0);
+});

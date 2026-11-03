@@ -8,7 +8,6 @@ import { OfferPosition } from "@/components/offer-position";
 import { deleteOffer } from "@/modules/offers/actions";
 import { precoReferencia } from "@/modules/triage/queries";
 import { deadline, price } from "@/lib/format";
-import "../../triagem/triagem.css";
 export default async function OffersPage() {
   const session = await requirePrestador();
   const [p] = await db.select().from(providers).where(eq(providers.userId, session.user.id)).limit(1);

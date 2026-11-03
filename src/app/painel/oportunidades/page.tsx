@@ -6,7 +6,6 @@ import { requirePrestador } from "@/lib/auth/session";
 import { listOpportunities } from "@/modules/proposals/queries";
 import { budgetLabel, dateLabel, desiredDeadlineLabel } from "@/modules/triage/labels";
 import { precoReferencia } from "@/modules/triage/queries";
-import "../../triagem/triagem.css";
 
 export const metadata: Metadata = { title: "Oportunidades" };
 const statusLabel = { ENVIADA: "Proposta enviada", PRE_SELECIONADA: "Pré-selecionada", RECUSADA: "Recusada", ACEITA: "Aceita", RETIRADA: "Retirada" } as const;

@@ -19,16 +19,12 @@
 }
 
 /* ---------- painel (Prestador, Conta) ---------- */
-.dashboard-nav { gap: 4px 20px; }
-.dashboard-nav a { min-height: 44px; display: inline-flex; align-items: center; }
-.dashboard-nav .button { min-height: 40px; padding: 4px 18px; }
 .dash-heading { display: flex; flex-direction: column; gap: 8px; }
 .dash-heading p { max-width: 60ch; }
 .dash-heading-row { flex-direction: row; justify-content: space-between; align-items: flex-end; gap: 16px 24px; flex-wrap: wrap; }
 .dash-heading-row > div { display: flex; flex-direction: column; gap: 8px; }
-.dash-next { background: var(--primary); color: var(--primary-foreground); }
 .dash-next p { opacity: .9; max-width: 56ch; }
-.dash-next .button { align-self: flex-start; background: var(--primary-foreground); border-color: var(--primary-foreground); color: var(--primary); }
+.dash-next .button { align-self: flex-start; }
 .dash-next :focus-visible { outline-color: var(--primary-foreground); }
 .dash-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .dash-steps li { display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: var(--radius-lg); background: var(--muted); color: var(--muted-foreground); }
@@ -49,7 +45,6 @@
 .dash-status dd a { font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
 .notice { padding: 14px 18px; border-radius: var(--radius); background: var(--muted); color: var(--foreground); font-size: .9375rem; font-weight: 400; }
 .notice a { font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
-.dashboard-nav + .form-page, .dashboard-nav + .dash { max-width: 800px; }
 
 /* ---------- formulários ---------- */
 .form-section { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
@@ -82,10 +77,12 @@ dialog.panel .stack { gap: 16px; }
 
 /* ---------- perfil público ---------- */
 .back-link { color: var(--muted-foreground); font-weight: 600; display: inline-flex; min-height: 44px; align-items: center; }
-.profile-hero { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 24px; align-items: center; padding: 32px; margin-top: 4px; }
-.profile-hero .provider-avatar { width: 96px; height: 96px; font-size: 2rem; }
+.profile-hero { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 32px; align-items: end; padding: 40px; margin-top: 4px; border-radius: var(--radius-xl); }
+.profile-hero .provider-avatar { width: 132px; height: 132px; font-size: 3rem; }
+.profile-hero .badge { background: var(--forest-raised); }
+.profile-hero .button.accent { min-height: 54px; padding-inline: 28px; }
 .profile-hero-text { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-.profile-hero-text h1 { font-size: clamp(2rem, 1.4rem + 2.4vw, 3rem); overflow-wrap: anywhere; }
+.profile-hero-text h1 { font-size: clamp(2.25rem, 1.3rem + 3.6vw, 4.5rem); line-height: 1; letter-spacing: -.035em; overflow-wrap: anywhere; }
 .profile-reputation { font-weight: 600; }
 .profile-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 40px; align-items: start; margin-top: 8px; }
 .profile-main { min-width: 0; }
@@ -99,13 +96,12 @@ dialog.panel .stack { gap: 16px; }
 .profile-offers .profile-offer { margin-top: 0; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
 .profile-offer h3 { margin: 0; font-size: 1.375rem; }
 .profile-offer-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px 24px; flex-wrap: wrap; width: 100%; padding-top: 16px; border-top: 1px solid var(--border); }
-.offer-price { font-size: 1.75rem !important; }
+.offer-price { font-size: 2rem !important; }
 .review-item { margin-top: 12px; }
 .review-heading span { padding: 2px 12px; }
 .review-section .empty { margin-top: 16px; padding: 32px 24px; }
 
 /* ---------- comparação ---------- */
-.comparison-scroll { box-shadow: inset 0 0 0 1px var(--border); }
 .comparison-table tbody th { position: sticky; left: 0; background: var(--card); z-index: 1; }
 .comparison-table .compare-key td, .comparison-table .compare-key th { background: var(--muted); }
 .compare-price { font-size: 1.5rem !important; letter-spacing: -.02em; line-height: 1.2; }
@@ -131,7 +127,7 @@ dialog.panel .stack { gap: 16px; }
   .dash-steps { grid-template-columns: 1fr; }
 }
 @media (max-width: 768px) {
-  .profile-hero { grid-template-columns: auto minmax(0, 1fr); padding: 20px; gap: 16px; }
+  .profile-hero { grid-template-columns: auto minmax(0, 1fr); padding: 20px; gap: 16px; align-items: start; border-radius: var(--radius-lg); }
   .profile-hero .provider-avatar { width: 64px; height: 64px; font-size: 1.5rem; }
   .profile-hero-cta { grid-column: 1 / -1; width: 100%; }
   .form-grid.three { grid-template-columns: 1fr; }
@@ -144,16 +140,7 @@ dialog.panel .stack { gap: 16px; }
 .mobile-menu > button { top: 10px !important; right: 10px !important; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 999px; opacity: 1 !important; color: var(--foreground); }
 .mobile-menu > button:hover { background: var(--muted); }
 .mobile-menu > button svg { width: 20px !important; height: 20px !important; }
-.dash, .form-page { max-width: 880px; width: 100%; }
-/* Navegação do painel no celular: uma linha rolável em vez de quebrar com o "Sair" sozinho. */
-@media (max-width: 640px) {
-  .dashboard-nav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 4px 18px; mask-image: linear-gradient(to right, #000 85%, transparent); padding-right: 32px; }
-  .dashboard-nav::-webkit-scrollbar { display: none; }
-  .dashboard-nav a { white-space: nowrap; flex-shrink: 0; }
-  .dashboard-nav form { margin-left: 8px; flex-shrink: 0; }
-}
 /* Detalhe da Oportunidade: contexto do Projeto à esquerda, Proposta fixa à direita em telas largas. */
-.dashboard-nav + .opportunity-page { max-width: none; }
 .opportunity-layout { display: grid; gap: 24px; }
 .opportunity-main, .opportunity-side { min-width: 0; }
 @media (min-width: 1100px) {
