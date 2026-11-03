@@ -117,6 +117,15 @@
 .choice-card input { margin-top: 3px; accent-color: var(--lime-ink); }
 .choice-card > span { display: flex; flex-direction: column; gap: 2px; }
 
+/* ---------- login social: as diretrizes do Google pedem fundo neutro e o "G" colorido ---------- */
+.social-buttons { display: flex; flex-direction: column; gap: 10px; }
+.social-divider { display: flex; align-items: center; gap: 12px; color: var(--muted-foreground); font-size: .9375rem; }
+.social-divider::before, .social-divider::after { content: ""; flex: 1; height: 1.5px; background: var(--border); }
+.social-button { display: inline-flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 48px; padding: 10px 20px; border: 1.5px solid #747775; border-radius: 999px; background: #fff; color: #1f1f1f; font-weight: 600; font-size: .9375rem; cursor: pointer; transition: background-color var(--t-hover) ease, transform var(--t-press) var(--ease-out); }
+.social-button svg { width: 20px; height: 20px; flex-shrink: 0; }
+.social-button:active { transform: scale(.98); }
+@media (hover: hover) { .social-button:hover { background: #f2f2f2; } }
+
 /* ---------- campos ---------- */
 input, select, textarea { transition: border-color var(--t-hover) ease, box-shadow var(--t-hover) ease, background-color var(--t-hover) ease; }
 input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 0; border-color: var(--foreground); box-shadow: 0 0 0 3px var(--lime), 0 0 0 5px var(--foreground); }

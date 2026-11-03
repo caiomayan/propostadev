@@ -19,7 +19,7 @@ test("sem credenciais, entrar e cadastro não mostram botões OAuth", async ({ p
   for (const path of ["/entrar", "/cadastro"]) {
     await page.goto(path);
     await expect(page.getByRole("button", { name: /GitHub|Google/ })).toHaveCount(0);
-    await expect(page.getByText("ou continue com")).toHaveCount(0);
+    await expect(page.locator(".social-buttons")).toHaveCount(0);
   }
 });
 
