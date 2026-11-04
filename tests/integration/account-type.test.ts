@@ -22,7 +22,7 @@ async function newUser(type: "CLIENTE" | "PRESTADOR" | null) {
   created.push(id);
   return id;
 }
-const sessionFor = (id: string, accountType: string | null) => ({ user: { id, accountType } });
+const sessionFor = (id: string, accountType: string | null) => ({ user: { id, accountType, emailVerified: true } });
 async function count(sql: string, params: unknown[]) { return Number((await pool.query<{ n: string }>(sql, params)).rows[0].n); }
 async function tipoDe(id: string) { return (await pool.query<{ tipo_conta: string | null }>('SELECT tipo_conta FROM "user" WHERE id=$1', [id])).rows[0].tipo_conta; }
 

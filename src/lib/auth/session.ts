@@ -2,6 +2,7 @@ import "server-only";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "./config";
+import { needsEmailConfirmation } from "./email-gate";
 import type { AccountType } from "./user-fields";
 
 export async function getSession() {
@@ -15,9 +16,10 @@ export async function requireSession() {
   if (!session) redirect("/entrar");
   return session;
 }
-// Rotas privadas exigem um tipo de conta; sem tipo, a escolha acontece em /boas-vindas.
+// Rotas privadas exigem e-mail confirmado e um tipo de conta. A confirmação vem antes: sem ela, nada privado abre.
 export async function requireAccount() {
   const session = await requireSession();
+  if (needsEmailConfirmation(session.user)) redirect("/confirmar-email");
   const accountType = session.user.accountType;
   if (accountType !== "CLIENTE" && accountType !== "PRESTADOR") redirect("/boas-vindas");
   return { session, accountType: accountType as AccountType };

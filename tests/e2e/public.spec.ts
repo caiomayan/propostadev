@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { test, expect, type Page } from "@playwright/test";
 import { Pool } from "pg";
 import { grantAcceptance } from "../integration/support";
+import { confirmEmail } from "./support";
 
 const demoPassword = process.env.DEMO_PASSWORD ?? "Demo-local-2026!";
 async function login(page: Page, email: string) {
@@ -102,6 +103,7 @@ test("usuário cria, edita e exclui avaliação sem publicar e-mail privado", as
   await page.getByLabel("Senha", { exact: true }).fill("Proposta-test-password-2026");
   await page.getByRole("radio", { name: /Quero contratar/ }).check();
   await page.getByRole("button", { name: "Criar conta", exact: true }).click();
+  await confirmEmail(page, privateEmail);
   await expect(page).toHaveURL(/\/painel$/);
   await page.goto("/prestadores/prestador-demo-3");
   // Sem Aceite do Prestador, o Cliente não vê o formulário

@@ -7,6 +7,7 @@ import { CompatibleCard } from "@/components/triage/compatible-card";
 import { DetailsForm } from "@/components/triage/details-form";
 import { RememberDraft } from "@/components/triage/draft-memory";
 import { getSession } from "@/lib/auth/session";
+import { needsEmailConfirmation } from "@/lib/auth/email-gate";
 import { getCatalog } from "@/modules/catalog/queries";
 import { publishProject } from "@/modules/projects/actions";
 import { posicaoOrcamento } from "@/modules/triage/position";
@@ -128,6 +129,10 @@ function PublishPanel({ session, draft, query, goalSlug }: { session: Awaited<Re
   const type = session.user.accountType;
   if (type === "PRESTADOR") return <p>Contas de Prestador não publicam projetos: esta Triagem serve para Clientes. Você pode usar o resultado para entender o mercado e ajustar suas ofertas.</p>;
   if (type !== "CLIENTE") return <><p>Escolha o tipo da sua conta para publicar.</p><Link className="button" href="/boas-vindas">Escolher tipo de conta</Link></>;
+  if (needsEmailConfirmation(session.user)) {
+    const next = encodeURIComponent(`/triagem?${query}`);
+    return <><p>Confirme seu e-mail para publicar. Seu rascunho é mantido.</p><Link className="button" href={`/confirmar-email${next.length <= MAX_NEXT_LENGTH ? `?next=${next}` : ""}`}>Confirmar e-mail</Link></>;
+  }
   return <>
     <p>O projeto fica aberto e aparece em “Meus projetos”. Você poderá cancelá-lo enquanto estiver aberto.</p>
     <ActionForm action={publishProject} label="Publicar projeto">

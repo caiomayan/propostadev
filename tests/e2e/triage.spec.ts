@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { confirmEmail } from "./support";
 
 const password = "Proposta-test-password-2026";
 
@@ -54,6 +55,8 @@ test("visitante faz a Triagem, cria conta de Cliente, publica e vê o projeto em
   await page.getByLabel("Senha", { exact: true }).fill(password);
   await page.getByRole("radio", { name: /Quero contratar/ }).check();
   await page.getByRole("button", { name: "Criar conta", exact: true }).click();
+  await expect(page).toHaveURL(/\/confirmar-email\?next=%2Ftriagem/);
+  await confirmEmail(page, email);
   await expect(page).toHaveURL(/\/triagem\?.*orcamento=FAIXA/);
   await expect(page.getByRole("heading", { name: "Página de lançamento do meu curso" })).toBeVisible();
 
@@ -89,10 +92,12 @@ test("Prestador vê explicação em vez de publicar; tipo inválido volta ao in�
 
   await page.goto("/cadastro");
   await page.getByLabel("Nome", { exact: true }).fill("Prestador da Triagem");
-  await page.getByLabel("E-mail", { exact: true }).fill(`prestador-triagem-${Date.now()}@test.example`);
+  const providerEmail = `prestador-triagem-${Date.now()}@test.example`;
+  await page.getByLabel("E-mail", { exact: true }).fill(providerEmail);
   await page.getByLabel("Senha", { exact: true }).fill(password);
   await page.getByRole("radio", { name: /Quero oferecer serviços/ }).check();
   await page.getByRole("button", { name: "Criar conta", exact: true }).click();
+  await confirmEmail(page, providerEmail);
   await expect(page).toHaveURL(/\/painel/);
   await page.goto("/triagem?tipo=landing-page&titulo=Meu+projeto+de+teste&descricao=Descri%C3%A7%C3%A3o+longa+o+bastante+para+passar+na+valida%C3%A7%C3%A3o+do+servidor.&orcamento=NAO_SEI&flexivel=1");
   await expect(page.getByText("Contas de Prestador não publicam projetos")).toBeVisible();

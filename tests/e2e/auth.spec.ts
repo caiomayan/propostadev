@@ -1,9 +1,11 @@
 import { test, expect, type Page } from "@playwright/test";
 import { Pool } from "pg";
+import { confirmEmail, emailCodeCount, expireEmailCode, plantEmailCode } from "./support";
 
 const password = "Proposta-test-password-2026";
 const newPassword = "Proposta-nova-senha-2026!";
 const neutral = "Se esse e-mail estiver cadastrado";
+const uniqueEmail = (prefix: string) => `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 8)}@example.test`;
 
 async function register(page: Page, name: string, email: string) {
   await page.goto("/cadastro");
@@ -12,6 +14,7 @@ async function register(page: Page, name: string, email: string) {
   await page.getByLabel("Senha", { exact: true }).fill(password);
   await page.getByRole("radio", { name: /Quero contratar/ }).check();
   await page.getByRole("button", { name: "Criar conta", exact: true }).click();
+  await confirmEmail(page, email);
   await expect(page).toHaveURL(/\/painel$/);
 }
 
@@ -105,32 +108,61 @@ test("esqueci minha senha: resposta neutra, redefinição de uso único e sessõ
   }
 });
 
-test("painel avisa e-mail não confirmado, permite reenviar e some após a confirmação", async ({ page }) => {
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL_TEST });
-  const email = `verify-${Date.now()}-${Math.random().toString(16).slice(2, 8)}@example.test`;
-  try {
-    await register(page, "Conta a confirmar", email);
-    const notice = page.getByRole("region", { name: "Confirmação de e-mail" });
-    await expect(notice).toContainText("Confirme seu e-mail");
-    await notice.getByRole("button", { name: "Reenviar e-mail" }).click();
-    await expect(notice.getByRole("status")).toContainText("novo código");
-    const box = notice.getByLabel("Código de confirmação", { exact: true });
-    await box.fill("000000");
-    await expect(notice.getByRole("alert")).toContainText("Código incorreto");
-    await expect(box).toHaveValue("");
-    const disabled = await page.request.post("/api/auth/sign-in/email-otp", { data: { email, otp: "000000" } });
-    expect(disabled.status()).toBe(404);
-    await pool.query("UPDATE \"user\" SET email_verified = true WHERE email = $1", [email]);
-    await page.reload();
-    await expect(page.getByRole("region", { name: "Confirmação de e-mail" })).toHaveCount(0);
-  } finally {
-    await pool.query("DELETE FROM \"user\" WHERE email = $1", [email]);
-    await pool.end();
+test("e-mail sem confirmação não abre o painel; código certo libera e leva ao destino", async ({ page }) => {
+  const email = uniqueEmail("gate");
+  await page.goto("/cadastro?next=/buscar%3Fq%3Dloja");
+  await fillRegistration(page, email);
+  await expect(page).toHaveURL(/\/confirmar-email\?next=/);
+  await expect(page.getByRole("heading", { name: "Confirme seu e-mail." })).toBeVisible();
+  const notice = page.getByRole("region", { name: "Confirmação de e-mail" });
+  await expect(notice).toContainText(email);
+  const box = notice.getByLabel("Código de confirmação", { exact: true });
+  await expect(box).toBeFocused();
+
+  for (const blocked of ["/painel", "/painel/conta", "/painel/projetos"]) {
+    await page.goto(blocked);
+    await expect(page).toHaveURL(/\/confirmar-email$/);
   }
+  await page.goto("/confirmar-email?next=/buscar%3Fq%3Dloja");
+  await box.fill("000000");
+  await expect(notice.getByRole("alert")).toContainText("Código incorreto");
+  await expect(box).toHaveValue("");
+  const disabled = await page.request.post("/api/auth/sign-in/email-otp", { data: { email, otp: "000000" } });
+  expect(disabled.status()).toBe(404);
+
+  await plantEmailCode(email, "123456");
+  await box.fill("123456");
+  await expect(page.getByRole("heading", { name: "E-mail confirmado." })).toBeVisible();
+  await expect(page).toHaveURL(/\/buscar\?q=loja$/);
+  await page.goto("/painel");
+  await expect(page).toHaveURL(/\/painel$/);
+  await page.goto("/confirmar-email");
+  await expect(page).toHaveURL(/\/painel$/);
+});
+
+test("quem volta sem código válido recebe outro ao chegar, e quem errou o e-mail consegue sair", async ({ page }) => {
+  const email = uniqueEmail("volta");
+  await page.goto("/cadastro");
+  await fillRegistration(page, email);
+  await expect(page).toHaveURL(/\/confirmar-email$/);
+  await expireEmailCode(email);
+  await page.context().clearCookies();
+
+  await page.goto("/entrar?next=/buscar");
+  await page.getByLabel("E-mail", { exact: true }).fill(email);
+  await page.getByLabel("Senha", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
+  await expect(page).toHaveURL(/\/confirmar-email\?next=%2Fbuscar$/);
+  await expect(page.getByRole("region", { name: "Confirmação de e-mail" }).getByRole("status")).toContainText("novo código");
+  expect(await emailCodeCount(email)).toBe(1);
+
+  await page.getByRole("button", { name: "Sair e criar a conta de novo" }).click();
+  await expect(page).toHaveURL(/\/cadastro$/);
+  await page.goto("/painel");
+  await expect(page).toHaveURL(/\/entrar/);
 });
 
 // --- Destino ?next (ticket 08, complemento) ---
-const uniqueEmail = (prefix: string) => `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 8)}@example.test`;
 async function fillRegistration(page: Page, email: string) {
   await page.getByLabel("Nome", { exact: true }).fill("Conta com destino");
   await page.getByLabel("E-mail", { exact: true }).fill(email);
@@ -148,8 +180,10 @@ async function clearAccountType(email: string) {
 }
 
 test("cadastro com ?next termina no destino informado", async ({ page }) => {
+  const email = uniqueEmail("next");
   await page.goto("/cadastro?next=/buscar%3Fq%3Dloja");
-  await fillRegistration(page, uniqueEmail("next"));
+  await fillRegistration(page, email);
+  await confirmEmail(page, email);
   await expect(page).toHaveURL(/\/buscar\?q=loja$/);
 });
 
@@ -159,7 +193,9 @@ test("query string longa e codificada sobrevive entrar → cadastro → destino"
   await page.getByRole("link", { name: "Criar conta" }).click();
   await expect(page).toHaveURL(/\/cadastro\?next=/);
   expect(new URL(page.url()).searchParams.get("next")).toBe(destination);
-  await fillRegistration(page, uniqueEmail("longo"));
+  const email = uniqueEmail("longo");
+  await fillRegistration(page, email);
+  await confirmEmail(page, email);
   await expect.poll(() => { const url = new URL(page.url()); return url.pathname + url.search; }).toBe(destination);
   await page.goto(`/cadastro?next=${encodeURIComponent(destination)}`);
   await page.getByRole("link", { name: "Entrar", exact: true }).last().click();
@@ -171,13 +207,16 @@ test("next externo é ignorado no cadastro e na escolha de tipo", async ({ page 
     await page.context().clearCookies();
     await page.goto(`/cadastro?next=${encodeURIComponent(evil)}`);
     await expect(page.locator('input[name="next"]')).toHaveCount(0);
-    await fillRegistration(page, uniqueEmail("evil"));
+    const email = uniqueEmail("evil");
+    await fillRegistration(page, email);
+    await confirmEmail(page, email);
     await expect(page).toHaveURL(/\/painel$/);
   }
   const email = uniqueEmail("evil-tipo");
   await page.context().clearCookies();
   await page.goto("/cadastro");
   await fillRegistration(page, email);
+  await confirmEmail(page, email);
   await expect(page).toHaveURL(/\/painel$/);
   await clearAccountType(email);
   await page.goto(`/boas-vindas?next=${encodeURIComponent("https://evil.example")}`);
@@ -190,6 +229,7 @@ test("/boas-vindas?next redireciona ao destino depois da escolha do tipo", async
   const email = uniqueEmail("boas");
   await page.goto("/cadastro");
   await fillRegistration(page, email);
+  await confirmEmail(page, email);
   await expect(page).toHaveURL(/\/painel$/);
   await clearAccountType(email);
   await page.goto("/boas-vindas?next=/buscar%3Fq%3Dloja");

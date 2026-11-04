@@ -1,5 +1,6 @@
 import { test, expect, type Browser, type Page } from "@playwright/test";
 import { Pool } from "pg";
+import { confirmEmail } from "./support";
 
 const password = "Proposta-test-password-2026";
 const triageUrl = "/triagem?tipo=landing-page&titulo=Site+para+triagem+de+propostas&descricao=Preciso+de+uma+p%C3%A1gina+de+vendas+com+depoimentos+e+formul%C3%A1rio+de+contato+integrado.&orcamento=ATE&max=2000&prazo=30";
@@ -11,6 +12,7 @@ async function register(page: Page, name: string, email: string, type: "CLIENTE"
   await page.getByLabel("Senha", { exact: true }).fill(password);
   await page.getByRole("radio", { name: type === "CLIENTE" ? /Quero contratar/ : /Quero oferecer serviços/ }).check();
   await page.getByRole("button", { name: "Criar conta", exact: true }).click();
+  await confirmEmail(page, email);
   await expect(page).toHaveURL(/\/painel/);
 }
 

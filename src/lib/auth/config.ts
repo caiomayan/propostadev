@@ -25,7 +25,8 @@ export const auth = betterAuth({
     revokeSessionsOnPasswordReset: true,
     sendResetPassword: async ({ user, url }) => { sendEmail({ to: user.email, preview: `Link: ${url}`, ...passwordResetEmail(user.name, url) }); },
   },
-  // Verificação não bloqueia o login (requireEmailVerification false); o painel mostra um aviso.
+  // requireEmailVerification fica false de propósito: com true, o login recusaria quem ainda precisa de sessão para digitar o código.
+  // A exigência mora nas guardas (session.ts, account-type.ts), que levam a /confirmar-email.
   // O envio do código vem do plugin emailOTP (overrideDefaultEmailVerification).
   emailVerification: { sendOnSignUp: true },
   // Vínculo automático por e-mail só quando o provedor marca o e-mail como verificado (padrão do Better Auth,

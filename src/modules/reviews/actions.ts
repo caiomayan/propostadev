@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { providers, reviews } from "@/lib/db/schema";
 import { getSession } from "@/lib/auth/session";
 import { accountTypeDenial } from "@/lib/auth/account-type";
+import { needsEmailConfirmation } from "@/lib/auth/email-gate";
 import { mutationAllowed, mutationError } from "@/lib/auth/mutation-limit";
 import type { ActionState } from "@/lib/auth/action-state";
 import { reviewSchema } from "./validation";
@@ -25,6 +26,7 @@ export async function saveReview(_: ActionState, form: FormData): Promise<Action
   const session = await getSession();
   if (!session) return { error: "Entre para avaliar um prestador." };
   if (!session.user.accountType) return { error: accountTypeDenial(session, "CLIENTE") ?? "Escolha o tipo da sua conta antes de continuar." };
+  if (needsEmailConfirmation(session.user)) return { error: "Confirme seu e-mail para continuar." };
   const parsed = reviewSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) return { error: "Confira a nota e o comentário.", fields: parsed.error.flatten().fieldErrors };
   const userId = session.user.id;
@@ -48,6 +50,7 @@ export async function saveReview(_: ActionState, form: FormData): Promise<Action
 export async function deleteReview(_: ActionState, form: FormData): Promise<ActionState> {
   const session = await getSession();
   if (!session) return { error: "Entre para excluir sua avaliação." };
+  if (needsEmailConfirmation(session.user)) return { error: "Confirme seu e-mail para continuar." };
   const id = z.string().uuid().safeParse(form.get("providerId"));
   if (!id.success) return { error: "Prestador inválido." };
   if (!await mutationAllowed(session.user.id, "review")) return { error: "Muitas alterações. Aguarde um minuto." };

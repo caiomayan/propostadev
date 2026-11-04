@@ -15,7 +15,7 @@ const typeA = randomUUID();
 const typeB = randomUUID();
 const userIds: string[] = [];
 const extraTypes: string[] = [];
-const sessionFor = (id: string, accountType: string | null) => ({ user: { id, accountType } });
+const sessionFor = (id: string, accountType: string | null) => ({ user: { id, accountType, emailVerified: true } });
 const message = "Posso entregar esta página com testes, revisão de conteúdo e acompanhamento.";
 
 async function newUser(type: "CLIENTE" | "PRESTADOR", name = "Conta de teste") {

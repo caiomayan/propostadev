@@ -14,7 +14,7 @@ const pool = new Pool({ connectionString: testUrl });
 const categoryId = randomUUID();
 const typeA = randomUUID();
 const userIds: string[] = [];
-const sessionFor = (id: string, accountType: string | null) => ({ user: { id, accountType } });
+const sessionFor = (id: string, accountType: string | null) => ({ user: { id, accountType, emailVerified: true } });
 const message = "Posso entregar esta página com testes, revisão de conteúdo e acompanhamento.";
 const idForm = (id: string) => { const form = new FormData(); form.set("propostaId", id); return form; };
 const count = async (sql: string, params: unknown[]) => Number((await pool.query<{ n: string }>(sql, params)).rows[0].n);

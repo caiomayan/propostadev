@@ -24,7 +24,7 @@ describe("direct server actions authorization", () => {
     expect(mocks.delete).not.toHaveBeenCalled();
   });
   it("rejects own profile reviews using the session identity", async () => {
-    mocks.getSession.mockResolvedValue({ user: { id: "owner", accountType: "CLIENTE" } });
+    mocks.getSession.mockResolvedValue({ user: { id: "owner", accountType: "CLIENTE", emailVerified: true } });
     mocks.select.mockReturnValue({ from: () => ({ where: () => ({ limit: async () => [{ id: "550e8400-e29b-41d4-a716-446655440000", userId: "owner", active: true }] }) }) });
     const data = new FormData();
     data.set("providerId", "550e8400-e29b-41d4-a716-446655440000");
@@ -39,17 +39,22 @@ describe("autorização por tipo de conta", () => {
   const forged = () => { const data = new FormData(); data.set("providerId", "550e8400-e29b-41d4-a716-446655440000"); data.set("id", "550e8400-e29b-41d4-a716-446655440000"); data.set("rating", "5"); return data; };
   const untouched = () => { for (const mock of [mocks.select, mocks.insert, mocks.update, mocks.delete]) expect(mock).not.toHaveBeenCalled(); };
   it.each([saveProvider, setProviderActive, saveOffer, deleteOffer])("Cliente não gerencia perfil nem ofertas", async (action) => {
-    mocks.getSession.mockResolvedValue({ user: { id: "cliente", accountType: "CLIENTE" } });
+    mocks.getSession.mockResolvedValue({ user: { id: "cliente", accountType: "CLIENTE", emailVerified: true } });
     expect((await action({}, forged())).error).toContain("Prestador");
     untouched();
   });
   it("Prestador não avalia", async () => {
-    mocks.getSession.mockResolvedValue({ user: { id: "prestador", accountType: "PRESTADOR" } });
+    mocks.getSession.mockResolvedValue({ user: { id: "prestador", accountType: "PRESTADOR", emailVerified: true } });
     // Quem já tem Avaliação (do MVP 1) ainda edita; quem não tem, como aqui, não cria.
     const provider = { id: "550e8400-e29b-41d4-a716-446655440000", userId: "outro", active: true };
     mocks.select.mockReturnValueOnce({ from: () => ({ where: () => ({ limit: async () => [provider] }) }) }).mockReturnValueOnce({ from: () => ({ where: () => ({ limit: async () => [] }) }) });
     expect((await saveReview({}, forged())).error).toContain("Cliente");
     for (const mock of [mocks.insert, mocks.update, mocks.delete]) expect(mock).not.toHaveBeenCalled();
+  });
+  it.each([saveProvider, setProviderActive, saveOffer, deleteOffer, saveReview, deleteReview])("e-mail sem confirmação não altera nada", async (action) => {
+    mocks.getSession.mockResolvedValue({ user: { id: "sem-confirmar", accountType: action === saveReview || action === deleteReview ? "CLIENTE" : "PRESTADOR", emailVerified: false } });
+    expect((await action({}, forged())).error).toContain("Confirme seu e-mail");
+    untouched();
   });
   it.each([saveProvider, saveOffer, saveReview])("conta sem tipo é recusada", async (action) => {
     mocks.getSession.mockResolvedValue({ user: { id: "novo", accountType: null } });

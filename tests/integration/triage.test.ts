@@ -15,7 +15,7 @@ const categoryId = randomUUID();
 const types = { fixos: randomUUID(), mistos: randomUUID(), poucos: randomUUID(), ordem: randomUUID(), vazio: randomUUID() };
 const slug = (id: string) => `t-${id}`;
 const userIds: string[] = [];
-const sessionFor = (id: string, accountType: string | null) => ({ user: { id, accountType } });
+const sessionFor = (id: string, accountType: string | null) => ({ user: { id, accountType, emailVerified: true } });
 
 async function newUser(type: "CLIENTE" | "PRESTADOR") {
   const id = randomUUID();

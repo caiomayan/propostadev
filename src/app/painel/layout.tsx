@@ -1,9 +1,8 @@
-import { LogOut } from "lucide-react";
 import { eq } from "drizzle-orm";
 import { requireAccount } from "@/lib/auth/session";
 import { db } from "@/lib/db";
 import { providers } from "@/lib/db/schema";
-import { signOut } from "@/lib/auth/actions";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import { PanelLinks, type PanelLink } from "@/components/panel-nav";
 import { ProviderAvatar } from "@/components/provider-avatar";
 
@@ -23,7 +22,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return <div className="container dashboard-wrapper">
     <aside className="dashboard-side">
       <div className="dashboard-who"><ProviderAvatar name={session.user.name} photoUrl={photoUrl}/><div><strong>{session.user.name}</strong><small>{provider ? "Prestador" : "Cliente"}</small></div></div>
-      <nav className="dashboard-nav" aria-label="Painel"><PanelLinks links={links}/><form action={signOut}><button className="sign-out"><LogOut aria-hidden="true"/><span>Sair</span></button></form></nav>
+      <nav className="dashboard-nav" aria-label="Painel"><PanelLinks links={links}/><SignOutButton icon/></nav>
     </aside>
     <div className="dashboard-main">{children}</div>
   </div>;

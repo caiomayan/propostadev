@@ -2,6 +2,7 @@ import "server-only";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { user } from "@/lib/db/auth-schema";
+import { needsEmailConfirmation } from "./email-gate";
 import type { AccountType } from "./user-fields";
 
 // Define o tipo de conta uma única vez. O UPDATE condicional recusa tipo já definido;
@@ -11,7 +12,7 @@ export async function setAccountType(userId: string, type: AccountType) {
   return changed.length === 1;
 }
 
-type SessionLike = { user: { id: string; accountType?: string | null } } | null;
+type SessionLike = { user: { id: string; accountType?: string | null; emailVerified?: boolean | null } } | null;
 
 // Para Server Actions: devolve a mensagem de recusa ou null quando a sessão pode agir.
 export function accountTypeDenial(session: SessionLike, required: AccountType): string | null {
@@ -19,5 +20,6 @@ export function accountTypeDenial(session: SessionLike, required: AccountType): 
   const type = session.user.accountType;
   if (!type) return "Escolha o tipo da sua conta antes de continuar.";
   if (type !== required) return required === "PRESTADOR" ? "Esta ação é exclusiva de contas de Prestador." : "Esta ação é exclusiva de contas de Cliente.";
+  if (needsEmailConfirmation(session.user)) return "Confirme seu e-mail para continuar.";
   return null;
 }

@@ -12,6 +12,7 @@ import { setAccountType } from "./account-type";
 import { accountTypes } from "./user-fields";
 import { socialProviderIds, enabledSocialProviders } from "./providers";
 import { emailAvailable } from "@/lib/email/mailer";
+import { needsEmailConfirmation } from "./email-gate";
 
 const credentials = z.object({ email: z.string().trim().toLowerCase().email().max(254), password: z.string().min(12).max(128) });
 const accountType = z.enum(accountTypes);
@@ -20,9 +21,10 @@ export async function signIn(_: ActionState, form: FormData): Promise<ActionStat
   const parsed = credentials.safeParse(Object.fromEntries(form));
   if (!parsed.success) return { error: "Confira seu e-mail e senha.", fields: parsed.error.flatten().fieldErrors };
   if (!await mutationAllowed(createHash("sha256").update(parsed.data.email).digest("hex"), "auth")) return { error: "Muitas tentativas. Aguarde um minuto." };
-  try { await auth.api.signInEmail({ body: parsed.data, headers: await headers() }); }
+  let unconfirmed: boolean;
+  try { unconfirmed = needsEmailConfirmation((await auth.api.signInEmail({ body: parsed.data, headers: await headers() })).user); }
   catch { return { error: "Não foi possível entrar. Confira e-mail e senha ou tente novamente em alguns instantes." }; }
-  redirect(safeDestination(form.get("next")));
+  redirect(unconfirmed ? withNext("/confirmar-email", internalNext(form.get("next"))) : safeDestination(form.get("next")));
 }
 export async function signUp(_: ActionState, form: FormData): Promise<ActionState> {
   const parsed = registration.safeParse(Object.fromEntries(form));
@@ -35,7 +37,7 @@ export async function signUp(_: ActionState, form: FormData): Promise<ActionStat
   // O tipo nunca passa pelo input do Better Auth: só o servidor o define, uma vez.
   // Se falhar, a conta fica sem tipo e o painel redireciona para /boas-vindas.
   try { await setAccountType(createdId, chosenType); } catch { /* tratado por /boas-vindas */ }
-  redirect(safeDestination(form.get("next")));
+  redirect(emailAvailable() ? withNext("/confirmar-email", internalNext(form.get("next"))) : safeDestination(form.get("next")));
 }
 export async function chooseAccountType(_: ActionState, form: FormData): Promise<ActionState> {
   const session = await getSession();
@@ -48,9 +50,9 @@ export async function chooseAccountType(_: ActionState, form: FormData): Promise
   catch { return { error: "Não foi possível salvar o tipo da conta." }; }
   redirect(safeDestination(form.get("next")));
 }
-export async function signOut() {
+export async function signOut(form?: FormData) {
   await auth.api.signOut({ headers: await headers() });
-  redirect("/");
+  redirect(form?.get("to") === "cadastro" ? "/cadastro" : "/");
 }
 export async function updateName(_: ActionState, form: FormData): Promise<ActionState> {
   const session = await getSession();

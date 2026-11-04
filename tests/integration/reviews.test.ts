@@ -16,7 +16,7 @@ const typeId = randomUUID();
 const userIds: string[] = [];
 const message = "Posso entregar esta página com testes, revisão de conteúdo e acompanhamento.";
 const projectText = "Descrição suficiente para o projeto de teste do banco.";
-const session = (id: string, accountType: string | null) => ({ user: { id, accountType } });
+const session = (id: string, accountType: string | null) => ({ user: { id, accountType, emailVerified: true } });
 const n = async (sql: string, params: unknown[]) => Number((await pool.query<{ n: string }>(sql, params)).rows[0].n);
 const form = (providerId: string, rating = 5, comment = "") => { const data = new FormData(); data.set("providerId", providerId); data.set("rating", String(rating)); data.set("comment", comment); return data; };
 
