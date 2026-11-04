@@ -215,7 +215,8 @@ test("query string longa e codificada sobrevive entrar → cadastro → destino"
   await confirmEmail(page, email);
   await expect.poll(() => { const url = new URL(page.url()); return url.pathname + url.search; }).toBe(destination);
   await page.goto(`/cadastro?next=${encodeURIComponent(destination)}`);
-  await page.getByRole("link", { name: "Entrar", exact: true }).last().click();
+  await page.locator(".auth-panel").getByRole("link", { name: "Entrar", exact: true }).click();
+  await expect(page).toHaveURL(/\/entrar\?next=/);
   expect(new URL(page.url()).searchParams.get("next")).toBe(destination);
 });
 

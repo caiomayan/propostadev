@@ -10,7 +10,7 @@ import { Field, SelectField, TextAreaField } from "@/components/forms/field";
 type Pair = readonly [name: "photoUrl" | "city" | "state" | "country" | "phone" | "whatsapp" | "siteUrl" | "githubUrl" | "linkedinUrl", label: string, hint?: string];
 const location: Pair[] = [["city", "Cidade"], ["state", "UF", "Duas letras, como PB."], ["country", "País", "Duas letras, como BR."]];
 const phones: Pair[] = [["phone", "Telefone internacional", "Exemplo: +5583999999999"], ["whatsapp", "WhatsApp internacional", "Exemplo: +5583999999999"]];
-const links: Pair[] = [["photoUrl", "URL da foto", "Endereço HTTPS de uma imagem."], ["siteUrl", "Site", "Endereço HTTPS."], ["githubUrl", "GitHub", "Endereço HTTPS."], ["linkedinUrl", "LinkedIn", "Endereço HTTPS."]];
+const links: Pair[] = [["photoUrl", "URL da foto", "Endereço HTTPS de uma imagem. Em branco, usamos a foto da sua conta Google, se houver."], ["siteUrl", "Site", "Endereço HTTPS."], ["githubUrl", "GitHub", "Endereço HTTPS."], ["linkedinUrl", "LinkedIn", "Endereço HTTPS."]];
 
 export default async function ProviderPage() {
   const session = await requirePrestador();

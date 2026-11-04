@@ -2,6 +2,7 @@ import "server-only";
 import { and, eq, sql, type SQL } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { providers } from "@/lib/db/schema";
+import { user } from "@/lib/db/auth-schema";
 import type { Offer } from "@/lib/db/schema";
 import type { SearchInput } from "./validation";
 import { canCreateReview, getOwnReview, reputationSubquery, reviewIsVerified } from "@/modules/reviews/queries";
@@ -17,9 +18,9 @@ const projection = sql`o.id, o.titulo AS title, o.descricao AS description,
   o.tipo_preco AS "priceType", o.preco_minimo AS "priceMin", o.preco_maximo AS "priceMax",
   o.tipo_prazo AS "deadlineType", o.prazo_minimo_dias AS "deadlineMinDays", o.prazo_maximo_dias AS "deadlineMaxDays",
   p.id AS "providerId", p.slug, p.nome_exibicao AS "displayName", p.tipo AS type, p.anos_experiencia AS "yearsExperience",
-  p.cidade AS city, p.uf AS state, p.pais AS country, p.foto_url AS "photoUrl", t.nome AS "serviceName", t.slug AS "serviceSlug",
+  p.cidade AS city, p.uf AS state, p.pais AS country, coalesce(nullif(p.foto_url, ''), conta.image) AS "photoUrl", t.nome AS "serviceName", t.slug AS "serviceSlug",
   r.rating, coalesce(r.count, 0)::int AS "reviewCount", coalesce(r.verified, 0)::int AS "verifiedCount"`;
-const fromPublic = sql`FROM oferta_servico o JOIN perfil_prestador p ON p.id = o.prestador_id
+const fromPublic = sql`FROM oferta_servico o JOIN perfil_prestador p ON p.id = o.prestador_id JOIN "user" conta ON conta.id = p.usuario_id
   JOIN tipo_servico t ON t.id = o.tipo_servico_id JOIN categoria c ON c.id = t.categoria_id
   LEFT JOIN ${reputationSubquery} r ON r.prestador_id = p.id`;
 const active = sql`o.ativo AND p.ativo AND t.ativo AND c.ativo AND o.deleted_at IS NULL`;
@@ -73,7 +74,7 @@ export async function getComparison(ids: string[]) {
 }
 
 export async function getPublicProvider(slug: string) {
-  const [provider] = await db.select({ id: providers.id, slug: providers.slug, type: providers.type, displayName: providers.displayName, description: providers.description, yearsExperience: providers.yearsExperience, city: providers.city, state: providers.state, country: providers.country, photoUrl: providers.photoUrl, contactEmail: providers.contactEmail, phone: providers.phone, whatsapp: providers.whatsapp, siteUrl: providers.siteUrl, githubUrl: providers.githubUrl, linkedinUrl: providers.linkedinUrl }).from(providers).where(and(eq(providers.slug, slug), eq(providers.active, true))).limit(1);
+  const [provider] = await db.select({ id: providers.id, slug: providers.slug, type: providers.type, displayName: providers.displayName, description: providers.description, yearsExperience: providers.yearsExperience, city: providers.city, state: providers.state, country: providers.country, photoUrl: sql<string | null>`coalesce(nullif(${providers.photoUrl}, ''), ${user.image})`, contactEmail: providers.contactEmail, phone: providers.phone, whatsapp: providers.whatsapp, siteUrl: providers.siteUrl, githubUrl: providers.githubUrl, linkedinUrl: providers.linkedinUrl }).from(providers).innerJoin(user, eq(user.id, providers.userId)).where(and(eq(providers.slug, slug), eq(providers.active, true))).limit(1);
   if (!provider) return null;
   const [offerRows, stats] = await Promise.all([
     db.execute<PublicOffer>(sql`SELECT ${projection} ${fromPublic} WHERE ${active} AND p.id = ${provider.id}::uuid ORDER BY o.titulo, o.id`),

@@ -167,6 +167,28 @@ test("mobile abre filtros em modal sem overflow horizontal", async ({ page }) =>
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 
+test("Prestador sem foto própria mostra a foto da conta; a foto informada tem prioridade", async ({ page }) => {
+  const pool = testPool();
+  const accountPhoto = "https://photo-fixture.example.test/conta.png";
+  const ownPhoto = "https://photo-fixture.example.test/propria.png";
+  const owner = "(SELECT usuario_id FROM perfil_prestador WHERE slug='prestador-demo-3')";
+  const original = await pool.query<{ photoUrl: string | null }>("SELECT foto_url AS \"photoUrl\" FROM perfil_prestador WHERE slug='prestador-demo-3'");
+  await page.route("https://photo-fixture.example.test/**", (route) => route.fulfill({ contentType: "image/svg+xml", body: "<svg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/>" }));
+  try {
+    await pool.query("UPDATE perfil_prestador SET foto_url=NULL WHERE slug='prestador-demo-3'");
+    await pool.query(`UPDATE "user" SET image=$1 WHERE id=${owner}`, [accountPhoto]);
+    await page.goto("/prestadores/prestador-demo-3");
+    await expect(page.locator(".profile-hero img.provider-avatar")).toHaveAttribute("src", accountPhoto);
+    await pool.query("UPDATE perfil_prestador SET foto_url=$1 WHERE slug='prestador-demo-3'", [ownPhoto]);
+    await page.reload();
+    await expect(page.locator(".profile-hero img.provider-avatar")).toHaveAttribute("src", ownPhoto);
+  } finally {
+    await pool.query(`UPDATE "user" SET image=NULL WHERE id=${owner}`);
+    await pool.query("UPDATE perfil_prestador SET foto_url=$1 WHERE slug='prestador-demo-3'", [original.rows[0]?.photoUrl ?? null]);
+    await pool.end();
+  }
+});
+
 test("foto HTTPS indisponível mantém iniciais no perfil e na busca", async ({ page }) => {
   const pool = testPool();
   const photoUrl = "https://photo-fixture.example.test/unavailable.png";

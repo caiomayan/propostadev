@@ -11,7 +11,7 @@ export const MIN_SAMPLE = 3;
 export const COMPATIBLE_LIMIT = 12;
 
 const activeOffer = sql`o.ativo AND p.ativo AND t.ativo AND c.ativo AND o.deleted_at IS NULL`;
-const fromActive = sql`FROM oferta_servico o JOIN perfil_prestador p ON p.id = o.prestador_id
+const fromActive = sql`FROM oferta_servico o JOIN perfil_prestador p ON p.id = o.prestador_id JOIN "user" conta ON conta.id = p.usuario_id
   JOIN tipo_servico t ON t.id = o.tipo_servico_id JOIN categoria c ON c.id = t.categoria_id`;
 
 export type ServiceTypeSummary = { id: string; slug: string; name: string; description: string | null; category: string };
@@ -102,7 +102,7 @@ export async function prestadoresCompativeis(input: { tipoServicoId: string; orc
   const result = await db.execute<CompatibleProvider>(sql`
     WITH candidates AS (
       SELECT p.id AS "providerId", p.slug, p.nome_exibicao AS "displayName", p.tipo AS type, p.anos_experiencia AS "yearsExperience",
-        p.cidade AS city, p.uf AS state, p.pais AS country, p.foto_url AS "photoUrl",
+        p.cidade AS city, p.uf AS state, p.pais AS country, coalesce(nullif(p.foto_url, ''), conta.image) AS "photoUrl",
         o.titulo AS "offerTitle", o.tipo_preco AS "priceType", o.preco_minimo::text AS "priceMin", o.preco_maximo::text AS "priceMax",
         o.tipo_prazo AS "deadlineType", o.prazo_minimo_dias AS "deadlineMinDays", o.prazo_maximo_dias AS "deadlineMaxDays",
         CASE WHEN ${ceiling}::numeric IS NULL OR o.tipo_preco IN ('SOB_CONSULTA', 'POR_HORA') OR o.preco_minimo IS NULL THEN NULL ELSE o.preco_minimo <= ${ceiling}::numeric END AS "cabeOrcamento",

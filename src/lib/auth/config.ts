@@ -4,13 +4,22 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { APIError } from "better-auth/api";
 import { emailOTP } from "better-auth/plugins";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import * as schema from "@/lib/db/auth-schema";
 import { userAdditionalFields } from "./user-fields";
 import { socialProviderConfig } from "./providers";
+import { fetchGooglePicture } from "./google-photo";
 import { sendEmail } from "@/lib/email/mailer";
 import { passwordResetEmail, verificationCodeEmail } from "@/lib/email/templates";
+
+// Copia só a foto a cada login. A opção overrideUserInfoOnSignIn trocaria também o nome que a pessoa editou em Conta.
+async function syncGooglePhoto(account: { providerId: string; userId: string; accessToken?: string | null }) {
+  if (account.providerId !== "google" || !account.accessToken) return;
+  const picture = await fetchGooglePicture(account.accessToken);
+  if (picture) await db.update(schema.user).set({ image: picture }).where(eq(schema.user.id, account.userId)).catch(() => undefined);
+}
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: "pg", schema }),
@@ -34,6 +43,7 @@ export const auth = betterAuth({
   socialProviders: socialProviderConfig(),
   rateLimit: { enabled: true, storage: "database", window: 60, max: 20 },
   databaseHooks: {
+    account: { create: { after: syncGooglePhoto }, update: { after: syncGooglePhoto } },
     user: {
       create: { before: async (user) => {
         const parsed = z.object({ name: z.string().trim().min(2).max(100), email: z.string().trim().toLowerCase().email().max(254) }).safeParse(user);

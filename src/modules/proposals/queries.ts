@@ -131,10 +131,10 @@ const orderings: Record<TriageOrder | "padrao", SQL> = {
 export async function listProposalsForTriage(clientId: string, projectId: string, options: { ordem?: TriageOrder; soPre?: boolean } = {}): Promise<TriageProposal[]> {
   if (!uuidSchema.safeParse(projectId).success) return [];
   const result = await db.execute<TriageProposal>(sql`
-    SELECT pr.id, pf.id AS "providerId", pf.slug AS "providerSlug", pf.nome_exibicao AS "providerName", pf.foto_url AS "providerPhotoUrl", pf.ativo AS "providerActive",
+    SELECT pr.id, pf.id AS "providerId", pf.slug AS "providerSlug", pf.nome_exibicao AS "providerName", coalesce(nullif(pf.foto_url, ''), conta.image) AS "providerPhotoUrl", pf.ativo AS "providerActive",
       pr.valor::text AS amount, pr.prazo_dias AS days, pr.mensagem AS message, pr.status, pr.created_at AS "createdAt",
       r.rating, coalesce(r.count, 0)::int AS "reviewCount", coalesce(r.verified, 0)::int AS "verifiedCount"
-    FROM proposta pr JOIN projeto p ON p.id = pr.projeto_id JOIN perfil_prestador pf ON pf.id = pr.prestador_id
+    FROM proposta pr JOIN projeto p ON p.id = pr.projeto_id JOIN perfil_prestador pf ON pf.id = pr.prestador_id JOIN "user" conta ON conta.id = pf.usuario_id
     LEFT JOIN ${reputationSubquery} r ON r.prestador_id = pf.id
     WHERE p.id = ${projectId}::uuid AND p.cliente_id = ${clientId} AND pr.status <> 'RETIRADA' ${options.soPre ? sql`AND pr.status = 'PRE_SELECIONADA'` : sql``}
     ORDER BY ${orderings[options.ordem ?? "padrao"]}`);

@@ -15,7 +15,7 @@ export default async function PrivacyPage() {
     <h2>O que guardamos</h2>
     <ul>
       <li><strong>Conta:</strong> nome, e-mail, tipo de conta (Cliente ou Prestador) e senha, que fica armazenada de forma cifrada.</li>
-      <li><strong>Login com Google:</strong> se você escolher essa opção, recebemos seu nome, e-mail e foto de perfil. Não recebemos sua senha do Google.</li>
+      <li><strong>Login com Google:</strong> se você escolher essa opção, recebemos seu nome, e-mail e foto de perfil, e atualizamos a foto a cada login. Em contas de Prestador, essa foto aparece no perfil público e nas buscas, a menos que você informe outra em Meu perfil. Não recebemos sua senha do Google.</li>
       <li><strong>Perfil de Prestador:</strong> o que você preencher, como nome de exibição, descrição, localização, contatos, links e ofertas.</li>
       <li><strong>Uso da plataforma:</strong> projetos, propostas, convites e avaliações.</li>
       <li><strong>Sessão:</strong> endereço IP e navegador usados no login, para manter sua sessão e proteger a conta.</li>
