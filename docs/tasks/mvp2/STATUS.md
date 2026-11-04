@@ -7,8 +7,6 @@ https://propostadev-one.vercel.app roda a `main` (merge 0dace58 do `mvp2`). Tick
 - Seed demo rodado localmente contra o Supabase: 20 Prestadores em todos os tipos de serviço, 6 Clientes, 25 Projetos, 44 Propostas e 18 Avaliações (17 verificadas). Em 03/11/2026 todas as contas de teste foram apagadas e a demo foi recriada.
 - A senha das contas demo está no `.env.local` do coordenador (`DEMO_PASSWORD_PROD`), fora do repositório.
 - Smoke test de escrita feito em produção. A demo foi restaurada em seguida com `DEMO_RESET=true`.
-- Os 5 usuários de teste da equipe (MVP 1) foram mantidos.
-- Em 02/11 à noite, amigos do dono testam com contas próprias. Antes da apresentação, limpe essas contas (se o dono quiser) e restaure a demo com `DEMO_RESET=true`.
 
 ## Antes da apresentação
 - Depois de ensaios, restaure a demo: rode o seed contra a produção com `DEMO_RESET=true` (veja o README).
