@@ -2,13 +2,14 @@ import "server-only";
 import { after } from "next/server";
 import nodemailer from "nodemailer";
 
-export type OutgoingEmail = { to: string; subject: string; text: string; html: string; link: string };
+/** `preview`: o link ou código, impresso só em desenvolvimento, quando não há SMTP. */
+export type OutgoingEmail = { to: string; subject: string; text: string; html: string; preview: string };
 
 type Env = Record<string, string | undefined>;
 export function smtpConfigured(env: Env = process.env) {
   return Boolean(env.SMTP_USER?.trim() && env.SMTP_PASS?.trim());
 }
-// Em desenvolvimento e teste, sem SMTP, o link vai para o console. Em produção sem SMTP,
+// Em desenvolvimento e teste, sem SMTP, o link ou código vai para o console. Em produção sem SMTP,
 // nenhum e-mail é enviado nem logado e os fluxos que dependem dele não são oferecidos.
 export function emailAvailable(env: Env = process.env) {
   return smtpConfigured(env) || env.NODE_ENV !== "production";
@@ -25,7 +26,7 @@ async function deliver(message: OutgoingEmail) {
     await nodemailer.createTransport(transport).sendMail({ from: `Proposta.dev <${from}>`, to: message.to, subject: message.subject, text: message.text, html: message.html });
     return;
   }
-  if (process.env.NODE_ENV !== "production") console.info(`[e-mail em desenvolvimento] Para: ${message.to} | Assunto: ${message.subject}\nLink: ${message.link}`);
+  if (process.env.NODE_ENV !== "production") console.info(`[e-mail em desenvolvimento] Para: ${message.to} | Assunto: ${message.subject}\n${message.preview}`);
 }
 
 // A entrega roda depois da resposta (after) para que o tempo de resposta não diferencie

@@ -113,7 +113,13 @@ test("painel avisa e-mail não confirmado, permite reenviar e some após a confi
     const notice = page.getByRole("region", { name: "Confirmação de e-mail" });
     await expect(notice).toContainText("Confirme seu e-mail");
     await notice.getByRole("button", { name: "Reenviar e-mail" }).click();
-    await expect(notice.getByRole("status")).toContainText("novo link");
+    await expect(notice.getByRole("status")).toContainText("novo código");
+    const box = notice.getByLabel("Código de confirmação", { exact: true });
+    await box.fill("000000");
+    await expect(notice.getByRole("alert")).toContainText("Código incorreto");
+    await expect(box).toHaveValue("");
+    const disabled = await page.request.post("/api/auth/sign-in/email-otp", { data: { email, otp: "000000" } });
+    expect(disabled.status()).toBe(404);
     await pool.query("UPDATE \"user\" SET email_verified = true WHERE email = $1", [email]);
     await page.reload();
     await expect(page.getByRole("region", { name: "Confirmação de e-mail" })).toHaveCount(0);

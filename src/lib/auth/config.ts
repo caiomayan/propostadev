@@ -3,13 +3,14 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { APIError } from "better-auth/api";
+import { emailOTP } from "better-auth/plugins";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import * as schema from "@/lib/db/auth-schema";
 import { userAdditionalFields } from "./user-fields";
 import { socialProviderConfig } from "./providers";
 import { sendEmail } from "@/lib/email/mailer";
-import { passwordResetEmail, verificationEmail } from "@/lib/email/templates";
+import { passwordResetEmail, verificationCodeEmail } from "@/lib/email/templates";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: "pg", schema }),
@@ -22,13 +23,11 @@ export const auth = betterAuth({
     // Token de uso único (consumido na redefinição) com validade de 1 hora; encerra todas as sessões abertas.
     resetPasswordTokenExpiresIn: 60 * 60,
     revokeSessionsOnPasswordReset: true,
-    sendResetPassword: async ({ user, url }) => { sendEmail({ to: user.email, link: url, ...passwordResetEmail(user.name, url) }); },
+    sendResetPassword: async ({ user, url }) => { sendEmail({ to: user.email, preview: `Link: ${url}`, ...passwordResetEmail(user.name, url) }); },
   },
   // Verificação não bloqueia o login (requireEmailVerification false); o painel mostra um aviso.
-  emailVerification: {
-    sendOnSignUp: true,
-    sendVerificationEmail: async ({ user, url }) => { sendEmail({ to: user.email, link: url, ...verificationEmail(user.name, url) }); },
-  },
+  // O envio do código vem do plugin emailOTP (overrideDefaultEmailVerification).
+  emailVerification: { sendOnSignUp: true },
   // Vínculo automático por e-mail só quando o provedor marca o e-mail como verificado (padrão do Better Auth,
   // sem trustedProviders) e a conta local já confirmou o mesmo e-mail.
   socialProviders: socialProviderConfig(),
@@ -50,5 +49,14 @@ export const auth = betterAuth({
       } },
     },
   },
-  plugins: [nextCookies()],
+  // O plugin também traria login, recuperação de senha e troca de e-mail por código: nada disso existe no produto.
+  // Toda a superfície HTTP dele fica desligada e o uso passa só pelas Server Actions, com o e-mail vindo da sessão.
+  disabledPaths: ["/sign-in/email-otp", "/email-otp/send-verification-otp", "/email-otp/check-verification-otp", "/email-otp/verify-email", "/email-otp/request-password-reset", "/forget-password/email-otp", "/email-otp/reset-password", "/email-otp/request-email-change", "/email-otp/change-email"],
+  plugins: [
+    emailOTP({
+      otpLength: 6, expiresIn: 10 * 60, allowedAttempts: 5, storeOTP: "hashed", disableSignUp: true, overrideDefaultEmailVerification: true,
+      sendVerificationOTP: async ({ email, otp, type }) => { if (type === "email-verification") sendEmail({ to: email, preview: `Código: ${otp}`, ...verificationCodeEmail(otp) }); },
+    }),
+    nextCookies(),
+  ],
 });

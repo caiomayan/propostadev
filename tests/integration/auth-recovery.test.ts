@@ -109,6 +109,29 @@ describe.skipIf(!testUrl)("recuperação de senha (ticket 08)", () => {
     expect(await sessions()).toBe(0);
   });
 
+  it("confirma o e-mail com o código certo e recusa código errado, vencido ou repetido à exaustão", async () => {
+    const { auth, id, email } = await newUser();
+    const issue = () => auth.api.createVerificationOTP({ body: { email, type: "email-verification" } });
+    const verify = (otp: string) => auth.api.verifyEmailOTP({ body: { email, otp } }).then(() => "ok", (error: { body?: { code?: string } }) => error.body?.code);
+    const wrong = (otp: string) => String((Number(otp) + 1) % 1000000).padStart(6, "0");
+    const stored = await pool.query<{ value: string }>("SELECT value FROM verification WHERE identifier = $1", [`email-verification-otp-${email}`]);
+    expect(stored.rowCount).toBe(1); // o cadastro já enviou um código, não um link
+    let otp = await issue();
+    const saved = await pool.query<{ value: string }>("SELECT value FROM verification WHERE identifier = $1", [`email-verification-otp-${email}`]);
+    expect(saved.rows[0].value).not.toContain(otp); // guardado com hash
+    expect(await verify(wrong(otp))).toBe("INVALID_OTP");
+    otp = await issue();
+    await pool.query("UPDATE verification SET expires_at = now() - interval '1 minute' WHERE identifier = $1", [`email-verification-otp-${email}`]);
+    expect(await verify(otp)).toBe("OTP_EXPIRED");
+    otp = await issue();
+    for (let attempt = 0; attempt < 5; attempt++) expect(await verify(wrong(otp))).toBe("INVALID_OTP");
+    expect(await verify(otp)).toBe("TOO_MANY_ATTEMPTS");
+    otp = await issue();
+    expect(await verify(otp)).toBe("ok");
+    const verified = await pool.query<{ email_verified: boolean }>('SELECT email_verified FROM "user" WHERE id = $1', [id]);
+    expect(verified.rows[0].email_verified).toBe(true);
+  });
+
   it("o cadastro não bloqueia o login mesmo com e-mail não verificado", async () => {
     const { auth, id, email } = await newUser();
     const verified = await pool.query<{ email_verified: boolean }>('SELECT email_verified FROM "user" WHERE id = $1', [id]);

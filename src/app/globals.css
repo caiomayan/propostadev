@@ -239,6 +239,4 @@ dialog::backdrop { background: var(--overlay); }
 .password-strength[data-level="1"] .password-strength-bar span[data-on="true"] { background: var(--destructive); }
 .password-strength[data-level="4"] .password-strength-bar span[data-on="true"], .password-strength[data-level="3"] .password-strength-bar span[data-on="true"] { background: var(--success); }
 .password-strength [role=status] { color: var(--muted-foreground); font-weight: 400; }
-.verification-notice { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 12px 16px; border-radius: var(--radius); background: var(--muted); color: var(--foreground); font-size: .9375rem; }
-.verification-notice .button { min-height: 36px; padding: 4px 16px; font-size: .875rem; }
 .form-success { color: var(--success); }

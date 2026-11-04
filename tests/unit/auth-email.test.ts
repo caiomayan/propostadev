@@ -4,10 +4,10 @@ const sendMail = vi.hoisted(() => vi.fn<(message: unknown) => Promise<unknown>>(
 const createTransport = vi.hoisted(() => vi.fn<(options: unknown) => { sendMail: typeof sendMail }>(() => ({ sendMail })));
 vi.mock("nodemailer", () => ({ default: { createTransport } }));
 import { emailAvailable, sendEmail, smtpConfigured, smtpSettings } from "../../src/lib/email/mailer";
-import { passwordResetEmail, verificationEmail } from "../../src/lib/email/templates";
+import { passwordResetEmail, verificationCodeEmail } from "../../src/lib/email/templates";
 import { passwordStrength } from "../../src/lib/auth/password-strength";
 
-const message = { to: "pessoa@example.test", subject: "Assunto", text: "texto", html: "<p>html</p>", link: "https://app.test/reset?token=SEGREDO-TOKEN" };
+const message = { to: "pessoa@example.test", subject: "Assunto", text: "texto", html: "<p>html</p>", preview: "https://app.test/reset?token=SEGREDO-TOKEN" };
 afterEach(() => { vi.unstubAllEnvs(); vi.restoreAllMocks(); sendMail.mockClear(); createTransport.mockClear(); });
 
 describe("e-mail transacional", () => {
@@ -26,7 +26,7 @@ describe("e-mail transacional", () => {
     const info = vi.spyOn(console, "info").mockImplementation(() => {});
     sendEmail(message);
     await vi.waitFor(() => expect(info).toHaveBeenCalled());
-    expect(String(info.mock.calls[0][0])).toContain(message.link);
+    expect(String(info.mock.calls[0][0])).toContain(message.preview);
     expect(createTransport).not.toHaveBeenCalled();
   });
   it("sem SMTP em produção, nem envia nem registra o token", async () => {
@@ -60,7 +60,11 @@ describe("e-mail transacional", () => {
     expect(reset.html).toContain("&lt;b&gt;Ana");
     expect(reset.text).toContain("https://app.test/r?token=abc&x=1");
     expect(reset.text).toContain("1 hora");
-    expect(verificationEmail("Ana", "https://app.test/v").subject).toMatch(/Confirme/);
+    const confirmation = verificationCodeEmail("482913");
+    expect(confirmation.subject).toContain("482913");
+    expect(confirmation.html).toContain("482913");
+    expect(confirmation.text).toContain("10 minutos");
+    expect(confirmation.html).not.toContain("href");
   });
 });
 

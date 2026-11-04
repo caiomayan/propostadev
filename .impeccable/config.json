@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font",
+        "value": "arial",
+        "createdAt": "2026-11-03T23:55:01.823Z",
+        "reason": "E-mail transacional: clientes de e-mail não carregam as fontes do site, então Arial é a pilha segura (decisão de implementação, não do usuário)"
+      }
+    ]
+  }
+}

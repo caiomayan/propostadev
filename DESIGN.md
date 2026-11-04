@@ -100,6 +100,7 @@ Compartilhados e reutilizados pelos próximos tickets (triagem, propostas, pain�
 - `Card` (`ui/card`): `tone` default | muted | accent | brand. Equivalente em classe: `.panel` / `.panel.tone`.
 - `Badge`, `Input`, `Textarea`, `Skeleton`, `Sheet` restilizados pelos tokens.
 - `PriceLab` e `JourneyStory` (`components/home/`): a régua arrastável e a jornada por rolagem da home. Dados de `getMarket` (`modules/triage/market.ts`), com cache de 5 minutos.
+- Confirmação de e-mail (`components/auth/email-verification-notice.tsx`): um input real desenhado como seis casas, com envio automático no sexto dígito, tremida no código errado e onda limão no acerto. Não bloqueia o uso e aparece no início do painel.
 - `AuthShell` (`components/auth/auth-shell.tsx`), `PanelLinks` (`components/panel-nav.tsx`), `SiteNav` e `RollingFigure`.
 - `PriceRuler` (`components/price-ruler.tsx`): sem props é a ilustração decorativa dos estados vazios (sem dados); com `data` mostra a faixa anunciada em limão, a média dos preços fixos e o orçamento do Cliente na mesma escala (um valor único, como uma Proposta ou o preço de uma Oferta, vira ponto), sempre com os valores também como texto na legenda. Usada na Triagem (ao vivo, enquanto a pessoa digita o orçamento), no Projeto, nas Oportunidades e no formulário de Proposta.
 - Slot da Triagem na home: `.triage-slot[data-slot="triagem"]` em campo limão, com os atalhos de objetivo e "Começar a Triagem". A busca é o link secundário "Buscar prestadores".
@@ -109,7 +110,8 @@ Compartilhados e reutilizados pelos próximos tickets (triagem, propostas, pain�
 ## Do's and Don'ts
 
 ### Do
-- Ler cores só de tokens; nunca hex em componentes.
+- Ler cores só de tokens; nunca hex em componentes. Exceção: marcas de terceiros, como o "G" do Google e o botão neutro exigido por ele.
+- Usar marcas de terceiros só por `components/brand-icons.tsx`: `simple-icons` para os traçados oficiais; lucide para ícones genéricos. O LinkedIn saiu do pacote, então o traçado oficial fica no próprio arquivo.
 - Mostrar preço em destaque tipográfico, sempre com unidade (R$/hora, por projeto).
 - Foco visível (outline 3px `--ring`), alvos de 44px, contraste AA nos dois temas.
 - Respeitar `prefers-reduced-motion`: a página reduzida é a página pronta.

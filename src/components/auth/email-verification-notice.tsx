@@ -1,15 +1,67 @@
 "use client";
-import { useActionState } from "react";
-import { resendVerification } from "@/lib/auth/actions";
+import { useActionState, useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
+import { useRouter } from "next/navigation";
+import { Check } from "lucide-react";
+import { resendVerification, verifyEmailCode } from "@/lib/auth/actions";
 import type { ActionState } from "@/lib/auth/action-state";
 
-// Aviso discreto e não bloqueante no painel enquanto o e-mail não foi confirmado.
-export function EmailVerificationNotice() {
-  const [state, resend, pending] = useActionState<ActionState>(resendVerification, {});
-  return <div className="verification-notice" role="region" aria-label="Confirmação de e-mail">
-    <span><strong>Confirme seu e-mail.</strong> Enviamos um link quando você criou a conta.</span>
-    <form action={resend}><button type="submit" className="button secondary" disabled={pending}>{pending ? "Enviando…" : "Reenviar e-mail"}</button></form>
-    {state.success && <span role="status">{state.success}</span>}
-    {state.error && <span role="alert" className="form-error">{state.error}</span>}
+const LENGTH = 6;
+const COOLDOWN_SECONDS = 60;
+
+// Confirmação por código, não bloqueante: a pessoa usa o painel normalmente enquanto não confirma.
+// Um único input real desenhado como seis casas mantém colar, autocompletar e leitor de tela funcionando.
+export function EmailVerificationNotice({ email }: { email: string }) {
+  const router = useRouter();
+  const input = useRef<HTMLInputElement>(null);
+  const form = useRef<HTMLFormElement>(null);
+  const [code, setCode] = useState("");
+  const [focused, setFocused] = useState(false);
+  const [misses, setMisses] = useState(0);
+  const [resendUntil, setResendUntil] = useState(0);
+  const [now, setNow] = useState(0);
+  const [resent, resend, resending] = useActionState<ActionState>(resendVerification, {});
+  const [result, verify, checking] = useActionState<ActionState, FormData>(async (previous, data) => {
+    const outcome = await verifyEmailCode(previous, data);
+    if (outcome.error) { setCode(""); setMisses((count) => count + 1); input.current?.focus(); }
+    // A animação de sucesso termina antes de o painel recarregar sem este aviso.
+    if (outcome.success) window.setTimeout(() => router.refresh(), window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1400);
+    return outcome;
+  }, {});
+
+  useEffect(() => {
+    if (!resendUntil) return;
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [resendUntil]);
+
+  const remaining = resendUntil ? Math.max(0, Math.ceil((resendUntil - (now || resendUntil - COOLDOWN_SECONDS * 1000)) / 1000)) : 0;
+  const state = result.success ? "done" : checking ? "checking" : misses > 0 && code === "" ? "wrong" : "idle";
+  const change = (value: string) => {
+    const digits = value.replace(/\D/g, "").slice(0, LENGTH);
+    flushSync(() => setCode(digits));
+    if (digits.length === LENGTH) form.current?.requestSubmit();
+  };
+
+  return <div className="verification-notice" role="region" aria-label="Confirmação de e-mail" data-state={state}>
+    <div className="verification-copy">
+      <h2>{result.success ? "E-mail confirmado." : "Confirme seu e-mail."}</h2>
+      <p>{result.success ? "Tudo certo com a sua conta." : <>Digite o código de 6 dígitos que enviamos para <strong>{email}</strong>. Ele vale por 10 minutos.</>}</p>
+    </div>
+    <div className="verification-entry">
+      <form ref={form} action={verify}>
+        <div className="otp">
+          <input ref={input} className="otp-input" name="code" value={code} onChange={(event) => change(event.target.value)} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]*" maxLength={LENGTH} aria-label="Código de confirmação" aria-describedby="otp-feedback" disabled={Boolean(result.success)} readOnly={checking}/>
+          <div className="otp-cells" key={misses} aria-hidden="true">{Array.from({ length: LENGTH }, (_, index) => <span key={index} className={`otp-cell${code[index] ? " filled" : ""}${focused && index === Math.min(code.length, LENGTH - 1) ? " active" : ""}`} style={{ "--i": index } as React.CSSProperties}>{code[index] && <b key={code[index]}>{code[index]}</b>}</span>)}</div>
+          {result.success && <span className="otp-done" aria-hidden="true"><Check/></span>}
+        </div>
+        <button type="submit" className="sr-only" disabled={checking || Boolean(result.success)}>Confirmar código</button>
+      </form>
+      {!result.success && <div className="verification-foot">
+        <p id="otp-feedback" className="otp-feedback">{checking ? <span role="status">Conferindo…</span> : result.error ? <span role="alert">{result.error}</span> : resent.success ? <span role="status">{resent.success}</span> : resent.error ? <span role="alert">{resent.error}</span> : "Não chegou? Olhe a caixa de spam."}</p>
+        <form action={resend} onSubmit={() => { setNow(Date.now()); setResendUntil(Date.now() + COOLDOWN_SECONDS * 1000); }}><button type="submit" className="otp-resend" disabled={resending || remaining > 0}>{resending ? "Enviando…" : remaining > 0 ? `Reenviar em ${remaining}s` : "Reenviar e-mail"}</button></form>
+      </div>}
+      {result.success && <p id="otp-feedback" role="status" className="sr-only">E-mail confirmado.</p>}
+    </div>
   </div>;
 }

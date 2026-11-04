@@ -6,7 +6,7 @@ import { offers, providers, reviews, serviceTypes } from "../src/lib/db/schema";
 import { setAccountType } from "../src/lib/auth/account-type";
 import { REVIEW_ACCEPTANCE_TRIGGER } from "../src/modules/reviews/rules";
 import { seedCatalog } from "./seed";
-import { seedDemoScenarios } from "./demo-scenarios";
+import { demoPhoto, seedDemoScenarios } from "./demo-scenarios";
 
 async function seedDemo() {
   if (process.env.NODE_ENV === "production" || process.env.ALLOW_DEMO_SEED !== "true") throw new Error("Demo recusada: use ALLOW_DEMO_SEED=true apenas em ambiente local.");
@@ -30,7 +30,7 @@ async function seedDemo() {
     const existing = await db.select({ id: user.id }).from(user).where(eq(user.email, email)).limit(1);
     const account = existing[0] ?? (await auth.api.signUpEmail({ body: { email, password, name: names[i] } })).user;
     await setAccountType(account.id, "PRESTADOR"); // no-op se o tipo já estiver definido
-    const [provider] = await db.insert(providers).values({ userId: account.id, slug: `prestador-demo-${i + 1}`, type: i % 2 === 0 ? "PESSOA_JURIDICA" : "PESSOA_FISICA", displayName: names[i], description: profiles[i].about, yearsExperience: i + 1, contactEmail: email, contactsPublishedAt: new Date(), city: profiles[i].city[0], state: profiles[i].city[1] }).onConflictDoUpdate({ target: providers.userId, set: { displayName: names[i] } }).returning();
+    const [provider] = await db.insert(providers).values({ userId: account.id, slug: `prestador-demo-${i + 1}`, type: i % 2 === 0 ? "PESSOA_JURIDICA" : "PESSOA_FISICA", displayName: names[i], description: profiles[i].about, yearsExperience: i + 1, contactEmail: email, contactsPublishedAt: new Date(), city: profiles[i].city[0], state: profiles[i].city[1], photoUrl: demoPhoto(i + 1) }).onConflictDoUpdate({ target: providers.userId, set: { displayName: names[i], photoUrl: demoPhoto(i + 1) } }).returning();
     const service = types.find((type) => type.slug === (i < 3 ? "landing-page" : i === 7 ? "api" : "site-institucional"));
     if (!service) throw new Error("Catálogo de demonstração incompleto.");
     const exists = await db.select({ id: offers.id }).from(offers).where(and(eq(offers.providerId, provider.id), eq(offers.serviceTypeId, service.id), eq(offers.active, true), isNull(offers.deletedAt))).limit(1);

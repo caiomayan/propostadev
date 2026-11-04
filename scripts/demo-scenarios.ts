@@ -321,6 +321,12 @@ const scenarios: ProjectSeed[] = [
   },
 ];
 
+/**
+ * Avatar ilustrado (DiceBear, CC0) servido por `public/demo/avatars`. O Perfil só aceita URL https absoluta, então a
+ * base vem de DEMO_PHOTO_BASE, definida no seed de produção. Sem ela, ficam as iniciais.
+ */
+export const demoPhoto = (n: number) => (process.env.DEMO_PHOTO_BASE ? `${process.env.DEMO_PHOTO_BASE}/demo/avatars/prestador-demo-${n}.svg` : null);
+
 const ago = (days: number, hours = 0) => new Date(Date.now() - (days * 24 + hours) * 3_600_000);
 
 async function seedExtraProviders(password: string, types: Map<string, string>) {
@@ -329,7 +335,7 @@ async function seedExtraProviders(password: string, types: Map<string, string>) 
     const [existing] = await db.select({ id: user.id }).from(user).where(eq(user.email, email)).limit(1);
     const accountId = existing?.id ?? (await auth.api.signUpEmail({ body: { email, password, name: seed.name } })).user.id;
     await setAccountType(accountId, "PRESTADOR");
-    const [provider] = await db.insert(providers).values({ userId: accountId, slug: `prestador-demo-${seed.n}`, type: seed.kind, displayName: seed.name, description: `${seed.about}`, yearsExperience: seed.years, contactEmail: email, contactsPublishedAt: new Date(), city: seed.city?.[0] ?? null, state: seed.city?.[1] ?? null }).onConflictDoUpdate({ target: providers.userId, set: { displayName: seed.name } }).returning({ id: providers.id });
+    const [provider] = await db.insert(providers).values({ userId: accountId, slug: `prestador-demo-${seed.n}`, type: seed.kind, displayName: seed.name, description: `${seed.about}`, yearsExperience: seed.years, contactEmail: email, contactsPublishedAt: new Date(), city: seed.city?.[0] ?? null, state: seed.city?.[1] ?? null, photoUrl: demoPhoto(seed.n) }).onConflictDoUpdate({ target: providers.userId, set: { displayName: seed.name, photoUrl: demoPhoto(seed.n) } }).returning({ id: providers.id });
     for (const offer of seed.offers) {
       const serviceTypeId = types.get(offer.service);
       if (!serviceTypeId) throw new Error(`Tipo de serviço ausente na demo: ${offer.service}`);

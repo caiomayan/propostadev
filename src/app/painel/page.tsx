@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { and, eq, isNull } from "drizzle-orm";
+import { EmailVerificationNotice } from "@/components/auth/email-verification-notice";
 import { requireAccount } from "@/lib/auth/session";
+import { emailAvailable } from "@/lib/email/mailer";
 import { db } from "@/lib/db";
 import { offers, providers } from "@/lib/db/schema";
 import { ResumeDraft } from "@/components/triage/draft-memory";
@@ -10,12 +12,14 @@ import { listMyProposals, listOpportunities } from "@/modules/proposals/queries"
 import { dateLabel, projectStatusLabels } from "@/modules/triage/labels";
 export default async function DashboardPage() {
   const { session, accountType } = await requireAccount();
+  // Fica na página, não no layout: o Next rola até o conteúdo da rota e esconderia um bloco acima dele.
+  const verification = !session.user.emailVerified && emailAvailable() ? <EmailVerificationNotice email={session.user.email}/> : null;
   if (accountType === "CLIENTE") {
     const projects = await listClientProjects(session.user.id);
     const activeProposals = projects.reduce((total, project) => total + project.proposalCount, 0);
     const openProjects = projects.filter((project) => project.status === "ABERTO").length;
     const closedProjects = projects.filter((project) => project.status === "ENCERRADO").length;
-    return <section className="stack"><h1>Olá, {session.user.name}.</h1><ResumeDraft/>
+    return <section className="stack">{verification}<h1>Olá, {session.user.name}.</h1><ResumeDraft/>
       {projects.length > 0 && <dl className="dash-figures" aria-label="Seus números"><div className="dash-figure lead"><dt>{activeProposals === 1 ? "Proposta ativa" : "Propostas ativas"}</dt><dd>{activeProposals}</dd></div><div className="dash-figure"><dt>{openProjects === 1 ? "Projeto aberto" : "Projetos abertos"}</dt><dd>{openProjects}</dd></div><div className="dash-figure"><dt>{closedProjects === 1 ? "Projeto encerrado" : "Projetos encerrados"}</dt><dd>{closedProjects}</dd></div></dl>}
       {projects.length === 0 ? <div className="panel stack"><h2>Comece descrevendo o que você precisa</h2><p>Faça a Triagem: você vê quanto esse serviço costuma custar e quais prestadores são compatíveis antes de publicar.</p><Link className="button" href="/triagem">Descrever um projeto</Link></div>
         : <div className="panel stack"><h2>Seus projetos</h2><p>{activeProposals} {activeProposals === 1 ? "proposta ativa recebida" : "propostas ativas recebidas"} em {openProjects} {openProjects === 1 ? "projeto aberto" : "projetos abertos"}.</p><ul className="project-list">{projects.slice(0, 3).map((project) => <li key={project.id} className="project-row"><div><Link href={`/painel/projetos/${project.id}`}>{project.title}</Link><p className="project-meta"><span>{dateLabel(project.createdAt)}</span></p></div><span className="chips-row">{project.proposalCount > 0 && <span className="chip">{project.proposalCount} {project.proposalCount === 1 ? "proposta recebida" : "propostas recebidas"}</span>}<span className={`status ${project.status.toLowerCase()}`}>{projectStatusLabels[project.status]}</span></span></li>)}</ul><div className="actions"><Link className="button" href="/triagem">Descrever um projeto</Link><Link className="button secondary" href="/painel/projetos">Ver todos os projetos</Link></div></div>}
@@ -37,7 +41,7 @@ export default async function DashboardPage() {
   ];
   const next = steps.find((step) => !step.done);
   const firstName = session.user.name.split(/\s+/)[0];
-  return <section className="stack dash">
+  return <section className="stack dash">{verification}
     <header className="dash-heading"><h1>Olá, {firstName}.</h1><p className="muted">{next ? "Faltam poucos passos para você aparecer na busca." : "Seu perfil está no ar. Mantenha preços e prazos atualizados."}</p></header>
     {!next && <dl className="dash-figures" aria-label="Seus números"><div className="dash-figure lead"><dt>{invited > 0 ? `${open === 1 ? "Oportunidade" : "Oportunidades"} (${invited} com convite)` : open === 1 ? "Oportunidade aberta" : "Oportunidades abertas"}</dt><dd>{open}</dd></div><div className="dash-figure"><dt>{inPlay === 1 ? "Proposta em disputa" : "Propostas em disputa"}</dt><dd>{inPlay}</dd></div><div className="dash-figure"><dt>{accepted === 1 ? "Proposta aceita" : "Propostas aceitas"}</dt><dd>{accepted}</dd></div></dl>}
     {next ? <div className="panel dash-next stack"><h2>{next.title}</h2><p>{next.text}</p><Link className="button" href={next.href}>{next.cta}</Link></div>

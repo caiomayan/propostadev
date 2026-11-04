@@ -15,12 +15,14 @@ https://propostadev-one.vercel.app roda a `main` (merge 0dace58 do `mvp2`). Tick
 - O roteiro está em `docs/tasks/mvp2/ROTEIRO.md`.
 
 ## Credenciais
-OAuth GitHub: o botão só aparece com as variáveis definidas na Vercel. Quem grava as variáveis sensíveis é o dono. Em produção desde 03/11/2026: login com Google, SMTP com Gmail e senha de app e a página `/privacidade`, exigida pelo Google.
+OAuth GitHub: o botão só aparece com as variáveis definidas na Vercel. Quem grava as variáveis sensíveis é o dono. Em produção desde 03/11/2026: login com Google, SMTP com Gmail e senha de app, confirmação de e-mail por código de 6 dígitos e a página `/privacidade`, exigida pelo Google. A recuperação de senha continua por link.
 
 ## Frontend v3 (03/11/2026)
 Redesenho de todas as telas, com a marca mantida: régua arrastável com preços reais na home, jornada por rolagem, Triagem com régua ao vivo, painel com navegação lateral e figuras, autenticação em duas metades e movimento em todo o produto. Detalhes em `DESIGN.md`.
 
 ## Aprendizados de ambiente
+- O plugin emailOTP abre login, recuperação e troca de e-mail por código: toda a superfície HTTP dele fica em `disabledPaths` e o uso passa só pelas Server Actions.
+- Blocos acima do conteúdo no layout do painel somem depois de um redirect, porque o Next rola até o segmento novo.
 - Com `next dev`, abra por `localhost`, não por `127.0.0.1`: o Next bloqueia os recursos de desenvolvimento e a página fica sem hidratação.
 - `loading.tsx` em rota com `notFound()` faz a resposta sair 200 em vez de 404. O teste de autorização pegou isso no painel.
 - O E2E usa `next start` sobre o build existente. Rode `pnpm build` antes de `pnpm test:e2e`.

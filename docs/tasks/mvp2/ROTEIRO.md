@@ -27,6 +27,7 @@ Use uma janela anônima para cada conta (Cliente e Prestador) ou dois navegadore
 ## 2. Contas separadas (cerca de 1 min)
 1. Em **Criar conta de Cliente**, mostre a escolha "Quero contratar" ou "Quero oferecer serviços". O tipo é definitivo.
 2. Contas de Prestador não publicam projetos, e contas de Cliente não enviam propostas.
+3. Com um e-mail real, a conta nova abre o painel pedindo o código de 6 dígitos enviado por e-mail. As contas demo já estão confirmadas, então não mostram esse passo.
 
 ## 3. Triagem das Propostas e Aceite (Cliente, cerca de 3 min)
 1. Entre como **cliente1**. No **Painel**, veja os projetos e o contador de propostas.

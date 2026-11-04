@@ -96,9 +96,25 @@ export async function resendVerification(): Promise<ActionState> {
   if (session.user.emailVerified) return { success: "Seu e-mail já está confirmado." };
   if (!emailAvailable()) return { error: "O envio de e-mail não está disponível no momento." };
   if (!await mutationAllowed(session.user.id, "verify")) return { error: "Muitas tentativas. Aguarde um minuto." };
-  try { await auth.api.sendVerificationEmail({ body: { email: session.user.email, callbackURL: "/painel" }, headers: await headers() }); }
+  try { await auth.api.sendVerificationOTP({ body: { email: session.user.email, type: "email-verification" }, headers: await headers() }); }
   catch { return { error: "Não foi possível reenviar agora. Tente novamente em alguns instantes." }; }
-  return { success: "Enviamos um novo link de confirmação para o seu e-mail." };
+  return { success: "Enviamos um novo código para o seu e-mail." };
+}
+const otpErrors: Record<string, string> = { INVALID_OTP: "Código incorreto. Confira e tente de novo.", OTP_EXPIRED: "Este código expirou. Peça um novo.", TOO_MANY_ATTEMPTS: "Muitas tentativas com este código. Peça um novo." };
+// O e-mail vem sempre da sessão: um código só confirma a conta de quem está logado.
+export async function verifyEmailCode(_: ActionState, form: FormData): Promise<ActionState> {
+  const session = await getSession();
+  if (!session) return { error: "Entre para confirmar o e-mail." };
+  if (session.user.emailVerified) return { success: "Seu e-mail já está confirmado." };
+  const code = z.string().regex(/^\d{6}$/).safeParse(form.get("code"));
+  if (!code.success) return { error: "Digite os 6 dígitos do código." };
+  if (!await mutationAllowed(session.user.id, "verify-otp")) return { error: "Muitas tentativas. Aguarde um minuto." };
+  try { await auth.api.verifyEmailOTP({ body: { email: session.user.email, otp: code.data }, headers: await headers() }); }
+  catch (error) {
+    const reason = (error as { body?: { code?: string } }).body?.code ?? "";
+    return { error: otpErrors[reason] ?? "Não foi possível confirmar agora. Tente novamente em alguns instantes." };
+  }
+  return { success: "E-mail confirmado." };
 }
 export async function socialSignIn(form: FormData) {
   const provider = z.enum(socialProviderIds).safeParse(form.get("provider"));
