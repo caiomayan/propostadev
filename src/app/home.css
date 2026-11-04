@@ -166,6 +166,9 @@ body:has(.home) .site-footer { margin-top: 0; }
   .lab-figure { font-size: clamp(2.75rem, 9.5svh, 5rem); }
   .lab-track { height: 60px; }
   .triage-slot { gap: 8px; padding: 22px 24px; }
+  .triage-slot h2 { font-size: 1.5rem; }
+  .triage-slot .goal-links a { min-height: 44px; padding-block: 4px; }
+  .triage-slot .slot-secondary { display: none; } /* a busca segue no menu principal, logo acima */
 }
 
 /* ---------- telas menores ---------- */
