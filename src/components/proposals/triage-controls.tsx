@@ -6,13 +6,14 @@ const orders: { value: TriageOrder | undefined; label: string }[] = [
 ];
 
 /** Ordenação e filtro por links: o estado vive na URL (`ordem`, `pre=1`), sem estado no cliente. */
-export function TriageControls({ basePath, ordem, soPre, canFilter }: { basePath: string; ordem?: TriageOrder; soPre: boolean; canFilter: boolean }) {
+export function TriageControls({ basePath, ordem, soPre, canFilter, compat }: { basePath: string; ordem?: TriageOrder; soPre: boolean; canFilter: boolean; compat?: string }) {
   const href = (next: { ordem?: TriageOrder; pre?: boolean }) => {
     const params = new URLSearchParams();
     if (next.ordem) params.set("ordem", next.ordem);
     if (next.pre) params.set("pre", "1");
+    if (compat) params.set("compat", compat);
     const query = params.toString();
-    return query ? `${basePath}?${query}` : basePath;
+    return `${query ? `${basePath}?${query}` : basePath}#propostas`;
   };
   return <div className="triage-controls">
     <nav aria-label="Ordenar propostas"><p className="eyebrow" id="ordenar">Ordenar por</p>

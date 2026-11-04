@@ -5,6 +5,7 @@ import { providers } from "@/lib/db/schema";
 import type { Offer } from "@/lib/db/schema";
 import type { SearchInput } from "./validation";
 import { canCreateReview, getOwnReview, reputationSubquery, reviewIsVerified } from "@/modules/reviews/queries";
+import type { ReviewOrder } from "@/lib/list-sorts";
 
 export type PublicOffer = Pick<Offer, "id" | "title" | "description" | "priceType" | "priceMin" | "priceMax" | "deadlineType" | "deadlineMinDays" | "deadlineMaxDays"> & {
   providerId: string; slug: string; displayName: string; type: "PESSOA_FISICA" | "PESSOA_JURIDICA"; yearsExperience: number;
@@ -42,10 +43,16 @@ function searchConditions(input: SearchInput) {
 }
 
 export async function searchProviders(input: SearchInput) {
-  const eligible = sql`SELECT ${projection}, row_number() OVER (PARTITION BY p.id ORDER BY o.titulo, o.id) AS choice ${fromPublic} WHERE ${searchConditions(input)}`;
+  // Sem modelo escolhido, só o preço por projeto entra na ordem: R$/hora e sob consulta ficam por último (não se misturam unidades).
+  const sortPrice = input.modelo_preco ? sql`o.preco_minimo` : sql`CASE WHEN o.tipo_preco IN ('FIXO', 'A_PARTIR_DE', 'INTERVALO') THEN o.preco_minimo END`;
+  // A oferta mostrada por prestador é a que justifica a posição dele na lista.
+  const shown = input.ordenar === "preco" ? sql`${sortPrice} ASC NULLS LAST, o.titulo, o.id` : input.ordenar === "prazo" ? sql`o.prazo_minimo_dias ASC NULLS LAST, o.titulo, o.id` : sql`o.titulo, o.id`;
+  const eligible = sql`SELECT ${projection}, ${sortPrice} AS "sortPrice", o.prazo_minimo_dias AS "sortDays", row_number() OVER (PARTITION BY p.id ORDER BY ${shown}) AS choice ${fromPublic} WHERE ${searchConditions(input)}`;
   const order = input.ordenar === "nota" ? sql`rating::numeric DESC NULLS LAST, "reviewCount" DESC, "displayName", "providerId"`
+    : input.ordenar === "avaliacoes" ? sql`"reviewCount" DESC, rating::numeric DESC NULLS LAST, "displayName", "providerId"`
     : input.ordenar === "experiencia" ? sql`"yearsExperience" DESC, "displayName", "providerId"`
-    : input.ordenar === "preco" ? sql`"priceMin" ASC, "displayName", "providerId"` : sql`"displayName", "providerId"`;
+    : input.ordenar === "preco" ? sql`"sortPrice" ASC NULLS LAST, "displayName", "providerId"`
+    : input.ordenar === "prazo" ? sql`"sortDays" ASC NULLS LAST, "displayName", "providerId"` : sql`"displayName", "providerId"`;
   const [rows, count] = await Promise.all([
     db.execute<PublicOffer>(sql`WITH eligible AS (${eligible}) SELECT * FROM eligible WHERE choice = 1 ORDER BY ${order} LIMIT 12 OFFSET ${(input.pagina - 1) * 12}`),
     db.execute<{ count: number }>(sql`WITH eligible AS (${eligible}) SELECT count(*)::int AS count FROM eligible WHERE choice = 1`),
@@ -78,9 +85,13 @@ export async function getPublicProvider(slug: string) {
 export type ProviderReview = { id: string; name: string; rating: number; comment: string | null; createdAt: Date; updatedAt: Date; verified: boolean };
 
 /** Página de Avaliações do Prestador, cada uma com a flag derivada `verified`, mais a situação do usuário da sessão. */
-export async function getProviderReviews(providerId: string, page: number, userId?: string) {
+const reviewOrdering: Record<ReviewOrder, SQL> = {
+  recentes: sql`a.created_at DESC, a.id DESC`, melhores: sql`a.nota DESC, a.created_at DESC, a.id DESC`,
+  piores: sql`a.nota ASC, a.created_at DESC, a.id DESC`, verificadas: sql`${reviewIsVerified("a")} DESC, a.created_at DESC, a.id DESC`,
+};
+export async function getProviderReviews(providerId: string, page: number, userId?: string, order: ReviewOrder = "recentes") {
   const [rows, own, owner, canCreate] = await Promise.all([
-    db.execute<ProviderReview>(sql`SELECT a.id, u.name, a.nota AS rating, a.comentario AS comment, a.created_at AS "createdAt", a.updated_at AS "updatedAt", ${reviewIsVerified("a")} AS verified FROM avaliacao a JOIN "user" u ON u.id = a.usuario_id WHERE a.prestador_id = ${providerId}::uuid ORDER BY a.created_at DESC, a.id DESC LIMIT 10 OFFSET ${(page - 1) * 10}`),
+    db.execute<ProviderReview>(sql`SELECT a.id, u.name, a.nota AS rating, a.comentario AS comment, a.created_at AS "createdAt", a.updated_at AS "updatedAt", ${reviewIsVerified("a")} AS verified FROM avaliacao a JOIN "user" u ON u.id = a.usuario_id WHERE a.prestador_id = ${providerId}::uuid ORDER BY ${reviewOrdering[order]} LIMIT 10 OFFSET ${(page - 1) * 10}`),
     userId ? getOwnReview(userId, providerId) : Promise.resolve(null),
     userId ? db.select({ id: providers.id }).from(providers).where(and(eq(providers.id, providerId), eq(providers.userId, userId))).limit(1) : Promise.resolve([]),
     userId ? canCreateReview(userId, providerId) : Promise.resolve(false),

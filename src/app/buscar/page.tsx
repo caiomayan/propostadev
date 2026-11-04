@@ -1,6 +1,7 @@
 import Form from "next/form";
 import Link from "next/link";
 import { ProviderCard } from "@/components/provider-card";
+import { SortLinks } from "@/components/sort-links";
 import { PriceFilters } from "@/components/provider-price-filters";
 import { FilterPanel } from "@/components/provider-filter-panel";
 import { FilterSelect } from "@/components/provider-filter-select";
@@ -10,6 +11,7 @@ import { searchSchema } from "@/modules/search/validation";
 import { money, priceLabels } from "@/lib/format";
 
 type Params = Record<string, string | string[] | undefined>;
+const searchOrders = [{ value: "nome", label: "Nome" }, { value: "nota", label: "Melhor avaliação" }, { value: "avaliacoes", label: "Mais avaliados" }, { value: "experiencia", label: "Maior experiência" }, { value: "preco", label: "Menor preço" }, { value: "prazo", label: "Menor prazo" }];
 export default async function SearchPage({ searchParams }: { searchParams: Promise<Params> }) {
   const params = await searchParams;
   const raw = Object.fromEntries(Object.entries(params).map(([key, value]) => [key, Array.isArray(value) ? value[0] : value]).filter(([, value]) => value !== "" && value !== undefined));
@@ -20,6 +22,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const selectedCategory = catalog.categories.find((category) => category.slug === input.categoria);
   const pages = Math.min(1000, Math.ceil(search.total / 12));
   const href = (page: number) => { const query = new URLSearchParams(); for (const [key, value] of Object.entries(input)) if (value !== undefined && value !== "" && key !== "pagina") query.set(key, String(value)); query.set("pagina", String(page)); return `/buscar?${query}`; };
+  const sortHref = (ordenar: string) => { const query = new URLSearchParams(); for (const [key, value] of Object.entries(input)) if (value !== undefined && value !== "" && key !== "pagina" && key !== "ordenar") query.set(key, String(value)); if (ordenar !== "nome") query.set("ordenar", ordenar); const text = query.toString(); return `/buscar${text ? `?${text}` : ""}#resultados`; };
+  const sorts = searchOrders.filter((order) => order.value !== "preco" || input.modelo_preco !== "SOB_CONSULTA").map((order) => ({ label: order.label, href: sortHref(order.value), current: order.value === input.ordenar }));
   const activeFilters = [input.q && `Busca: ${input.q}`, selectedCategory?.name, selectedType?.name, input.pessoa && (input.pessoa === "PESSOA_FISICA" ? "Pessoa física" : "Pessoa jurídica"), input.experiencia_min !== undefined && `Experiência: ${input.experiencia_min}+ anos`, input.nota_min && `Nota: ${input.nota_min}+`, input.modelo_preco && priceLabels[input.modelo_preco], input.preco_min && `Mínimo: ${money(input.preco_min)}`, input.preco_max && `Máximo: ${money(input.preco_max)}`, input.prazo_ate && `Até ${input.prazo_ate} dias`].filter(Boolean);
   return <section className="container section"><div className="page-heading"><h1>Encontre seu próximo desenvolvedor</h1><p className="muted">Compare serviços anunciados e converse diretamente com quem desenvolve.</p></div>
     {!parsed.success && <div role="alert" className="panel filter-error"><p>Alguns filtros são inválidos. Ajuste os campos e busque novamente. Apenas o texto da busca foi mantido nos resultados.</p><ul>{parsed.error.issues.map((issue, index) => <li key={index}>{issue.path.join(".")}: {issue.message}</li>)}</ul></div>}
@@ -32,10 +36,11 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       <FilterSelect label="Avaliação mínima" name="nota_min" defaultValue={input.nota_min ?? ""}><option value="">Qualquer avaliação</option>{[1, 2, 3, 4, 5].map((rating) => <option key={rating} value={rating}>{rating} de 5 ou mais</option>)}</FilterSelect>
       <PriceFilters key={input.modelo_preco ?? "any"} model={input.modelo_preco} min={input.preco_min} max={input.preco_max}/>
       <label>Prazo estimado de até (dias)<input name="prazo_ate" type="number" min={1} max={3650} defaultValue={input.prazo_ate}/></label><p className="muted">Inclui prazos fixos e intervalos com limite superior. Prazos a combinar e “a partir de” ficam de fora.</p>
-      <FilterSelect label="Ordenar por" name="ordenar" defaultValue={input.ordenar}><option value="nome">Nome</option><option value="nota">Melhor avaliação</option><option value="experiencia">Maior experiência</option><option value="preco">Menor preço anunciado</option></FilterSelect>
+      {input.ordenar !== "nome" && <input type="hidden" name="ordenar" value={input.ordenar}/>}
       <button className="button">Buscar serviços</button><Link href="/buscar" className="button secondary">Limpar filtros</Link>
-    </div></Form></FilterPanel><div className="search-main">
+    </div></Form></FilterPanel><div className="search-main" id="resultados">
       <div className="search-count"><h2>{search.total} {search.total === 1 ? "prestador encontrado" : "prestadores encontrados"}</h2><span className="muted">Uma oferta por prestador · outras no perfil</span></div>
+      {search.total > 1 && <SortLinks name="prestadores" options={sorts}/>}
       {activeFilters.length > 0 && <div className="active-filters" aria-label="Filtros ativos">{activeFilters.map((filter, index) => <span className="badge" key={index}>{filter}</span>)}</div>}
       {selectedType && average && <aside className="price-statistic"><p className="eyebrow">Neste tipo de serviço · {selectedType.name}</p>{average.average ? <><strong>{money(average.average)}</strong><p>Média dos preços fixos anunciados; não é orçamento.</p><p className="muted">{average.count} prestadores na amostra. Este indicador considera todas as ofertas elegíveis do tipo, independentemente dos demais filtros.</p></> : <><p>Dados insuficientes para calcular uma média.</p><p className="muted">{average.count} de pelo menos 3 prestadores com preços fixos elegíveis.</p></>}</aside>}
       {search.results.length ? <div className="result-list">{search.results.map((offer) => <ProviderCard key={offer.providerId} offer={offer}/>)}</div> : <div className="empty panel"><h2>{search.total > 0 ? "Esta página não tem resultados" : "Nenhum prestador encontrado"}</h2><p className="muted">{search.total > 0 ? "Volte para uma página disponível para ver os prestadores." : "Tente outro termo ou remova alguns filtros para ampliar sua busca."}</p><Link className="button secondary" href={search.total > 0 ? href(1) : "/buscar"}>{search.total > 0 ? "Voltar à primeira página" : "Remover filtros"}</Link></div>}

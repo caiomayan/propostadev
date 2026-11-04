@@ -11,6 +11,8 @@ import { REVIEW_NOT_ELIGIBLE, VERIFIED_SEAL } from "@/modules/reviews/rules";
 import { deadline, location, price } from "@/lib/format";
 import { Reputation } from "@/components/reputation";
 import { StarRating } from "@/components/star-rating";
+import { SortLinks } from "@/components/sort-links";
+import { reviewOrders, reviewSorts, sortOptions, type ReviewOrder } from "@/lib/list-sorts";
 
 export default async function ProviderPage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const [{ slug }, query] = await Promise.all([params, searchParams]);
@@ -20,7 +22,10 @@ export default async function ProviderPage({ params, searchParams }: { params: P
   const value = Number(rawPage ?? 1);
   const page = Number.isInteger(value) && value >= 1 && value <= 1000 ? value : 1;
   const session = await getSession();
-  const reviewData = await getProviderReviews(provider.id, page, session?.user.id);
+  const rawOrder = Array.isArray(query.avaliacoes) ? query.avaliacoes[0] : query.avaliacoes;
+  const reviewOrder = reviewOrders.find((order) => order === rawOrder) ?? "recentes";
+  const reviewHref = (nextPage: number, order: ReviewOrder = reviewOrder) => { const params = new URLSearchParams(); if (nextPage > 1) params.set("pagina", String(nextPage)); if (order !== "recentes") params.set("avaliacoes", order); const text = params.toString(); return `/prestadores/${slug}${text ? `?${text}` : ""}#avaliacoes`; };
+  const reviewData = await getProviderReviews(provider.id, page, session?.user.id, reviewOrder);
   const reviewBox = !session ? <div className="panel"><p><Link href="/entrar">Entre como Cliente</Link> para avaliar este prestador. Só quem contratou por uma Proposta aceita pode avaliar.</p></div>
     : reviewData.isOwner ? <p className="panel muted">Você pode acompanhar as avaliações do seu perfil aqui. Não é possível avaliar o próprio perfil.</p>
     : reviewData.own ? <ReviewForm providerId={provider.id} own={reviewData.own}/>
@@ -38,9 +43,10 @@ export default async function ProviderPage({ params, searchParams }: { params: P
         <section className="profile-section"><h2>Serviços anunciados</h2>{provider.offers.length ? <div className="profile-offers">{provider.offers.map((offer) => <article className="profile-offer" key={offer.id}><span className="badge">{offer.serviceName}</span><h3>{offer.title}</h3><p className="profile-offer-description">{offer.description}</p><div className="profile-offer-foot"><dl className="offer-facts"><div><dt>Preço</dt><dd className="offer-price">{price(offer)}</dd></div><div><dt>Prazo</dt><dd>{deadline(offer)}</dd></div></dl><CompareButton offerId={offer.id} providerId={provider.id}/></div></article>)}</div> : <div className="empty"><p>Este prestador ainda não tem serviços ativos anunciados.</p></div>}</section>
         <section id="avaliacoes" className="review-section"><h2>Avaliações ({provider.reviewCount})</h2><p className="muted">Avaliações com o selo “{VERIFIED_SEAL}” vêm de Clientes que aceitaram uma Proposta deste prestador na plataforma.</p>
           {reviewBox}
+          {provider.reviewCount > 1 && <SortLinks name="avaliações" options={sortOptions(reviewSorts, reviewOrder, (order) => reviewHref(1, (order ?? "recentes") as ReviewOrder))}/>}
           {reviewData.reviews.length ? reviewData.reviews.map((review) => <article className={`review-item ${review.verified ? "verified" : "previous"}`} key={review.id}><div className="review-heading"><strong>{review.name}</strong><StarRating value={review.rating} label={`Nota ${review.rating} de 5`}/></div><div className="review-meta"><ReviewBadge verified={review.verified}/><p className="muted"><time dateTime={new Date(review.createdAt).toISOString()}>{new Date(review.createdAt).toLocaleDateString("pt-BR")}</time>{new Date(review.updatedAt).getTime() > new Date(review.createdAt).getTime() && " · Editada"}</p></div>{review.comment && <p>{review.comment}</p>}</article>) : <p className="empty">{provider.reviewCount ? "Não há avaliações nesta página." : "Ainda não recebeu avaliações."}</p>}
-          {page > 1 && reviewData.reviews.length === 0 && <p><Link className="button secondary" href={`/prestadores/${slug}#avaliacoes`}>Voltar às primeiras avaliações</Link></p>}
-          {pages > 1 && <nav className="pagination" aria-label="Paginação de avaliações">{page > 1 ? <Link className="button secondary" href={`/prestadores/${slug}?pagina=${page - 1}#avaliacoes`}>Anterior</Link> : <span/>}<span className="muted">Página {page} de {pages}</span>{page < pages ? <Link className="button secondary" href={`/prestadores/${slug}?pagina=${page + 1}#avaliacoes`}>Próxima</Link> : <span/>}</nav>}
+          {page > 1 && reviewData.reviews.length === 0 && <p><Link className="button secondary" href={reviewHref(1)}>Voltar às primeiras avaliações</Link></p>}
+          {pages > 1 && <nav className="pagination" aria-label="Paginação de avaliações">{page > 1 ? <Link className="button secondary" href={reviewHref(page - 1)}>Anterior</Link> : <span/>}<span className="muted">Página {page} de {pages}</span>{page < pages ? <Link className="button secondary" href={reviewHref(page + 1)}>Próxima</Link> : <span/>}</nav>}
         </section>
       </div>
       <aside id="contato" className="panel stack profile-contact"><h2>Fale com o prestador</h2><p className="muted">Tire dúvidas pelos contatos publicados abaixo. Para receber uma proposta com valor e prazo, descreva seu projeto na <Link href="/triagem">Triagem</Link> e convide este prestador.</p><ProviderContacts provider={provider}/><p className="muted">{provider.contactEmail}</p></aside>

@@ -101,7 +101,7 @@ test("Cliente pré-seleciona, filtra e aceita com confirmação; vê os contatos
   await expect(client).toHaveURL(/ordem=valor/);
   await expect(client.getByRole("link", { name: "Menor valor" })).toHaveAttribute("aria-current", "true");
   await expect(firstCard).toContainText(nameB);
-  await client.getByRole("link", { name: "Menor prazo" }).click();
+  await client.getByRole("navigation", { name: "Ordenar propostas" }).getByRole("link", { name: "Menor prazo" }).click();
   await expect(client).toHaveURL(/ordem=prazo/);
   await expect(firstCard).toContainText(nameA);
 
@@ -113,7 +113,7 @@ test("Cliente pré-seleciona, filtra e aceita com confirmação; vê os contatos
   await expect(client).toHaveURL(/pre=1/);
   await expect(client.locator("article.proposal-card")).toHaveCount(1);
   await expect(client.locator("article.proposal-card")).toContainText(nameA);
-  await expect(client.getByRole("link", { name: "Menor prazo" })).toHaveAttribute("href", /pre=1/);
+  await expect(client.getByRole("navigation", { name: "Ordenar propostas" }).getByRole("link", { name: "Menor prazo" })).toHaveAttribute("href", /pre=1/);
   await client.getByRole("link", { name: "Todas" }).click();
   await expect(client.locator("article.proposal-card")).toHaveCount(2);
 

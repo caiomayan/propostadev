@@ -61,6 +61,8 @@
 .filter-fields .inline { flex-wrap: nowrap; align-items: flex-start; }
 .filter-fields .inline > .field, .filter-fields .inline label { flex: 1; min-width: 0; }
 .search-main { min-width: 0; }
+.search-main .sort-links { margin-block: 12px 20px; }
+.search-main .active-filters + .result-list, .search-main .sort-links + .result-list { margin-top: 0; }
 .search-count { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 .search-count h2 { font-size: 1.25rem; }
 .filter-error { color: var(--destructive); margin-bottom: 20px; }

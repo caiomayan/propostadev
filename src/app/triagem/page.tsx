@@ -7,6 +7,8 @@ import { CompatibleCard } from "@/components/triage/compatible-card";
 import { DetailsForm } from "@/components/triage/details-form";
 import { RememberDraft } from "@/components/triage/draft-memory";
 import { getSession } from "@/lib/auth/session";
+import { applySort, compatibleSorts, sortOptions } from "@/lib/list-sorts";
+import { SortLinks } from "@/components/sort-links";
 import { needsEmailConfirmation } from "@/lib/auth/email-gate";
 import { getCatalog } from "@/modules/catalog/queries";
 import { publishProject } from "@/modules/projects/actions";
@@ -35,7 +37,7 @@ export default async function TriagePage({ searchParams }: { searchParams: Promi
   // Com etapa=detalhes o rascunho ainda está em preenchimento (edição ou vindo da régua da home): sem cobrar erros.
   const editing = one(params.etapa) === "detalhes";
   if (!parsed.ok || editing) return <DetailsStep serviceType={serviceType} goalSlug={goalSlug} raw={raw} errors={!parsed.ok && touched && !editing ? parsed.errors : {}} />;
-  return <ResultStep serviceType={serviceType} draft={parsed.draft} goalSlug={goalSlug} />;
+  return <ResultStep serviceType={serviceType} draft={parsed.draft} goalSlug={goalSlug} ordem={params.ordem} />;
 }
 
 function Steps({ current }: { current: 1 | 2 | 3 }) {
@@ -81,14 +83,15 @@ async function DetailsStep({ serviceType, goalSlug, raw, errors }: { serviceType
   </div>;
 }
 
-async function ResultStep({ serviceType, draft, goalSlug }: { serviceType: ServiceTypeSummary; draft: Draft; goalSlug: string }) {
-  const [reference, providers, session] = await Promise.all([
+async function ResultStep({ serviceType, draft, goalSlug, ordem }: { serviceType: ServiceTypeSummary; draft: Draft; goalSlug: string; ordem: unknown }) {
+  const [reference, compatible, session] = await Promise.all([
     precoReferencia(serviceType.id),
     prestadoresCompativeis({ tipoServicoId: serviceType.id, orcamento: draft.orcamento, prazoDias: draft.prazoDias }),
     getSession(),
   ]);
   const position = posicaoOrcamento(draft.orcamento, reference.faixa);
   const query = draftQuery(draft, goalSlug ? { objetivo: goalSlug } : {});
+  const { items: providers, current, isDefault } = applySort(compatibleSorts, ordem, compatible);
   return <div className="container triage stack">
     <Steps current={3}/>
     <RememberDraft query={query}/>
@@ -105,7 +108,8 @@ async function ResultStep({ serviceType, draft, goalSlug }: { serviceType: Servi
     </section>
 
     <section className="stack" aria-labelledby="compativeis">
-      <div><p className="eyebrow">Prestadores compatíveis</p><h2 id="compativeis">{providers.length ? `${providers.length} ${providers.length === 1 ? "prestador oferece" : "prestadores oferecem"} ${serviceType.name}` : "Ainda não há prestadores neste tipo"}</h2><p className="muted">Ordenados por orçamento, prazo, avaliações verificadas e nota. Cada card mostra o motivo.</p></div>
+      <div><p className="eyebrow">Prestadores compatíveis</p><h2 id="compativeis">{providers.length ? `${providers.length} ${providers.length === 1 ? "prestador oferece" : "prestadores oferecem"} ${serviceType.name}` : "Ainda não há prestadores neste tipo"}</h2><p className="muted">{isDefault ? "Ordenados por orçamento, prazo, avaliações verificadas e nota. " : ""}Cada card mostra o motivo.</p></div>
+      {providers.length > 1 && <SortLinks name="prestadores compatíveis" options={sortOptions(compatibleSorts, current, (value) => `/triagem?${query}${value ? `&ordem=${value}` : ""}#compativeis`)}/>}
       {providers.length ? <div className="stack compatible-list">{providers.map((provider) => <CompatibleCard key={provider.providerId} provider={provider}/>)}</div> : <div className="empty"><h3>Nenhum prestador com oferta ativa agora</h3><p>Publique o projeto: quando alguém passar a oferecer este serviço, ele poderá ver o seu pedido.</p></div>}
     </section>
 

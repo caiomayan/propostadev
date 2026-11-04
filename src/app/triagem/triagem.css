@@ -158,7 +158,9 @@
 /* Triagem de Propostas e Aceite (ticket 06) */
 .triage-controls { display: flex; flex-wrap: wrap; gap: 16px 40px; }
 .triage-controls nav { min-width: 0; }
-.triage-controls .chips-row { list-style: none; padding: 0; margin-top: 6px; }
+.triage-controls .chips-row, .sort-links .chips-row { list-style: none; padding: 0; margin-top: 6px; }
+.sort-links { min-width: 0; margin-bottom: 4px; }
+#resultados, #compativeis, #convidar, #propostas, #avaliacoes { scroll-margin-top: 96px; }
 .filter-link { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 16px; border-radius: 999px; border: 1.5px solid var(--border); color: var(--foreground); font-weight: 600; font-size: .9375rem; }
 .filter-link:hover { text-decoration: none; border-color: var(--foreground); }
 .filter-link.current { background: var(--primary); border-color: var(--primary); color: var(--primary-foreground); }

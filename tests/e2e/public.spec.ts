@@ -157,8 +157,8 @@ test("perfil próprio impede autoavaliação e Prestador não avalia outros", as
 test("mobile abre filtros em modal sem overflow horizontal", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await page.goto("/buscar");
-  await page.getByRole("button", { name: "Filtros e ordenação", exact: true }).click();
-  const dialog = page.getByRole("dialog", { name: "Filtros e ordenação" });
+  await page.getByRole("button", { name: "Filtros", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Filtros", exact: true });
   await expect(dialog).toBeVisible();
   await dialog.getByLabel("Modelo de preço", { exact: true }).selectOption("SOB_CONSULTA");
   await expect(dialog.getByLabel("Preço mínimo", { exact: true })).toBeDisabled();

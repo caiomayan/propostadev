@@ -7,6 +7,8 @@ import { PriceRuler } from "@/components/price-ruler";
 import { ForgetDraft } from "@/components/triage/draft-memory";
 import { money } from "@/lib/format";
 import { requireCliente } from "@/lib/auth/session";
+import { applySort, compatibleSorts, sortOptions } from "@/lib/list-sorts";
+import { SortLinks } from "@/components/sort-links";
 import { cancelProject } from "@/modules/projects/actions";
 import { getClientProject, listInvitedProviderIds } from "@/modules/projects/queries";
 import { getAcceptedProvider, listProposalsForTriage, parseTriageOrder } from "@/modules/proposals/queries";
@@ -24,20 +26,22 @@ import { precoReferencia, prestadoresCompativeis } from "@/modules/triage/querie
 
 export const metadata: Metadata = { title: "Projeto" };
 
-export default async function ProjectDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ publicado?: string; ordem?: string; pre?: string }> }) {
+export default async function ProjectDetailPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ publicado?: string; ordem?: string; pre?: string; compat?: string }> }) {
   const session = await requireCliente();
   const { id } = await params;
   const project = await getClientProject(session.user.id, id);
   if (!project) notFound();
-  const { publicado, ordem: ordemParam, pre } = await searchParams;
+  const { publicado, ordem: ordemParam, pre, compat } = await searchParams;
   const ordem = parseTriageOrder(ordemParam), soPre = pre === "1" && project.status === "ABERTO";
   const open = project.status === "ABERTO";
   const budget = { tipo: project.budgetType, min: project.budgetMin, max: project.budgetMax };
-  const [reference, proposals, invitedIds, compatible, accepted] = await Promise.all([
+  const [reference, proposals, invitedIds, listedCompatible, accepted] = await Promise.all([
     precoReferencia(project.serviceTypeId), listProposalsForTriage(session.user.id, project.id, { ordem, soPre }), listInvitedProviderIds(session.user.id, project.id),
     project.status === "ABERTO" ? prestadoresCompativeis({ tipoServicoId: project.serviceTypeId, orcamento: budget, prazoDias: project.desiredDays }) : Promise.resolve([]),
     getAcceptedProvider(session.user.id, project.id),
   ]);
+  const { items: compatible, current: compatOrder } = applySort(compatibleSorts, compat, listedCompatible);
+  const compatHref = (value: string | undefined) => { const query = new URLSearchParams(); if (ordem) query.set("ordem", ordem); if (soPre) query.set("pre", "1"); if (value) query.set("compat", value); const text = query.toString(); return `/painel/projetos/${project.id}${text ? `?${text}` : ""}#convidar`; };
   const winner = proposals.find((proposal) => proposal.status === "ACEITA");
   const others = proposals.filter((proposal) => proposal.status !== "ACEITA");
   const basePath = `/painel/projetos/${project.id}`;
@@ -60,7 +64,7 @@ export default async function ProjectDetailPage({ params, searchParams }: { para
     <section className="stack" aria-labelledby="propostas">
       <div><p className="eyebrow">Propostas</p><h2 id="propostas">{open ? `${project.proposalCount} ${project.proposalCount === 1 ? "proposta ativa" : "propostas ativas"}` : `${proposals.length} ${proposals.length === 1 ? "proposta recebida" : "propostas recebidas"}`}</h2>
         {!open && <p className="muted">{project.status === "ENCERRADO" ? "O projeto foi encerrado com o aceite de uma proposta. A lista é somente leitura." : "O projeto foi cancelado. A lista é somente leitura."}</p>}</div>
-      {proposals.length > 1 || soPre || ordem ? <TriageControls basePath={basePath} ordem={ordem} soPre={soPre} canFilter={open}/> : null}
+      {proposals.length > 1 || soPre || ordem ? <TriageControls basePath={basePath} ordem={ordem} soPre={soPre} canFilter={open} compat={compatOrder === compatibleSorts[0].value ? undefined : compatOrder}/> : null}
       {winner && <ProposalCard proposal={winner} reference={reference} budget={budget} desiredDays={project.desiredDays} actions={false} highlight/>}
       {others.length === 0 && !winner
         ? soPre ? <div className="empty"><h3>Nenhuma proposta pré-selecionada</h3><p>Pré-selecione as propostas que continuam na disputa para filtrá-las aqui.</p><Link className="button secondary" href={basePath}>Ver todas as propostas</Link></div>
@@ -70,7 +74,7 @@ export default async function ProjectDetailPage({ params, searchParams }: { para
     {project.status === "ABERTO" && <section className="stack" aria-labelledby="convidar">
       <div><p className="eyebrow">Convites</p><h2 id="convidar">Convide prestadores compatíveis</h2><p className="muted">{invitedIds.length} de {MAX_INVITES} convites usados. O prestador convidado vê o seu projeto primeiro, com o selo Convite.</p></div>
       {compatible.length === 0 ? <div className="empty"><h3>Nenhum prestador compatível agora</h3><p>Quando alguém passar a oferecer este serviço, ele aparece aqui.</p></div>
-        : <div className="stack compatible-list">{compatible.map((provider) => <CompatibleCard key={provider.providerId} provider={provider} action={<InviteButton projectId={project.id} providerId={provider.providerId} providerName={provider.displayName} invited={invitedIds.includes(provider.providerId)}/>}/>)}</div>}
+        : <>{compatible.length > 1 && <SortLinks name="prestadores compatíveis" options={sortOptions(compatibleSorts, compatOrder, compatHref)}/>}<div className="stack compatible-list">{compatible.map((provider) => <CompatibleCard key={provider.providerId} provider={provider} action={<InviteButton projectId={project.id} providerId={provider.providerId} providerName={provider.displayName} invited={invitedIds.includes(provider.providerId)}/>}/>)}</div></>}
     </section>}
     {project.status === "ABERTO" && <details className="confirm"><summary>Cancelar projeto</summary><div className="stack"><p>O projeto deixa de estar aberto e não poderá ser reaberto. Se quiser, descreva um novo projeto depois.</p>
       <ActionForm action={cancelProject} label="Confirmar cancelamento"><input type="hidden" name="id" value={project.id}/></ActionForm></div></details>}
