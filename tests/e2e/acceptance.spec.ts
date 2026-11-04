@@ -187,7 +187,7 @@ test("Cliente pré-seleciona, filtra e aceita com confirmação; vê os contatos
   await client.getByText("Editar avaliação", { exact: true }).click();
   await client.getByLabel("Nota", { exact: true }).selectOption("4");
   await client.getByRole("button", { name: "Atualizar avaliação", exact: true }).click();
-  await expect(client.locator(".own-review")).toContainText("4/5");
+  await expect(client.locator(".own-review").getByRole("img", { name: "Nota 4 de 5" })).toBeVisible();
   await client.getByText("Excluir avaliação", { exact: true }).click();
   await client.getByRole("button", { name: "Confirmar exclusão" }).click();
   await expect(client.getByRole("heading", { name: `Avalie ${nameA}` })).toBeVisible();

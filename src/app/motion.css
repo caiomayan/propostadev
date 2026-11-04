@@ -3,12 +3,21 @@
    prefers-reduced-motion: no-preference, e nada depende de JavaScript para aparecer. */
 
 /* Barra de navegação: aparece no clique em um link interno e some quando a nova rota chega. */
-.route-progress { position: fixed; inset: 0 0 auto; height: 3px; z-index: 60; background: var(--lime); transform: scaleX(0); transform-origin: left; opacity: 0; pointer-events: none; }
+.route-progress { position: fixed; inset: 0 0 auto; height: 4px; z-index: 60; background: var(--lime); transform: scaleX(0); transform-origin: left; opacity: 0; pointer-events: none; }
 html[data-nav="loading"] .route-progress { opacity: 1; transform: scaleX(.82); transition: transform 1.6s var(--ease-expo); }
+html[data-nav="loading"] { cursor: progress; }
+html[data-nav="loading"] main:not(:has(.dashboard-main)), html[data-nav="loading"] .dashboard-main { opacity: .55; transition: opacity .2s ease .15s; }
+a[data-nav-pending] { cursor: progress; }
+:is(a, button)[data-nav-pending]:not(.wordmark)::after, :is(button, [role="menuitem"])[data-pending]::after { content: ""; display: inline-block; flex-shrink: 0; width: 1em; height: 1em; margin-left: 8px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; vertical-align: -.15em; }
+.button[aria-disabled="true"], .social-button[aria-disabled="true"], .sign-out[aria-disabled="true"], .link-button[aria-disabled="true"] { cursor: progress; opacity: .75; }
 html[data-nav="done"] .route-progress { opacity: 0; transform: scaleX(1); transition: transform .2s var(--ease-out), opacity .3s ease .12s; }
 
 @media (prefers-reduced-motion: no-preference) {
   html { scroll-behavior: smooth; }
+  :is(a, button)[data-nav-pending]::after, :is(button, [role="menuitem"])[data-pending]::after { animation: spin .7s linear infinite; }
+  .account-menu[data-state="open"] { animation: menu-in .18s var(--ease-out) both; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes menu-in { from { opacity: 0; transform: translateY(-6px) scale(.97); } }
 
   /* Entrada de rota: o conteúdo sobe um pouco, em ordem de leitura. */
   .route { animation: route-in .5s var(--ease-out) both; }

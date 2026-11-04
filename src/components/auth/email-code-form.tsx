@@ -1,7 +1,6 @@
 "use client";
 import { startTransition, useActionState, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
 import { resendVerification, verifyEmailCode } from "@/lib/auth/actions";
 import type { ActionState } from "@/lib/auth/action-state";
@@ -12,7 +11,6 @@ const COOLDOWN_SECONDS = 60;
 // Etapa obrigatória depois do cadastro. Um único input real desenhado como seis casas
 // mantém colar, autocompletar e leitor de tela funcionando.
 export function EmailCodeForm({ email, destination, sendOnArrival }: { email: string; destination: string; sendOnArrival: boolean }) {
-  const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
   const form = useRef<HTMLFormElement>(null);
   const arrived = useRef(false);
@@ -25,8 +23,9 @@ export function EmailCodeForm({ email, destination, sendOnArrival }: { email: st
   const [result, verify, checking] = useActionState<ActionState, FormData>(async (previous, data) => {
     const outcome = await verifyEmailCode(previous, data);
     if (outcome.error) { setCode(""); setMisses((count) => count + 1); input.current?.focus(); }
-    // A animação de sucesso termina antes de seguir. O refresh atualiza o cabeçalho, que fica no layout raiz.
-    if (outcome.success) window.setTimeout(() => { router.replace(destination); router.refresh(); }, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1400);
+    // A animação de sucesso termina antes de seguir. Carga completa: o cliente pré-buscou /painel ainda sem confirmação
+    // e guardou o redirecionamento para esta tela; o cabeçalho, no layout raiz, também precisa mudar.
+    if (outcome.success) window.setTimeout(() => window.location.replace(destination), window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1400);
     return outcome;
   }, {});
 

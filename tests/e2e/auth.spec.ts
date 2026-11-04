@@ -140,6 +140,23 @@ test("e-mail sem confirmação não abre o painel; código certo libera e leva a
   await expect(page).toHaveURL(/\/painel$/);
 });
 
+test("código certo sem destino abre o painel e atualiza o cabeçalho", async ({ page }) => {
+  const email = uniqueEmail("painel");
+  await page.goto("/cadastro");
+  await fillRegistration(page, email);
+  await expect(page).toHaveURL(/\/confirmar-email$/);
+  await page.getByRole("button", { name: /^Menu da conta de/ }).click();
+  await expect(page.getByRole("menuitem", { name: "Confirmar e-mail" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await plantEmailCode(email, "654321");
+  await page.getByLabel("Código de confirmação", { exact: true }).fill("654321");
+  await expect(page).toHaveURL(/\/painel$/);
+  await expect(page.getByRole("heading", { name: /^Olá/ })).toBeVisible();
+  await page.getByRole("button", { name: /^Menu da conta de/ }).click();
+  await expect(page.getByRole("menuitem", { name: "Projetos" })).toBeVisible();
+  await expect(page.getByRole("menuitem", { name: "Confirmar e-mail" })).toHaveCount(0);
+});
+
 test("quem volta sem código válido recebe outro ao chegar, e quem errou o e-mail consegue sair", async ({ page }) => {
   const email = uniqueEmail("volta");
   await page.goto("/cadastro");

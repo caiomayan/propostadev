@@ -21,6 +21,8 @@ OAuth GitHub: o botão só aparece com as variáveis definidas na Vercel. Quem g
 Redesenho de todas as telas, com a marca mantida: régua arrastável com preços reais na home, jornada por rolagem, Triagem com régua ao vivo, painel com navegação lateral e figuras, autenticação em duas metades e movimento em todo o produto. Detalhes em `DESIGN.md`.
 
 ## Aprendizados de ambiente
+- O clique em `<Link>` precisa ser ouvido na captura: o Next chama `preventDefault` antes de um ouvinte comum no documento, e a barra de progresso nunca ligava.
+- A pré-busca guarda redirecionamentos no router do cliente. Mudança de estado da conta que não troca cookie precisa de `revalidatePath("/", "layout")` ou carga completa, senão `/painel` e a tela de origem se redirecionam sem fim.
 - A confirmação de e-mail é obrigatória, mas `requireEmailVerification` segue false: com true o login recusaria quem precisa de sessão para digitar o código. A exigência mora em `requireAccount` e `accountTypeDenial`. Nos E2E o SMTP é fictício: `tests/e2e/support.ts` confirma pelo banco ou planta um código conhecido.
 - O plugin emailOTP abre login, recuperação e troca de e-mail por código: toda a superfície HTTP dele fica em `disabledPaths` e o uso passa só pelas Server Actions.
 - Blocos acima do conteúdo no layout do painel somem depois de um redirect, porque o Next rola até o segmento novo.

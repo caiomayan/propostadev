@@ -48,6 +48,8 @@ export async function chooseAccountType(_: ActionState, form: FormData): Promise
   if (!await mutationAllowed(session.user.id, "account")) return { error: "Muitas alterações. Aguarde um minuto." };
   try { if (!await setAccountType(session.user.id, parsed.data.accountType)) return { error: "O tipo de conta já foi definido e não pode ser alterado." }; }
   catch { return { error: "Não foi possível salvar o tipo da conta." }; }
+  // O router do cliente guardou, pela pré-busca, que /painel levava a /boas-vindas: sem isto os dois se redirecionam sem fim.
+  revalidatePath("/", "layout");
   redirect(safeDestination(form.get("next")));
 }
 export async function signOut(form?: FormData) {

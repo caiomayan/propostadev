@@ -93,7 +93,7 @@ test("comparação limita três, persiste após reload, substitui contexto e rem
   }
 });
 
-test("usuário cria, edita e exclui avaliação sem publicar e-mail privado", async ({ page }) => {
+test("usuário cria, edita e exclui avaliação sem publicar e-mail privado", async ({ page, browser, baseURL }) => {
   const id = randomUUID();
   const privateEmail = `review-private-${id}@example.test`;
   const name = `Autora pública ${id.slice(0, 8)}`;
@@ -120,17 +120,22 @@ test("usuário cria, edita e exclui avaliação sem publicar e-mail privado", as
   await page.getByLabel("Comentário (opcional)").fill("Avaliação inicial do fluxo completo.");
   await page.getByRole("button", { name: "Publicar avaliação", exact: true }).click();
   await expect(page.locator(".review-item").filter({ hasText: name })).toContainText("Avaliação inicial do fluxo completo.");
-  await expect(page.locator(".review-item").filter({ hasText: name })).toContainText("5/5");
+  await expect(page.locator(".review-item").filter({ hasText: name }).getByRole("img", { name: "Nota 5 de 5" })).toBeVisible();
   await expect(page.locator(".review-item").filter({ hasText: name })).toContainText("Contratado pela Proposta.dev");
   await page.reload();
   await page.getByLabel("Nota", { exact: true }).selectOption("3");
   await page.getByLabel("Comentário (opcional)").fill("Comentário revisado sem dados pessoais.");
   await page.getByRole("button", { name: "Atualizar avaliação", exact: true }).click();
   await expect(page.locator(".review-item").filter({ hasText: name })).toContainText("Comentário revisado sem dados pessoais.");
-  await expect(page.locator(".review-item").filter({ hasText: name })).toContainText("3/5");
+  await expect(page.locator(".review-item").filter({ hasText: name }).getByRole("img", { name: "Nota 3 de 5" })).toBeVisible();
   await expect(page.locator(".review-item").filter({ hasText: name })).toContainText("Editada");
-  await expect(page.locator("body")).not.toContainText(privateEmail);
-  expect(await page.content()).not.toContain(privateEmail);
+  // Quem vê é um visitante: a própria pessoa recebe o e-mail dela no menu da conta.
+  const visitor = await browser.newContext({ baseURL });
+  const visitorPage = await visitor.newPage();
+  await visitorPage.goto("/prestadores/prestador-demo-3");
+  await expect(visitorPage.locator(".review-item").filter({ hasText: name })).toBeVisible();
+  expect(await visitorPage.content()).not.toContain(privateEmail);
+  await visitor.close();
   await page.getByText("Excluir minha avaliação", { exact: true }).click();
   await page.getByRole("button", { name: "Confirmar exclusão", exact: true }).click();
   await expect(page.locator(".review-item").filter({ hasText: name })).toHaveCount(0);

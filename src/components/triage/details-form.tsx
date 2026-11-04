@@ -1,4 +1,5 @@
 "use client";
+import Form from "next/form";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { PriceRuler } from "@/components/price-ruler";
@@ -24,7 +25,7 @@ export function DetailsForm({ tipo, objetivo, values, errors, serviceName, refer
   const liveBudget: Budget | undefined = budget === "ATE" && highValue ? { tipo: "ATE", min: null, max: highValue } : budget === "FAIXA" && lowValue && highValue && Number(highValue) >= Number(lowValue) ? { tipo: "FAIXA", min: lowValue, max: highValue } : budget === "NAO_SEI" ? { tipo: "NAO_SEI", min: null, max: null } : undefined;
   const error = (name: string) => errors[name] ? <p className="field-error" id={`erro-${name}`} role="alert">{errors[name]}</p> : null;
   const describedBy = (name: string) => errors[name] ? `erro-${name}` : undefined;
-  return <div className="triage-details"><form action="/triagem" method="get" className="stack triage-form" noValidate={false}>
+  return <div className="triage-details"><Form action="/triagem" className="stack triage-form" noValidate={false}>
     <input type="hidden" name="tipo" value={tipo}/>
     {objetivo && <input type="hidden" name="objetivo" value={objetivo}/>}
     <div className="field"><label htmlFor="titulo">Título do projeto</label><input id="titulo" name="titulo" required minLength={5} maxLength={120} defaultValue={values.titulo} placeholder="Ex.: Loja virtual para minha confeitaria" aria-invalid={Boolean(errors.titulo)} aria-describedby={describedBy("titulo")}/>{error("titulo")}</div>
@@ -40,7 +41,7 @@ export function DetailsForm({ tipo, objetivo, values, errors, serviceName, refer
       <label className="checkbox"><input type="checkbox" name="flexivel" value="1" checked={flexible} onChange={(event) => setFlexible(event.target.checked)}/><span>Meu prazo é flexível</span></label>
     </fieldset>
     <button className="button" type="submit">Ver preço de referência <ArrowRight aria-hidden="true"/></button>
-  </form>
+  </Form>
   <aside className="triage-live on-forest" aria-label={`Preço de referência de ${serviceName}`}>
     <h2>{serviceName} no mercado</h2>
     {reference.faixa ? <div aria-live="polite"><PriceRuler data={{ faixa: reference.faixa, media: reference.media, n: reference.n, orcamento: liveBudget, posicao: liveBudget ? posicaoOrcamento(liveBudget, reference.faixa) : undefined }}/></div>

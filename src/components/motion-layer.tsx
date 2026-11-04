@@ -1,6 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { startNavProgress, stopNavProgress } from "@/lib/nav-progress";
 
 // O que entra rolando. Só recebe a marca o que está abaixo da dobra na hora da varredura: quem está visível
 // já entrou com a rota, e sem JavaScript nada fica escondido.
@@ -50,28 +51,31 @@ export function MotionLayer() {
   }, [pathname, search]);
 
   // A rota mudou: encerra a barra.
-  useEffect(() => {
-    const root = document.documentElement;
-    if (root.dataset.nav !== "loading") return;
-    root.dataset.nav = "done";
-  }, [pathname, search]);
+  useEffect(() => { stopNavProgress(); }, [pathname, search]);
 
-  // Clique em link interno liga a barra; prazo de segurança para não prendê-la se a navegação for cancelada.
+  // Clique em link interno e envio de formulário de busca ligam a barra e marcam o que foi acionado.
   useEffect(() => {
-    let timer = 0;
     const onClick = (event: MouseEvent) => {
-      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       const link = (event.target as Element).closest?.("a[href]") as HTMLAnchorElement | null;
       if (!link || link.target || link.origin !== location.origin || link.hasAttribute("download")) return;
       if (link.pathname === location.pathname && link.search === location.search) return;
-      const root = document.documentElement;
-      root.dataset.nav = "loading";
-      window.clearTimeout(timer);
-      timer = window.setTimeout(() => { root.dataset.nav = "done"; }, 8000);
+      startNavProgress(link);
     };
-    document.addEventListener("click", onClick);
-    return () => { document.removeEventListener("click", onClick); window.clearTimeout(timer); };
+    // Só formulários GET para uma rota: os de Server Action têm retorno próprio no botão.
+    const onSubmit = (event: SubmitEvent) => {
+      const form = event.target as HTMLFormElement;
+      if (!form.getAttribute("action")?.startsWith("/") || form.method.toLowerCase() !== "get") return;
+      const target = new URL(form.action);
+      const query = new URLSearchParams(new FormData(form) as unknown as Record<string, string>).toString();
+      if (target.pathname === location.pathname && query === location.search.slice(1)) return;
+      startNavProgress(event.submitter as HTMLElement | null);
+    };
+    // Na captura: o Link do Next chama preventDefault antes de um ouvinte comum no documento rodar.
+    document.addEventListener("click", onClick, true);
+    document.addEventListener("submit", onSubmit);
+    return () => { document.removeEventListener("click", onClick, true); document.removeEventListener("submit", onSubmit); stopNavProgress(); };
   }, []);
 
-  return <div className="route-progress" aria-hidden="true"/>;
+  return <><div className="route-progress" aria-hidden="true"/><p id="route-status" aria-live="polite" className="sr-only"/></>;
 }

@@ -14,8 +14,14 @@
 .mobile-menu-account { width: 100%; }
 @media (max-width: 860px) {
   .header-inner { flex-wrap: nowrap; min-height: 64px; padding-block: 8px; }
-  .site-nav, .header-account { display: none; }
+  .site-nav, .header-account:not(.signed-in) { display: none; }
+  .header-account.signed-in { margin-left: auto; }
+  .header-inner { gap: 8px; }
   .menu-button { display: inline-flex; }
+}
+@media (max-width: 420px) {
+  .header-account.signed-in ~ .menu-button { padding-inline: 10px; }
+  .header-account.signed-in ~ .menu-button span { display: none; }
 }
 
 /* ---------- painel (Prestador, Conta) ---------- */
@@ -98,7 +104,6 @@ dialog.panel .stack { gap: 16px; }
 .profile-offer-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px 24px; flex-wrap: wrap; width: 100%; padding-top: 16px; border-top: 1px solid var(--border); }
 .offer-price { font-size: 2rem !important; }
 .review-item { margin-top: 12px; }
-.review-heading span { padding: 2px 12px; }
 .review-section .empty { margin-top: 16px; padding: 32px 24px; }
 
 /* ---------- comparação ---------- */

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { startNavProgress } from "@/lib/nav-progress";
 
 const storageKey = "proposta-comparison-offers";
 const eventName = "proposta-comparison-change";
@@ -72,6 +73,7 @@ export function ComparisonRemove({ id, ids }: { id: string; ids: string[] }) {
   const router = useRouter();
   return <Button variant="outline" className="button secondary" onClick={() => {
     const next = ids.filter((value) => value !== id); writeIds(next);
+    startNavProgress();
     router.push(`/comparar?ofertas=${next.join(",")}`);
   }}>Remover</Button>;
 }

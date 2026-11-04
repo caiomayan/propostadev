@@ -2,7 +2,8 @@ import Link from "next/link";
 import { PriceRuler } from "@/components/price-ruler";
 import { ProviderAvatar } from "@/components/provider-avatar";
 import { ProposalActions } from "@/components/proposals/proposal-actions";
-import { money, reputation } from "@/lib/format";
+import { money } from "@/lib/format";
+import { Reputation } from "@/components/reputation";
 import { budgetLabel } from "@/modules/triage/labels";
 import { compareDeadline, posicaoValor, type BudgetPosition } from "@/modules/triage/position";
 import type { TriageProposal } from "@/modules/proposals/queries";
@@ -40,7 +41,7 @@ export function ProposalCard({ proposal, reference, budget, desiredDays, actions
     <header className="proposal-head">
       <div className="provider-identity"><ProviderAvatar name={proposal.providerName} photoUrl={proposal.providerPhotoUrl}/>
         <div><h3 id={headingId}>{proposal.providerActive ? <Link href={`/prestadores/${proposal.providerSlug}`}>{proposal.providerName}</Link> : proposal.providerName}</h3>
-          <p className="muted">{reputation(proposal.rating, proposal.reviewCount, proposal.verifiedCount)}</p></div></div>
+          <p className="muted"><Reputation rating={proposal.rating} count={proposal.reviewCount} verified={proposal.verifiedCount}/></p></div></div>
       <span className={`status ${statusClass[proposal.status]}`}>{statusLabel[proposal.status]}</span>
     </header>
     <dl className="proposal-figures">
