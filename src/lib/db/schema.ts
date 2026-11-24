@@ -16,7 +16,9 @@ export const providers = pgTable("perfil_prestador", {
   description: text("descricao").notNull(), yearsExperience: smallint("anos_experiencia").notNull(), photoUrl: text("foto_url"), city: varchar("cidade", { length: 100 }),
   state: varchar("uf", { length: 2 }), country: varchar("pais", { length: 2 }).default("BR").notNull(), contactEmail: varchar("email_contato", { length: 254 }).notNull(),
   phone: varchar("telefone", { length: 20 }), whatsapp: varchar("whatsapp", { length: 20 }), siteUrl: text("site_url"), githubUrl: text("github_url"), linkedinUrl: text("linkedin_url"),
-  contactsPublishedAt: timestamp("contatos_publicados_em", { withTimezone: true }).notNull(), active: boolean("ativo").default(true).notNull(), ...dates(),
+  contactsPublishedAt: timestamp("contatos_publicados_em", { withTimezone: true }).notNull(), active: boolean("ativo").default(true).notNull(),
+  // Prestador VIP (MVP 3, ADR 0004): marcado só pela plataforma (seed ou SQL da equipe); nenhuma ação do usuário escreve aqui.
+  vip: boolean("vip").default(false).notNull(), ...dates(),
 }, (t) => [uniqueIndex("perfil_usuario_unique").on(t.userId), uniqueIndex("perfil_slug_unique").on(t.slug),
   check("perfil_nome_valido", sql`char_length(btrim(${t.displayName})) between 2 and 100`), check("perfil_descricao_valida", sql`char_length(btrim(${t.description})) between 30 and 5000`),
   check("perfil_experiencia_valida", sql`${t.yearsExperience} between 0 and 80`), check("perfil_email_nao_vazio", sql`btrim(${t.contactEmail}) <> ''`),
@@ -68,6 +70,21 @@ export const proposals = pgTable("proposta", {
 // Convite (ticket 05): chamado de um Cliente a um Prestador compatível. Limite de 10 por Projeto, validado no servidor.
 export const invites = pgTable("convite", { id: uuid("id").defaultRandom().primaryKey(), projectId: uuid("projeto_id").notNull().references(() => projects.id, { onDelete: "cascade" }), providerId: uuid("prestador_id").notNull().references(() => providers.id, { onDelete: "cascade" }), createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull() },
   (t) => [uniqueIndex("convite_projeto_prestador_unique").on(t.projectId, t.providerId), index("convite_prestador_idx").on(t.providerId)]);
+// Interesse no VIP (MVP 3): registro único por Prestador; não ativa VIP nem gera cobrança.
+export const vipInterests = pgTable("interesse_vip", { id: uuid("id").defaultRandom().primaryKey(), providerId: uuid("prestador_id").notNull().references(() => providers.id, { onDelete: "cascade" }), createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull() },
+  (t) => [uniqueIndex("interesse_vip_prestador_unique").on(t.providerId)]);
+// Preço de mercado externo (MVP 3, ADR 0004): uma linha por fonte por coleta; nunca entra no Preço de referência.
+// Linhas com status FALHA guardam a tentativa sem valores; a exibição usa a última linha OK de cada fonte.
+export const externalPriceStatuses = ["OK", "FALHA"] as const;
+export const externalPriceStatus = pgEnum("preco_externo_status", externalPriceStatuses);
+export const externalPrices = pgTable("preco_mercado_externo", {
+  id: uuid("id").defaultRandom().primaryKey(), serviceTypeId: uuid("tipo_servico_id").notNull().references(() => serviceTypes.id, { onDelete: "cascade" }),
+  sourceName: varchar("fonte_nome", { length: 100 }).notNull(), sourceUrl: text("fonte_url").notNull(),
+  minPrice: numeric("valor_min", { precision: 10, scale: 2 }), maxPrice: numeric("valor_max", { precision: 10, scale: 2 }), excerpt: text("trecho"),
+  status: externalPriceStatus("status").notNull(), error: text("erro"), collectedAt: timestamp("coletado_em", { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [index("preco_externo_tipo_fonte_idx").on(t.serviceTypeId, t.sourceUrl, t.collectedAt),
+  check("preco_externo_valores_validos", sql`(${t.status} = 'FALHA' AND ${t.minPrice} IS NULL AND ${t.maxPrice} IS NULL) OR (${t.status} = 'OK' AND ${t.minPrice} IS NOT NULL AND ${t.maxPrice} IS NOT NULL AND ${t.minPrice} > 0 AND ${t.maxPrice} >= ${t.minPrice})`),
+  check("preco_externo_fonte_valida", sql`btrim(${t.sourceName}) <> '' AND ${t.sourceUrl} ~ '^https://'`)]);
 export type Provider = typeof providers.$inferSelect;
 export type Offer = typeof offers.$inferSelect;
 export type Category = typeof categories.$inferSelect;
