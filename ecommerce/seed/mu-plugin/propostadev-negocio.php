@@ -77,7 +77,7 @@ add_filter('woocommerce_add_to_cart_validation', function ($ok, $productId) {
   $provider = pd_product_provider($product);
   foreach (WC()->cart->get_cart() as $line) {
     if (pd_product_provider($line['data']) !== $provider) {
-      wc_add_notice('Uma Contratação é feita com um Prestador por vez. Conclua a que está no carrinho ou remova o item antes de contratar outro Prestador.', 'error');
+      wc_add_notice('Uma Contratação é feita com um Prestador por vez. Conclua a que está no carrinho ou remova o item antes de contratar outro Prestador. <a class="button" href="' . esc_url(wc_get_cart_url()) . '">Ver carrinho</a>', 'error');
       return false;
     }
   }
@@ -254,3 +254,51 @@ add_filter('pre_comment_approved', function ($approved, $comment) {
 // A loja não envia e-mail (ADR 0006): os endereços da demo não entregam e não há servidor de e-mail.
 // O Cliente acompanha a Contratação em "Minhas Contratações"; o Prestador, em "Contratações recebidas".
 add_filter('pre_wp_mail', '__return_true');
+
+
+/* ---------------------------------------------------------------- Experiência de conta */
+
+// Depois do login: o Prestador vai direto às Contratações recebidas; o Cliente volta para onde estava.
+add_filter('woocommerce_login_redirect', fn ($redirect, $user) => pd_user_provider_slug($user) ? wc_get_account_endpoint_url('contratacoes-recebidas') : $redirect, 10, 2);
+// O formulário carrega a página de origem (?redirect=) para o WooCommerce voltar a ela; só endereços desta loja.
+add_action('woocommerce_login_form', function () {
+  $to = isset($_GET['redirect']) ? wp_validate_redirect(esc_url_raw(rawurldecode(wp_unslash($_GET['redirect']))), '') : '';
+  if ($to) echo '<input type="hidden" name="redirect" value="' . esc_url($to) . '">';
+});
+add_action('woocommerce_register_form', function () {
+  $to = isset($_GET['redirect']) ? wp_validate_redirect(esc_url_raw(rawurldecode(wp_unslash($_GET['redirect']))), '') : '';
+  if ($to) echo '<input type="hidden" name="pd_redirect" value="' . esc_url($to) . '">';
+});
+add_filter('woocommerce_registration_redirect', function ($redirect) {
+  $to = isset($_POST['pd_redirect']) ? wp_validate_redirect(esc_url_raw(wp_unslash($_POST['pd_redirect'])), '') : '';
+  return $to ?: wc_get_account_endpoint_url('dashboard');
+});
+
+// Prestador logado não contrata (papéis separados, como no site): a página explica em vez de mostrar o botão.
+add_filter('woocommerce_is_purchasable', fn ($ok) => pd_user_provider_slug() ? false : $ok, 20);
+add_action('woocommerce_single_product_summary', function () {
+  if (!pd_user_provider_slug()) return;
+  echo '<p class="pd-note pd-role-note">Você está como Prestador. Para contratar, saia e entre com uma conta de Cliente.</p>';
+}, 31);
+
+// Sem e-mail, a recuperação de senha não chegaria: o link sai e a tela de login diz o que fazer.
+add_filter('lostpassword_url', fn () => '');
+add_action('woocommerce_login_form_end', function () {
+  echo '<p class="pd-note">Esqueceu a senha? Esta loja de demonstração não envia e-mail; fale com a Equipe da plataforma.</p>';
+});
+add_action('woocommerce_before_customer_login_form', function () {
+  echo '<p class="pd-login-lead">Entre para acompanhar suas Contratações. Ainda não tem conta? Crie ao lado: leva menos de um minuto. Quer oferecer serviços? <a href="https://propostadev-one.vercel.app/cadastro">Cadastre-se como Prestador no Proposta.dev</a>.</p>';
+});
+add_filter('the_title', function ($title, $id = 0) {
+  if (!is_user_logged_in() && function_exists('is_account_page') && is_account_page() && (int) $id === (int) wc_get_page_id('myaccount') && in_the_loop()) return 'Entrar ou criar conta';
+  return $title;
+}, 10, 2);
+add_filter('gettext', function ($translated, $text, $domain) {
+  if ($domain !== 'woocommerce') return $translated;
+  return match ($text) {
+    'Login' => 'Entrar',
+    'Register' => 'Criar conta',
+    'Log in' => 'Entrar',
+    default => $translated,
+  };
+}, 30, 3);

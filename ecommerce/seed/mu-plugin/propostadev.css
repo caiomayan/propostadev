@@ -368,3 +368,28 @@ ul.products li.product img.pd-avatar-sm { width: 28px !important; height: 28px !
 .u-columns.col2-set .u-column1, .u-columns.col2-set .u-column2 { width: auto !important; float: none !important; margin: 0 !important; }
 .woocommerce-form-register { background: var(--pd-card); border: 1px solid var(--pd-line) !important; border-radius: var(--pd-r-lg); padding: 24px !important; }
 @media (max-width: 900px) { .woocommerce-account .woocommerce, .u-columns.col2-set { grid-template-columns: 1fr; } }
+
+/* Conta no cabeçalho */
+.pd-login { display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--pd-ink); color: var(--pd-ink) !important; font-weight: 700; font-size: .95rem; text-decoration: none; transition: background-color .18s var(--pd-ease), color .18s; }
+.pd-login:hover { background: var(--pd-ink); color: var(--pd-on-forest) !important; }
+.pd-account { position: relative; }
+.pd-account summary { list-style: none; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px 0 6px; border-radius: 999px; border: 1px solid var(--pd-line); background: var(--pd-card); font-weight: 700; font-size: .95rem; cursor: pointer; }
+.pd-account summary::-webkit-details-marker { display: none; }
+.pd-account[open] summary, .pd-account summary:hover { border-color: var(--pd-forest); }
+.pd-account-avatar { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--pd-forest); color: var(--pd-lime); font-family: var(--pd-display); font-weight: 800; }
+.pd-account-name { max-width: 10ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pd-account-panel { position: absolute; right: 0; top: calc(100% + 8px); z-index: 60; width: 260px; background: var(--pd-card); border: 1px solid var(--pd-line); border-radius: var(--pd-r-lg); padding: 8px; box-shadow: 0 20px 40px -24px rgb(16 35 26 / .5); }
+.pd-account-panel ul { list-style: none; margin: 0; padding: 0; }
+.pd-account-panel a { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; padding: 0 12px; border-radius: var(--pd-r); color: var(--pd-ink); font-weight: 600; text-decoration: none; }
+.pd-account-panel a:hover { background: var(--pd-muted); }
+.pd-account-panel li:last-child a { color: var(--pd-danger); }
+.pd-account-who { margin: 4px 12px 8px; padding-bottom: 10px; border-bottom: 1px solid var(--pd-line); font-weight: 700; display: flex; flex-direction: column; }
+.pd-account-who span { font-weight: 500; font-size: .85rem; color: var(--pd-muted-ink); }
+.pd-mobile-account { border-top: 1px solid var(--pd-line); padding-top: 8px; margin-top: 4px; }
+.pd-mobile-account .pd-account-who { margin: 4px 12px 4px; border: 0; padding: 0; }
+.pd-login-lead { max-width: 70ch; color: var(--pd-muted-ink); margin: 0 0 24px; font-size: 1.05rem; }
+.pd-role-note { background: var(--pd-muted); border-radius: var(--pd-r); padding: 12px 16px; color: var(--pd-ink); }
+.widget a, .widget_product_categories a { color: var(--pd-forest) !important; }
+@media (max-width: 900px) { .pd-header-tools .pd-account, .pd-header-tools .pd-login { display: none; } }
+.woocommerce-LostPassword, .lost_password { display: none !important; }
+.woocommerce-privacy-policy-text p { font-size: .9rem; color: var(--pd-muted-ink); }

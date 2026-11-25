@@ -43,7 +43,7 @@ for kv in \
   woocommerce_task_list_hidden=yes woocommerce_extended_task_list_hidden=yes woocommerce_show_marketplace_suggestions=no \
   woocommerce_allow_tracking=no woocommerce_enable_coupons=no \
   woocommerce_enable_myaccount_registration=yes woocommerce_enable_signup_and_login_from_checkout=yes woocommerce_enable_checkout_login_reminder=yes \
-  woocommerce_registration_generate_password=no woocommerce_registration_generate_username=yes woocommerce_review_rating_required=yes woocommerce_analytics_enabled=yes woocommerce_feature_order_attribution_enabled=no; do
+  woocommerce_registration_generate_password=no woocommerce_registration_generate_username=yes woocommerce_review_rating_required=yes woocommerce_cart_redirect_after_add=yes woocommerce_enable_ajax_add_to_cart=no woocommerce_analytics_enabled=yes woocommerce_feature_order_attribution_enabled=no; do
   wp option update "${kv%%=*}" "${kv#*=}" >/dev/null 2>&1 || true
 done
 wp option update woocommerce_specific_allowed_countries '["BR"]' --format=json >/dev/null
@@ -84,6 +84,7 @@ if ! wp menu list --fields=slug --format=csv | grep -q '^principal$'; then
   wp menu location assign principal primary
 fi
 wp eval-file /seed/textos.php
+wp eval-file /seed/termos.php
 wp eval-file /seed/demo.php
 wp rewrite flush >/dev/null 2>&1 || true
 wp cache flush >/dev/null

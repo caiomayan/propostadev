@@ -36,8 +36,10 @@ if (getenv('PD_RESET') === '1') {
   foreach (wc_get_orders(['limit' => -1, 'status' => array_keys(wc_get_order_statuses()), 'return' => 'ids']) as $id) wc_get_order($id)->delete(true);
   $own = get_comments(['type' => 'review', 'meta_query' => [['key' => '_pd_avaliacao', 'compare' => 'NOT EXISTS']], 'fields' => 'ids']);
   foreach ($own as $cid) { $post = get_comment($cid)->comment_post_ID; wp_delete_comment($cid, true); WC_Comments::clear_transients($post); }
-  if (function_exists('WC') && WC()->session) WC()->session->destroy_session();
-  WP_CLI::log(sprintf('Reset: Contratações apagadas e %d Avaliação(ões) feitas na loja removidas.', count($own)));
+  delete_metadata('user', 0, '_woocommerce_persistent_cart_' . get_current_blog_id(), '', true);
+  global $wpdb;
+  $wpdb->query("DELETE FROM {$wpdb->prefix}woocommerce_sessions");
+  WP_CLI::log(sprintf('Reset: Contratações e carrinhos apagados e %d Avaliação(ões) feitas na loja removidas.', count($own)));
 }
 
 // Duas Contratações de exemplo da Mariana: uma aguardando o Bruno (para a demo do painel do Prestador) e uma concluída com a Aurora (para a Avaliação verificada).

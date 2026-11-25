@@ -122,14 +122,62 @@ function pd_search(string $id): string {
   return '<form role="search" method="get" class="pd-search" action="' . esc_url(home_url('/')) . '"><label class="screen-reader-text" for="' . esc_attr($id) . '">Buscar serviços</label>' . pd_icon('search') . '<input id="' . esc_attr($id) . '" type="search" name="s" placeholder="Buscar serviços" value="' . esc_attr(get_search_query()) . '"><input type="hidden" name="post_type" value="product"></form>';
 }
 
+function pd_account_links(): array {
+  if (!is_user_logged_in()) return [];
+  $user = wp_get_current_user();
+  $links = [];
+  if (in_array('prestador', (array) $user->roles, true) && function_exists('pd_provider_orders')) {
+    $waiting = count(pd_provider_orders(pd_user_provider_slug($user), ['wc-aguardando']));
+    $links[] = [wc_get_account_endpoint_url('contratacoes-recebidas'), 'Contratações recebidas', $waiting];
+  } elseif (!current_user_can('manage_woocommerce')) {
+    $links[] = [wc_get_account_endpoint_url('orders'), 'Minhas Contratações', 0];
+  }
+  if (current_user_can('manage_woocommerce')) $links[] = [admin_url('admin.php?page=wc-orders'), 'Painel da Equipe', 0];
+  $links[] = [wc_get_account_endpoint_url('edit-account'), 'Dados da conta', 0];
+  $links[] = [wc_logout_url(home_url('/')), 'Sair', 0];
+  return $links;
+}
+
+// Entrar a partir de qualquer página leva de volta a ela depois do login.
+function pd_login_url(): string {
+  $account = wc_get_page_permalink('myaccount');
+  if (is_account_page()) return $account;
+  $here = home_url(add_query_arg([], $GLOBALS['wp']->request ?? ''));
+  return add_query_arg('redirect', rawurlencode(trailingslashit($here)), $account);
+}
+
+function pd_account_entry(): string {
+  if (!is_user_logged_in()) {
+    return '<a class="pd-login" href="' . esc_url(pd_login_url()) . '">Entrar</a>';
+  }
+  $user = wp_get_current_user();
+  $first = $user->first_name ?: $user->display_name;
+  $badge = array_sum(array_column(pd_account_links(), 2));
+  $out = '<details class="pd-account"><summary><span class="pd-account-avatar" aria-hidden="true">' . esc_html(mb_strtoupper(mb_substr($first, 0, 1))) . '</span><span class="pd-account-name">' . esc_html($first) . '</span>' . ($badge ? '<span class="pd-cart-count" aria-label="' . esc_attr($badge . ' Contratações aguardando') . '">' . $badge . '</span>' : '') . '</summary><div class="pd-account-panel"><p class="pd-account-who">' . esc_html($user->display_name) . '<span>' . esc_html(in_array('prestador', (array) $user->roles, true) ? 'Prestador' : (current_user_can('manage_woocommerce') ? 'Equipe da plataforma' : 'Cliente')) . '</span></p><ul>';
+  foreach (pd_account_links() as [$url, $label, $count]) $out .= '<li><a href="' . esc_url($url) . '">' . esc_html($label) . ($count ? ' <span class="pd-cart-count">' . (int) $count . '</span>' : '') . '</a></li>';
+  return $out . '</ul></div></details>';
+}
+
 function pd_header(): void {
   echo '<div class="col-full pd-header">';
   echo '<a class="pd-wordmark" href="' . esc_url(home_url('/')) . '" aria-label="Proposta.dev, início da loja">' . pd_mark() . '<span>Proposta<span class="pd-wordmark-dev">.dev</span></span></a>';
   echo '<nav class="pd-nav" aria-label="Principal">' . pd_nav('pd-nav-list') . '</nav>';
-  echo '<div class="pd-header-tools">' . pd_search('pd-busca') . pd_cart_link() . '</div>';
-  echo '<details class="pd-mobile-menu"><summary>' . pd_icon('menu') . '<span>Menu</span></summary><div class="pd-mobile-panel">' . pd_search('pd-busca-mobile') . '<nav aria-label="Principal no celular">' . pd_nav('pd-mobile-list') . '</nav></div></details>';
+  echo '<div class="pd-header-tools">' . pd_search('pd-busca') . pd_account_entry() . pd_cart_link() . '</div>';
+  echo '<details class="pd-mobile-menu"><summary>' . pd_icon('menu') . '<span>Menu</span></summary><div class="pd-mobile-panel">' . pd_search('pd-busca-mobile') . '<nav aria-label="Principal no celular">' . pd_nav('pd-mobile-list') . '</nav>' . pd_mobile_account() . '</div></details>';
   echo '</div>';
 }
+
+function pd_mobile_account(): string {
+  if (!is_user_logged_in()) return '<div class="pd-mobile-account"><a class="pd-btn pd-btn-primary pd-btn-block" href="' . esc_url(pd_login_url()) . '">Entrar ou criar conta</a></div>';
+  $out = '<div class="pd-mobile-account"><p class="pd-account-who">' . esc_html(wp_get_current_user()->display_name) . '</p><ul class="pd-mobile-list">';
+  foreach (pd_account_links() as [$url, $label, $count]) $out .= '<li><a href="' . esc_url($url) . '">' . esc_html($label) . ($count ? ' <span class="pd-cart-count">' . (int) $count . '</span>' : '') . '</a></li>';
+  return $out . '</ul></div>';
+}
+
+// Fecha os menus do cabeçalho com Esc ou clique fora (são <details>, funcionam sem JavaScript).
+add_action('wp_footer', function () {
+  echo "<script>document.addEventListener('click',e=>{document.querySelectorAll('.pd-header details[open]').forEach(d=>{if(!d.contains(e.target))d.removeAttribute('open')})});document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.pd-header details[open]').forEach(d=>{d.removeAttribute('open');d.querySelector('summary').focus()})});</script>";
+});
 
 /* ---------------------------------------------------------------- Página inicial */
 
@@ -382,6 +430,7 @@ add_filter('gettext', function ($translated, $text, $domain) {
   return match ($text) {
     'Your cart is currently empty!', 'Your cart is currently empty.' => 'Seu carrinho está vazio. Escolha uma Oferta para contratar.',
     'Return to shop' => 'Ver serviços',
+    'No products were found matching your selection.' => 'Nenhuma Oferta encontrada. Tente outro termo ou escolha um Tipo de serviço acima.',
     'Order received' => 'Contratação recebida',
     default => $translated,
   };
