@@ -12,6 +12,8 @@ export type PublicOffer = Pick<Offer, "id" | "title" | "description" | "priceTyp
   providerId: string; slug: string; displayName: string; type: "PESSOA_FISICA" | "PESSOA_JURIDICA"; yearsExperience: number;
   city: string | null; state: string | null; country: string; photoUrl: string | null;
   serviceName: string; serviceSlug: string; rating: string | null; reviewCount: number; verifiedCount: number; trusted: boolean;
+  /** Prestador VIP (MVP 3): só exibição do selo; nunca entra em ordenação da busca, da Triagem ou dos compatíveis. */
+  vip: boolean;
 };
 
 const projection = sql`o.id, o.titulo AS title, o.descricao AS description,
@@ -19,7 +21,7 @@ const projection = sql`o.id, o.titulo AS title, o.descricao AS description,
   o.tipo_prazo AS "deadlineType", o.prazo_minimo_dias AS "deadlineMinDays", o.prazo_maximo_dias AS "deadlineMaxDays",
   p.id AS "providerId", p.slug, p.nome_exibicao AS "displayName", p.tipo AS type, p.anos_experiencia AS "yearsExperience",
   p.cidade AS city, p.uf AS state, p.pais AS country, coalesce(nullif(p.foto_url, ''), conta.image) AS "photoUrl", t.nome AS "serviceName", t.slug AS "serviceSlug",
-  r.rating, coalesce(r.count, 0)::int AS "reviewCount", coalesce(r.verified, 0)::int AS "verifiedCount", coalesce(r.trusted, false) AS trusted`;
+  r.rating, coalesce(r.count, 0)::int AS "reviewCount", coalesce(r.verified, 0)::int AS "verifiedCount", coalesce(r.trusted, false) AS trusted, p.vip`;
 const fromPublic = sql`FROM oferta_servico o JOIN perfil_prestador p ON p.id = o.prestador_id JOIN "user" conta ON conta.id = p.usuario_id
   JOIN tipo_servico t ON t.id = o.tipo_servico_id JOIN categoria c ON c.id = t.categoria_id
   LEFT JOIN ${reputationSubquery} r ON r.prestador_id = p.id`;
@@ -61,6 +63,14 @@ export async function searchProviders(input: SearchInput) {
   return { results: rows.rows, total: count.rows[0]?.count ?? 0 };
 }
 
+export const VIP_HIGHLIGHT_LIMIT = 3;
+/** Destaque VIP: até 3 Prestadores VIP que atendem aos mesmos filtros da busca, por nota e depois nome. Só a primeira página chama isto. */
+export async function searchVipHighlight(input: SearchInput) {
+  const eligible = sql`SELECT ${projection}, row_number() OVER (PARTITION BY p.id ORDER BY o.titulo, o.id) AS choice ${fromPublic} WHERE ${searchConditions(input)} AND p.vip`;
+  const rows = await db.execute<PublicOffer>(sql`WITH eligible AS (${eligible}) SELECT * FROM eligible WHERE choice = 1 ORDER BY rating::numeric DESC NULLS LAST, "displayName", "providerId" LIMIT ${VIP_HIGHLIGHT_LIMIT}`);
+  return rows.rows;
+}
+
 export async function getComparison(ids: string[]) {
   const validIds = [...new Set(ids.filter((id) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)))].slice(0, 3);
   if (!validIds.length) return { offers: [] as PublicOffer[], removed: ids.length > 0 };
@@ -74,7 +84,7 @@ export async function getComparison(ids: string[]) {
 }
 
 export async function getPublicProvider(slug: string) {
-  const [provider] = await db.select({ id: providers.id, slug: providers.slug, type: providers.type, displayName: providers.displayName, description: providers.description, yearsExperience: providers.yearsExperience, city: providers.city, state: providers.state, country: providers.country, photoUrl: sql<string | null>`coalesce(nullif(${providers.photoUrl}, ''), ${user.image})`, contactEmail: providers.contactEmail, phone: providers.phone, whatsapp: providers.whatsapp, siteUrl: providers.siteUrl, githubUrl: providers.githubUrl, linkedinUrl: providers.linkedinUrl }).from(providers).innerJoin(user, eq(user.id, providers.userId)).where(and(eq(providers.slug, slug), eq(providers.active, true))).limit(1);
+  const [provider] = await db.select({ id: providers.id, slug: providers.slug, type: providers.type, displayName: providers.displayName, description: providers.description, yearsExperience: providers.yearsExperience, city: providers.city, state: providers.state, country: providers.country, photoUrl: sql<string | null>`coalesce(nullif(${providers.photoUrl}, ''), ${user.image})`, vip: providers.vip, contactEmail: providers.contactEmail, phone: providers.phone, whatsapp: providers.whatsapp, siteUrl: providers.siteUrl, githubUrl: providers.githubUrl, linkedinUrl: providers.linkedinUrl }).from(providers).innerJoin(user, eq(user.id, providers.userId)).where(and(eq(providers.slug, slug), eq(providers.active, true))).limit(1);
   if (!provider) return null;
   const [offerRows, stats] = await Promise.all([
     db.execute<PublicOffer>(sql`SELECT ${projection} ${fromPublic} WHERE ${active} AND p.id = ${provider.id}::uuid ORDER BY o.titulo, o.id`),
