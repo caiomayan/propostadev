@@ -1,3 +1,4 @@
+import { seedDemoAvisos } from "./avisos";
 import { seedDemoOportunidades } from "./oportunidades";
 import { seedDemoPrecosExternos } from "./precos-externos";
 import { seedDemoSelo } from "./selo";
@@ -9,5 +10,7 @@ export async function seedDemoMvp3(options: { includeDemoExternalPrices: boolean
   await seedDemoSelo();
   await seedDemoOportunidades();
   await seedDemoVip();
+  // Depois das Oportunidades: lê os Convites e Propostas que elas criam.
+  await seedDemoAvisos();
   if (options.includeDemoExternalPrices) await seedDemoPrecosExternos();
 }
