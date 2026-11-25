@@ -24,6 +24,8 @@ export async function accountSummary(user: SessionUser): Promise<AccountSummary>
   const pending = needsEmailConfirmation(user);
   const links: PanelLink[] = pending ? [{ href: "/confirmar-email", label: "Confirmar e-mail", icon: "mail" }]
     : !type ? [{ href: "/boas-vindas", label: "Escolher tipo de conta", icon: "account" }]
-    : [...panelLinks(type), ...(isPlataformaUser(user) ? [{ href: "/plataforma", label: "Plataforma", icon: "platform" } as PanelLink] : []), ...(provider?.active ? [{ href: `/prestadores/${provider.slug}`, label: "Ver meu perfil público", icon: "public" } as PanelLink] : [])];
+    : [...panelLinks(type), ...(provider?.active ? [{ href: `/prestadores/${provider.slug}`, label: "Ver meu perfil público", icon: "public" } as PanelLink] : [])];
+  // A Equipe da plataforma (e-mail confirmado) acha o painel no menu mesmo sem tipo de conta.
+  if (isPlataformaUser(user)) links.splice(type ? panelLinks(type).length : 0, 0, { href: "/plataforma", label: "Plataforma", icon: "platform" });
   return { name: user.name, email: user.email, role: type && (type === "PRESTADOR" ? "Prestador" : "Cliente"), photoUrl: provider?.photoUrl ?? user.image ?? null, links };
 }
