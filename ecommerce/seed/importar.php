@@ -54,16 +54,20 @@ foreach ($data['ofertas'] as $o) {
   $product->set_category_ids([$parent, $child]);
   $product->set_featured((bool) $o['vip']);
   $product->set_reviews_allowed(true);
-  $product->set_image_id(pd_cover($o['tipo_slug']));
+  $product->set_image_id(pd_cover(file_exists("/seed/capas/oferta-{$o['id']}.png") ? "oferta-{$o['id']}" : $o['tipo_slug']));
   $meta = [
     '_pd_oferta_id' => $o['id'], '_pd_tipo_preco' => $o['tipo_preco'], '_pd_preco_minimo' => $o['preco_minimo'], '_pd_preco_maximo' => $o['preco_maximo'],
     '_pd_tipo_prazo' => $o['tipo_prazo'], '_pd_prazo_minimo' => $o['prazo_minimo_dias'], '_pd_prazo_maximo' => $o['prazo_maximo_dias'],
     '_pd_prestador' => $o['prestador'], '_pd_prestador_slug' => $o['prestador_slug'], '_pd_vip' => $o['vip'] ? 'sim' : 'nao',
-    '_pd_local' => trim(($o['cidade'] ?? '') . ($o['uf'] ? '/' . $o['uf'] : ''), '/'), '_pd_anos' => $o['anos_experiencia'],
+    '_pd_foto' => $o['foto_url'] ?? '', '_pd_local' => trim(($o['cidade'] ?? '') . ($o['uf'] ? '/' . $o['uf'] : ''), '/'), '_pd_anos' => $o['anos_experiencia'],
   ];
   foreach ($meta as $k => $v) $product->update_meta_data($k, $v ?? '');
   $id = $product->save();
-  if ($brand) wp_set_object_terms($id, [$brand], 'product_brand');
+  if ($brand) {
+    wp_set_object_terms($id, [$brand], 'product_brand');
+    update_term_meta($brand, 'pd_foto', $o['foto_url'] ?? '');
+    update_term_meta($brand, 'pd_slug', $o['prestador_slug']);
+  }
   if (!$existing) $created++;
 
   foreach ($reviewsByProvider[$o['prestador_slug']] ?? [] as $r) {

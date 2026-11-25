@@ -30,7 +30,7 @@ wp theme install storefront --activate
 wp language plugin install woocommerce pt_BR || true
 wp language theme install storefront pt_BR || true
 wp theme delete twentytwentythree twentytwentyfour twentytwentyfive 2>/dev/null || true
-mkdir -p wp-content/mu-plugins && cp /seed/mu-plugin/propostadev.php wp-content/mu-plugins/propostadev.php
+mkdir -p wp-content/mu-plugins && cp /seed/mu-plugin/propostadev.php /seed/mu-plugin/propostadev.css wp-content/mu-plugins/
 wp wc tool run install_pages --user=equipe >/dev/null
 
 # Loja no Brasil, em reais, sem frete nem imposto (serviços digitais), aberta ao público.
@@ -41,15 +41,16 @@ for kv in \
   woocommerce_coming_soon=no woocommerce_store_pages_only=no woocommerce_enable_guest_checkout=yes \
   woocommerce_enable_reviews=yes woocommerce_review_rating_verification_required=no woocommerce_enable_review_rating=yes \
   woocommerce_task_list_hidden=yes woocommerce_extended_task_list_hidden=yes woocommerce_show_marketplace_suggestions=no \
-  woocommerce_allow_tracking=no woocommerce_analytics_enabled=no woocommerce_feature_order_attribution_enabled=no; do
+  woocommerce_allow_tracking=no woocommerce_enable_coupons=no woocommerce_analytics_enabled=no woocommerce_feature_order_attribution_enabled=no; do
   wp option update "${kv%%=*}" "${kv#*=}" >/dev/null 2>&1 || true
 done
 wp option update woocommerce_specific_allowed_countries '["BR"]' --format=json >/dev/null
 wp option update woocommerce_permalinks '{"product_base":"servico","category_base":"categoria","tag_base":"etiqueta"}' --format=json >/dev/null
+wp option update woocommerce_brand_permalink prestador >/dev/null
 wp option update woocommerce_onboarding_profile '{"skipped":true}' --format=json >/dev/null
 
 # Pagamento: só o combinado com o Prestador (demonstração, nada é cobrado).
-wp option update woocommerce_cod_settings '{"enabled":"yes","title":"Combinar pagamento com o Prestador","description":"Demonstração: nenhum valor é cobrado agora. O Prestador recebe a Contratação, confirma o escopo e combina o pagamento com você.","instructions":"Recebemos sua Contratação. O Prestador vai confirmar o escopo e combinar o pagamento.","enable_for_methods":[],"enable_for_virtual":"yes"}' --format=json >/dev/null
+wp option update woocommerce_cod_settings '{"enabled":"yes","title":"Combinar pagamento com o Prestador","description":"Demonstração: nenhum valor é cobrado agora. O Prestador recebe a Contratação, confirma o escopo e combina o pagamento com você.","instructions":"","enable_for_methods":[],"enable_for_virtual":"yes"}' --format=json >/dev/null
 for g in bacs cheque paypal; do wp option update "woocommerce_${g}_settings" '{"enabled":"no"}' --format=json >/dev/null; done
 
 # Catálogo.
@@ -73,15 +74,14 @@ wp term update product_cat "$(wp option get default_product_cat)" --name='Outros
 
 if ! wp menu list --fields=slug --format=csv | grep -q '^principal$'; then
   wp menu create Principal >/dev/null
-  wp menu item add-post principal "$HOME_ID" --title='Início' >/dev/null
   wp menu item add-post principal "$SHOP_ID" --title='Serviços' >/dev/null
   for slug in web backend-e-apis manutencao-e-integracoes; do
     TERM_ID=$(wp term get product_cat "$slug" --by=slug --field=term_id 2>/dev/null || true)
     [ -n "$TERM_ID" ] && wp menu item add-term principal product_cat "$TERM_ID" >/dev/null
   done
-  wp menu item add-post principal "$(wp option get woocommerce_myaccount_page_id)" --title='Minha conta' >/dev/null
   wp menu location assign principal primary
 fi
+wp eval-file /seed/textos.php
 wp rewrite flush >/dev/null 2>&1 || true
 wp cache flush >/dev/null
 echo "Loja pronta em $URL"

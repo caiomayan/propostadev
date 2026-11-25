@@ -21,7 +21,8 @@
       "anos_experiencia": 6,
       "cidade": "Belém",
       "uf": "PA",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-15.svg"
     },
     {
       "id": "682c5e6c-4086-48aa-8081-e788fefd0fb1",
@@ -44,7 +45,8 @@
       "anos_experiencia": 8,
       "cidade": "Salvador",
       "uf": "BA",
-      "vip": true
+      "vip": true,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-8.svg"
     },
     {
       "id": "04865b7c-0ce8-4a84-a8aa-1c30e046178b",
@@ -67,7 +69,8 @@
       "anos_experiencia": 5,
       "cidade": "Salvador",
       "uf": "BA",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-16.svg"
     },
     {
       "id": "9d611805-fea9-4061-bdac-7e825308f4cf",
@@ -90,7 +93,8 @@
       "anos_experiencia": 6,
       "cidade": "Belém",
       "uf": "PA",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-15.svg"
     },
     {
       "id": "5e20cc04-c603-42b6-bc9a-1bdec705c8ce",
@@ -113,7 +117,8 @@
       "anos_experiencia": 10,
       "cidade": "Campina Grande",
       "uf": "PB",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-14.svg"
     },
     {
       "id": "ece07d16-201c-488d-ba5f-204bbd55827b",
@@ -136,7 +141,8 @@
       "anos_experiencia": 5,
       "cidade": "Salvador",
       "uf": "BA",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-16.svg"
     },
     {
       "id": "7826ef4d-102e-408f-9378-1ddab005d9dc",
@@ -159,7 +165,8 @@
       "anos_experiencia": 4,
       "cidade": "São Luís",
       "uf": "MA",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-20.svg"
     },
     {
       "id": "6c7a779b-5ce3-4d0f-bcf2-4cb4e5fe08da",
@@ -182,7 +189,8 @@
       "anos_experiencia": 5,
       "cidade": "Salvador",
       "uf": "BA",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-16.svg"
     },
     {
       "id": "ba1fc221-0e50-4c94-9cf1-1e7f0e25d7d9",
@@ -205,7 +213,8 @@
       "anos_experiencia": 9,
       "cidade": "Recife",
       "uf": "PE",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-19.svg"
     },
     {
       "id": "0254c3c0-d64d-463e-bae5-e0c7fd1fecdb",
@@ -228,7 +237,8 @@
       "anos_experiencia": 2,
       "cidade": "Maceió",
       "uf": "AL",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-18.svg"
     },
     {
       "id": "077fedf1-8f81-4cd9-b230-d8262b341e68",
@@ -251,7 +261,8 @@
       "anos_experiencia": 3,
       "cidade": "João Pessoa",
       "uf": "PB",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-17.svg"
     },
     {
       "id": "c47a1245-2f42-462a-b51c-b0ce30942cc3",
@@ -274,7 +285,8 @@
       "anos_experiencia": 8,
       "cidade": "João Pessoa",
       "uf": "PB",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-11.svg"
     },
     {
       "id": "c0a8c037-5fe9-4e69-a2c3-9acaf362f4ad",
@@ -297,7 +309,8 @@
       "anos_experiencia": 4,
       "cidade": "Natal",
       "uf": "RN",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-10.svg"
     },
     {
       "id": "c76559a9-00cd-4ecf-8888-90a6abe51c41",
@@ -320,7 +333,8 @@
       "anos_experiencia": 6,
       "cidade": "Recife",
       "uf": "PE",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-9.svg"
     },
     {
       "id": "c0a79f7d-4dc5-4bfc-9222-fcf9bea7218c",
@@ -343,7 +357,8 @@
       "anos_experiencia": 1,
       "cidade": "João Pessoa",
       "uf": "PB",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-1.svg"
     },
     {
       "id": "565a1c42-ca47-4a4b-a610-8560a6874a1d",
@@ -366,7 +381,8 @@
       "anos_experiencia": 2,
       "cidade": "Recife",
       "uf": "PE",
-      "vip": true
+      "vip": true,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-2.svg"
     },
     {
       "id": "0006628e-4b9e-4781-9dd4-92140f514056",
@@ -389,7 +405,8 @@
       "anos_experiencia": 3,
       "cidade": "Campina Grande",
       "uf": "PB",
-      "vip": true
+      "vip": true,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-3.svg"
     },
     {
       "id": "a125783b-8b8c-4b47-8403-a79c97cdec45",
@@ -412,7 +429,8 @@
       "anos_experiencia": 10,
       "cidade": "Campina Grande",
       "uf": "PB",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-14.svg"
     },
     {
       "id": "7bfed4c5-a5ea-4ea7-9eb3-9e253bda4449",
@@ -435,7 +453,8 @@
       "anos_experiencia": 5,
       "cidade": "Aracaju",
       "uf": "SE",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-13.svg"
     },
     {
       "id": "3b4fc41e-52c1-4bb3-86fb-91fd9ab54d1f",
@@ -458,7 +477,8 @@
       "anos_experiencia": 7,
       "cidade": "Fortaleza",
       "uf": "CE",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-12.svg"
     },
     {
       "id": "3e69de67-b6f3-4fe6-826b-712621cf78f4",
@@ -481,7 +501,8 @@
       "anos_experiencia": 9,
       "cidade": "Recife",
       "uf": "PE",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-19.svg"
     },
     {
       "id": "5270cecf-0ccb-4cae-8ae5-5794d29cd86a",
@@ -504,7 +525,8 @@
       "anos_experiencia": 2,
       "cidade": "Maceió",
       "uf": "AL",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-18.svg"
     },
     {
       "id": "fe9bb970-8574-4abf-a4c6-174152582cb6",
@@ -527,7 +549,8 @@
       "anos_experiencia": 4,
       "cidade": "Natal",
       "uf": "RN",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-4.svg"
     },
     {
       "id": "37ffe437-9f94-478e-88eb-b93d90a47cc6",
@@ -550,7 +573,8 @@
       "anos_experiencia": 6,
       "cidade": "Teresina",
       "uf": "PI",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-6.svg"
     },
     {
       "id": "0d631f5a-d1db-4cdf-b680-be336767c8b5",
@@ -573,7 +597,8 @@
       "anos_experiencia": 7,
       "cidade": "João Pessoa",
       "uf": "PB",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-7.svg"
     },
     {
       "id": "f1d770df-5b0e-44aa-81c1-7f69d54536b3",
@@ -596,7 +621,8 @@
       "anos_experiencia": 3,
       "cidade": "João Pessoa",
       "uf": "PB",
-      "vip": false
+      "vip": false,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-17.svg"
     },
     {
       "id": "064416d1-d114-4120-b545-88767ddca40a",
@@ -619,7 +645,8 @@
       "anos_experiencia": 5,
       "cidade": "Fortaleza",
       "uf": "CE",
-      "vip": true
+      "vip": true,
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-5.svg"
     }
   ],
   "avaliacoes": [

@@ -17,7 +17,7 @@ O endereço público é uma rota do túnel da Cloudflare `caiomayan-vm` (já rod
 ## Atualizar o catálogo
 
 1. Exportar da demo (só leitura): `pnpm exec tsx --conditions=react-server scripts/exportar-catalogo-loja.ts` com a `DATABASE_URL` desejada. Gera `ecommerce/seed/catalogo.json`.
-2. Capas por Tipo de serviço: `node ecommerce/gerar-capas.mjs`.
+2. Capas (uma por Oferta, com o avatar do Prestador, e uma por Tipo de serviço para as categorias): `node ecommerce/gerar-capas.mjs`.
 3. Rodar `instalar.sh` de novo: atualiza os produtos existentes (pela Oferta de origem) e cria os novos.
 
 ## Administração
