@@ -7,6 +7,8 @@ import { offers, providers } from "@/lib/db/schema";
 import { ResumeDraft } from "@/components/triage/draft-memory";
 import { listClientProjects } from "@/modules/projects/queries";
 import { listMyProposals, listOpportunities } from "@/modules/proposals/queries";
+import { TrustChecklist } from "@/components/trust-checklist";
+import { getTrustCriteria } from "@/modules/reviews/queries";
 import { dateLabel, projectStatusLabels } from "@/modules/triage/labels";
 export default async function DashboardPage() {
   const { session, accountType } = await requireAccount();
@@ -48,6 +50,7 @@ export default async function DashboardPage() {
       <div><dt>Ofertas</dt><dd>{activeOffers} {activeOffers === 1 ? "ativa" : "ativas"}{pausedOffers > 0 && <> · {pausedOffers} {pausedOffers === 1 ? "pausada" : "pausadas"}</>} <Link href="/painel/ofertas">Gerenciar</Link></dd></div>
       {provider.active && <div><dt>Página pública</dt><dd><Link href={`/prestadores/${provider.slug}`}>Ver meu perfil público</Link></dd></div>}
     </dl></div>}
+    {provider && <TrustChecklist criteria={await getTrustCriteria(provider.id)}/>}
     <p><Link href="/buscar">Explorar prestadores →</Link></p>
   </section>;
 }
