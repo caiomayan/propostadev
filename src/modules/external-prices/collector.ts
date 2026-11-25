@@ -10,7 +10,15 @@ export type Validation = { ok: true; price: ValidPrice } | { ok: false; reason: 
 
 const toAmount = (value: unknown): number | null => (typeof value === "number" && Number.isFinite(value) ? value : null);
 
-/** Descarta o que não é preço: página sem preço, valor não numérico, zero ou negativo, mínimo maior que o máximo. */
+/** Valores em reais citados num trecho em formato brasileiro: "2.500,00" → 2500, "15 mil" → 15000, "1,5 mil" → 1500. */
+export function amountsInExcerpt(excerpt: string): number[] {
+  return [...excerpt.matchAll(/(\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d{1,2}))?(\s*mil\b)?/gi)].map((match) => {
+    const value = Number(`${match[1].replaceAll(".", "")}.${match[2] ?? "0"}`);
+    return match[3] ? value * 1000 : value;
+  });
+}
+
+/** Descarta o que não é preço: página sem preço, valor não numérico, zero ou negativo, mínimo maior que o máximo, valor ausente do trecho. */
 export function validateExtraction(raw: ExtractedPrice): Validation {
   if (raw.encontrado !== true) return { ok: false, reason: "A página não traz preço para este serviço" };
   const min = toAmount(raw.valor_min), max = toAmount(raw.valor_max);
@@ -19,7 +27,10 @@ export function validateExtraction(raw: ExtractedPrice): Validation {
   if (min > max) return { ok: false, reason: "Valor mínimo maior que o máximo" };
   // numeric(10,2): acima disso o banco recusaria a linha.
   if (max >= 100_000_000) return { ok: false, reason: "Valor extraído fora do limite" };
-  const excerpt = typeof raw.trecho === "string" && raw.trecho.trim() ? raw.trecho.trim().slice(0, 500) : null;
+  const excerpt = typeof raw.trecho === "string" && raw.trecho.trim() ? raw.trecho.replaceAll("**", "").replace(/\s+/g, " ").trim().slice(0, 500) : null;
+  // Trava contra número inventado ou mal lido (ex.: "R$ 1.000" lido como 1): os dois valores precisam estar no trecho citado.
+  const cited = excerpt ? amountsInExcerpt(excerpt) : [];
+  if (!cited.includes(min) || !cited.includes(max)) return { ok: false, reason: "Valores extraídos não aparecem no trecho citado" };
   return { ok: true, price: { min: min.toFixed(2), max: max.toFixed(2), excerpt } };
 }
 

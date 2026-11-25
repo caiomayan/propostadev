@@ -20,7 +20,7 @@ const schema = {
   required: ["encontrado", "valor_min", "valor_max", "trecho"],
 };
 
-const prompt = (serviceDescription: string) => `Extraia a faixa de preço em reais (BRL) que a página informa para o serviço: ${serviceDescription}. Use só números escritos na página. Se a página não trouxer preço para esse serviço específico, devolva encontrado=false.`;
+const prompt = (serviceDescription: string) => `Extraia a faixa de preço em reais (BRL) que a página informa especificamente para o serviço: ${serviceDescription}. Use só números escritos na página para esse serviço. Se a página só traz preço de outro serviço ou de outro tipo de site, ou não traz preço, devolva encontrado=false. Os valores estão no formato brasileiro, em que o ponto separa milhares e a vírgula separa centavos: "R$ 1.000" é mil reais (1000), "R$ 2.500,00" é 2500 e "R$ 10 mil" é 10000. Devolva valor_min e valor_max como números em reais, sem separador de milhar. Em trecho, copie a frase da página que contém os dois valores.`;
 
 /** Cliente real da API HTTP v2 do Firecrawl (scrape com formato JSON, 5 créditos por página). A chave nunca é impressa nem entra em mensagens de erro. */
 export function createFirecrawlClient(apiKey: string): PriceExtractor {
