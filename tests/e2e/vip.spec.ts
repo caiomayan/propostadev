@@ -53,9 +53,9 @@ test("Prestador registra Interesse no VIP; ao virar VIP (pela plataforma) aparec
   await page.getByRole("button", { name: "Salvar oferta" }).click();
   await expect(page).toHaveURL(/\/painel\/ofertas\/[a-f0-9-]+\/editar$/);
 
-  // Sem VIP, a faixa não existe
+  // Sem VIP, este Prestador não entra na faixa (o seed demo já tem outros VIP em Landing Page)
   await page.goto("/buscar?tipo=landing-page");
-  await expect(page.getByRole("heading", { name: "Destaque VIP" })).toHaveCount(0);
+  await expect(page.getByRole("region", { name: "Destaque VIP" }).getByText(name)).toHaveCount(0);
 
   // Página do VIP: aviso, interesse registrado uma única vez
   await page.goto("/painel");
