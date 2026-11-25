@@ -240,3 +240,6 @@ dialog::backdrop { background: var(--overlay); }
 .password-strength[data-level="4"] .password-strength-bar span[data-on="true"], .password-strength[data-level="3"] .password-strength-bar span[data-on="true"] { background: var(--success); }
 .password-strength [role=status] { color: var(--muted-foreground); font-weight: 400; }
 .form-success { color: var(--success); }
+.vip-badge { gap: 4px; background: var(--accent-fill); color: var(--accent-ink); }
+.vip-highlight { display: flex; flex-direction: column; gap: 16px; padding: 20px; border: 1px solid var(--accent-fill); border-radius: var(--radius-lg); }
+.vip-highlight-head { display: flex; flex-direction: column; gap: 4px; }
