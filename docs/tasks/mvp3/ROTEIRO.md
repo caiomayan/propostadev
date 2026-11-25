@@ -50,10 +50,15 @@ Endereço: https://propostadev.caiomayan.com (ADR 0006). Mesma identidade do sit
 2. Clique em **Landing Page** no painel: o catálogo filtra pelo Tipo (os botões no topo trocam o filtro). Cada card mostra o Prestador, a nota, o prazo e o preço com unidade.
 3. Abra **Landing Page de lançamento** (Bruno Cavalcanti, VIP): ficha do Prestador com link para o Perfil no site, preço, prazo e as abas **O que está incluído**, **Sobre o Prestador** e **Avaliações**.
 4. **Contratar** → **Carrinho** → **Ir para a Contratação**: dados do Cliente e "Combinar pagamento com o Prestador". **Confirmar Contratação** mostra a Contratação recebida (nada é cobrado).
-5. Mostre também uma Oferta **sob consulta** (Site institucional sob medida, Maré Sistemas): não vai para o carrinho, o botão pede orçamento no site.
-6. Explique o mapeamento: Oferta vira produto, Tipo de serviço vira categoria, Prestador vira marca (tem página própria), Avaliação do Prestador aparece no produto. Triagem, Preço de referência, Projetos e Propostas ficam só na plataforma própria: é o que uma loja pronta não faz, e a loja manda para lá quando o Cliente não sabe o que precisa.
+5. **Regras de negócio** (logado, senha das contas demo):
+   - Entre como **cliente1@demo.example** (Mariana Costa) → **Minhas Contratações**: uma *Aguardando o Prestador* (Bruno Cavalcanti) e uma *Concluída* (Aurora Web Studio), com as respostas do Prestador.
+   - Saia e entre como **prestador2@demo.example** (Bruno) → **Contratações recebidas**: a Contratação da Mariana com a descrição do Projeto. **Confirmar escopo** e depois **Marcar como concluída**. Outro Prestador não vê essa Contratação, e Prestador não entra no `/wp-admin`.
+   - Volte como Mariana e abra a Oferta do Bruno → aba **Avaliações**: agora o formulário aparece; a Avaliação sai com o selo **Contratação verificada**. Quem não contratou vê o aviso de que só quem teve a Contratação concluída avalia.
+   - Tente pôr no carrinho Ofertas de dois Prestadores: a loja recusa (uma Contratação é com um Prestador por vez, como a Proposta no site).
+6. Mostre também uma Oferta **sob consulta** (Site institucional sob medida, Maré Sistemas): não vai para o carrinho, o botão pede orçamento no site.
+7. Explique o mapeamento: Oferta vira produto, Tipo de serviço vira categoria, Prestador vira marca (tem página própria), Avaliação do Prestador aparece no produto. Triagem, Preço de referência, Projetos e Propostas ficam só na plataforma própria: é o que uma loja pronta não faz, e a loja manda para lá quando o Cliente não sabe o que precisa.
 
-Depois do ensaio, os pedidos de teste são apagados no reset (peça ao coordenador).
+Depois do ensaio, volte a loja ao ponto de partida com o reset de `ecommerce/README.md` (apaga as Contratações e Avaliações feitas no ensaio e recria as duas de exemplo).
 
 ## Perguntas prováveis
 - *O VIP é pago?* Nesta versão não: só registra interesse. Cobrança exige decisões de produto e jurídicas próprias.

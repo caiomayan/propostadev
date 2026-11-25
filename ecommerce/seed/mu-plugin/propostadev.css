@@ -322,3 +322,49 @@ ul.products li.product a.woocommerce-LoopProduct-link:focus-visible { outline: n
 ul.products li.product .price .pd-price-pre:only-child { font-family: var(--pd-display); font-size: 1em; font-weight: 800; color: var(--pd-ink); }
 .wc-block-components-product-details { font-size: .85rem; color: var(--pd-muted-ink); }
 ul.products li.product img.pd-avatar-sm { width: 28px !important; height: 28px !important; margin: 0 !important; border-radius: 50% !important; aspect-ratio: 1; }
+
+/* Conta: navegação, status da Contratação e painel do Prestador */
+.woocommerce-account .woocommerce { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: clamp(24px, 4vw, 48px); align-items: start; }
+.woocommerce-account .woocommerce > .woocommerce-notices-wrapper { grid-column: 1 / -1; }
+.woocommerce-account:not(.logged-in) .woocommerce { display: block; }
+.woocommerce-MyAccount-navigation, .woocommerce-MyAccount-content { width: auto !important; float: none !important; margin: 0 !important; }
+.woocommerce-MyAccount-navigation ul { list-style: none; margin: 0; padding: 8px; background: var(--pd-card); border: 1px solid var(--pd-line); border-radius: var(--pd-r-lg); }
+.woocommerce-MyAccount-navigation ul li { border: 0 !important; margin: 0; }
+.woocommerce-MyAccount-navigation ul li a { display: flex !important; align-items: center; min-height: 44px; padding: 0 14px !important; border-radius: var(--pd-r); color: var(--pd-ink); font-weight: 600; text-decoration: none; }
+.woocommerce-MyAccount-navigation ul li a::before { display: none !important; }
+.woocommerce-MyAccount-navigation ul li a:hover { background: var(--pd-muted); }
+.woocommerce-MyAccount-navigation ul li.is-active a { background: var(--pd-forest); color: var(--pd-on-forest) !important; }
+.woocommerce-MyAccount-content > p:first-child { color: var(--pd-muted-ink); }
+.pd-account-intro { background: var(--pd-lime); color: var(--pd-lime-ink); border-radius: var(--pd-r-xl); padding: clamp(20px, 4vw, 32px); margin-bottom: 24px; }
+.pd-account-intro h2 { font-size: 1.75rem; margin: 0 0 8px; }
+.pd-account-intro p { margin: 0 0 16px; max-width: 60ch; }
+.pd-account-intro p:last-child { margin: 0; }
+.pd-status { background: var(--pd-card); border: 1px solid var(--pd-line); border-radius: var(--pd-r-lg); padding: 18px 20px; margin: 0 0 24px; }
+.pd-status p { margin: 8px 0 0; color: var(--pd-muted-ink); max-width: 64ch; }
+.pd-status-provider { margin-left: 10px; font-weight: 600; color: var(--pd-muted-ink); }
+.pd-status-label, mark.order-status { display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 999px; font-weight: 700; font-size: .85rem; background: var(--pd-muted); color: var(--pd-ink); }
+.pd-status-aguardando .pd-status-label, .pd-status-label.pd-status-aguardando { background: var(--pd-lime); color: var(--pd-lime-ink); }
+.pd-status-confirmada .pd-status-label, .pd-status-label.pd-status-confirmada { background: var(--pd-forest); color: var(--pd-on-forest); }
+.pd-status-completed .pd-status-label, .pd-status-label.pd-status-completed { background: var(--pd-success); color: #fff; }
+.pd-status-recusada .pd-status-label, .pd-status-label.pd-status-recusada { background: #f3dcd9; color: var(--pd-danger); }
+.pd-received { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.pd-received-item { background: var(--pd-card); border: 1px solid var(--pd-line); border-radius: var(--pd-r-lg); padding: 20px; }
+.pd-received-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.pd-received-id { font-weight: 600; color: var(--pd-muted-ink); font-size: .9rem; font-variant-numeric: tabular-nums; }
+.pd-received-item h3 { font-size: 1.35rem; margin: 10px 0 4px; }
+.pd-received-meta { color: var(--pd-muted-ink); margin: 0 0 10px; font-variant-numeric: tabular-nums; }
+.pd-received-note { margin: 0; max-width: 70ch; }
+.pd-received-note span { color: var(--pd-muted-ink); }
+.pd-received-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.pd-empty { background: var(--pd-card); border: 1px dashed var(--pd-line); border-radius: var(--pd-r-lg); padding: 28px; }
+.pd-empty h2 { font-size: 1.5rem; margin: 0 0 6px; }
+.woocommerce-orders-table, .woocommerce-table--order-details { font-variant-numeric: tabular-nums; }
+.woocommerce-orders-table .button { min-height: 40px; }
+.woocommerce-OrderUpdates { list-style: none; padding: 0; margin: 0; }
+.woocommerce-OrderUpdate { background: var(--pd-card); border: 1px solid var(--pd-line); border-radius: var(--pd-r); padding: 12px 16px; margin-bottom: 8px; }
+.woocommerce-OrderUpdate-meta { font-size: .85rem; color: var(--pd-muted-ink); margin: 0 0 4px; }
+.woocommerce-review__verified { font-style: normal; display: inline-flex; padding: 2px 10px; border-radius: 999px; background: var(--pd-lime); color: var(--pd-lime-ink); font-weight: 700; font-size: .8rem; }
+.u-columns.col2-set { display: grid; grid-template-columns: repeat(2, minmax(0, 460px)); gap: 24px; }
+.u-columns.col2-set .u-column1, .u-columns.col2-set .u-column2 { width: auto !important; float: none !important; margin: 0 !important; }
+.woocommerce-form-register { background: var(--pd-card); border: 1px solid var(--pd-line) !important; border-radius: var(--pd-r-lg); padding: 24px !important; }
+@media (max-width: 900px) { .woocommerce-account .woocommerce, .u-columns.col2-set { grid-template-columns: 1fr; } }

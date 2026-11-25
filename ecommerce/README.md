@@ -20,6 +20,17 @@ O endereço público é uma rota do túnel da Cloudflare `caiomayan-vm` (já rod
 2. Capas (uma por Oferta, com o avatar do Prestador, e uma por Tipo de serviço para as categorias): `node ecommerce/gerar-capas.mjs`.
 3. Rodar `instalar.sh` de novo: atualiza os produtos existentes (pela Oferta de origem) e cria os novos.
 
+## Contas da demo e reset
+
+- Prestadores: `prestadorN@demo.example`; Cliente: `cliente1@demo.example` (Mariana Costa). Senha: a das contas demo do site (`DEMO_PASSWORD`).
+- Duas Contratações de exemplo da Mariana: uma aguardando o Bruno Cavalcanti (`prestador2`) e uma concluída com a Aurora Web Studio (`prestador1`), que libera a Avaliação verificada.
+- Voltar a loja ao ponto de partida (apaga Contratações e Avaliações feitas na loja e recria as de exemplo):
+
+```sh
+set -a; . ~/.config/propostadev/producao.env; set +a; export DEMO_PASSWORD
+docker compose --env-file ~/.config/propostadev/loja.env -f ecommerce/compose.yml run --rm -e DEMO_PASSWORD -e PD_RESET=1 cli wp eval-file /seed/demo.php
+```
+
 ## Administração
 
 Login em `/wp-admin` com o usuário `equipe` e a senha `LOJA_ADMIN_PASSWORD` de `loja.env`.

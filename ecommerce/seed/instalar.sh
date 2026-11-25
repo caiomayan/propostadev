@@ -30,7 +30,7 @@ wp theme install storefront --activate
 wp language plugin install woocommerce pt_BR || true
 wp language theme install storefront pt_BR || true
 wp theme delete twentytwentythree twentytwentyfour twentytwentyfive 2>/dev/null || true
-mkdir -p wp-content/mu-plugins && cp /seed/mu-plugin/propostadev.php /seed/mu-plugin/propostadev.css wp-content/mu-plugins/
+mkdir -p wp-content/mu-plugins && cp /seed/mu-plugin/propostadev.php /seed/mu-plugin/propostadev-negocio.php /seed/mu-plugin/propostadev.css wp-content/mu-plugins/
 wp wc tool run install_pages --user=equipe >/dev/null
 
 # Loja no Brasil, em reais, sem frete nem imposto (serviços digitais), aberta ao público.
@@ -39,9 +39,11 @@ for kv in \
   woocommerce_price_thousand_sep=. woocommerce_price_decimal_sep=, woocommerce_price_num_decimals=2 \
   woocommerce_allowed_countries=specific woocommerce_ship_to_countries=disabled woocommerce_calc_taxes=no \
   woocommerce_coming_soon=no woocommerce_store_pages_only=no woocommerce_enable_guest_checkout=yes \
-  woocommerce_enable_reviews=yes woocommerce_review_rating_verification_required=no woocommerce_enable_review_rating=yes \
+  woocommerce_enable_reviews=yes woocommerce_review_rating_verification_required=yes woocommerce_enable_review_rating=yes \
   woocommerce_task_list_hidden=yes woocommerce_extended_task_list_hidden=yes woocommerce_show_marketplace_suggestions=no \
-  woocommerce_allow_tracking=no woocommerce_enable_coupons=no woocommerce_analytics_enabled=no woocommerce_feature_order_attribution_enabled=no; do
+  woocommerce_allow_tracking=no woocommerce_enable_coupons=no \
+  woocommerce_enable_myaccount_registration=yes woocommerce_enable_signup_and_login_from_checkout=yes woocommerce_enable_checkout_login_reminder=yes \
+  woocommerce_registration_generate_password=no woocommerce_registration_generate_username=yes woocommerce_review_rating_required=yes woocommerce_analytics_enabled=yes woocommerce_feature_order_attribution_enabled=no; do
   wp option update "${kv%%=*}" "${kv#*=}" >/dev/null 2>&1 || true
 done
 wp option update woocommerce_specific_allowed_countries '["BR"]' --format=json >/dev/null
@@ -82,6 +84,7 @@ if ! wp menu list --fields=slug --format=csv | grep -q '^principal$'; then
   wp menu location assign principal primary
 fi
 wp eval-file /seed/textos.php
+wp eval-file /seed/demo.php
 wp rewrite flush >/dev/null 2>&1 || true
 wp cache flush >/dev/null
 echo "Loja pronta em $URL"

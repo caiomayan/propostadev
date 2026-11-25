@@ -22,7 +22,8 @@
       "cidade": "Belém",
       "uf": "PA",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-15.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-15.svg",
+      "prestador_email": "prestador15@demo.example"
     },
     {
       "id": "682c5e6c-4086-48aa-8081-e788fefd0fb1",
@@ -46,7 +47,8 @@
       "cidade": "Salvador",
       "uf": "BA",
       "vip": true,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-8.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-8.svg",
+      "prestador_email": "prestador8@demo.example"
     },
     {
       "id": "04865b7c-0ce8-4a84-a8aa-1c30e046178b",
@@ -70,7 +72,8 @@
       "cidade": "Salvador",
       "uf": "BA",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-16.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-16.svg",
+      "prestador_email": "prestador16@demo.example"
     },
     {
       "id": "9d611805-fea9-4061-bdac-7e825308f4cf",
@@ -94,7 +97,8 @@
       "cidade": "Belém",
       "uf": "PA",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-15.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-15.svg",
+      "prestador_email": "prestador15@demo.example"
     },
     {
       "id": "5e20cc04-c603-42b6-bc9a-1bdec705c8ce",
@@ -118,7 +122,8 @@
       "cidade": "Campina Grande",
       "uf": "PB",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-14.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-14.svg",
+      "prestador_email": "prestador14@demo.example"
     },
     {
       "id": "ece07d16-201c-488d-ba5f-204bbd55827b",
@@ -142,7 +147,8 @@
       "cidade": "Salvador",
       "uf": "BA",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-16.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-16.svg",
+      "prestador_email": "prestador16@demo.example"
     },
     {
       "id": "7826ef4d-102e-408f-9378-1ddab005d9dc",
@@ -166,7 +172,8 @@
       "cidade": "São Luís",
       "uf": "MA",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-20.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-20.svg",
+      "prestador_email": "prestador20@demo.example"
     },
     {
       "id": "6c7a779b-5ce3-4d0f-bcf2-4cb4e5fe08da",
@@ -190,7 +197,8 @@
       "cidade": "Salvador",
       "uf": "BA",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-16.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-16.svg",
+      "prestador_email": "prestador16@demo.example"
     },
     {
       "id": "ba1fc221-0e50-4c94-9cf1-1e7f0e25d7d9",
@@ -214,7 +222,8 @@
       "cidade": "Recife",
       "uf": "PE",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-19.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-19.svg",
+      "prestador_email": "prestador19@demo.example"
     },
     {
       "id": "0254c3c0-d64d-463e-bae5-e0c7fd1fecdb",
@@ -238,7 +247,8 @@
       "cidade": "Maceió",
       "uf": "AL",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-18.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-18.svg",
+      "prestador_email": "prestador18@demo.example"
     },
     {
       "id": "077fedf1-8f81-4cd9-b230-d8262b341e68",
@@ -262,7 +272,8 @@
       "cidade": "João Pessoa",
       "uf": "PB",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-17.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-17.svg",
+      "prestador_email": "prestador17@demo.example"
     },
     {
       "id": "c47a1245-2f42-462a-b51c-b0ce30942cc3",
@@ -286,7 +297,8 @@
       "cidade": "João Pessoa",
       "uf": "PB",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-11.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-11.svg",
+      "prestador_email": "prestador11@demo.example"
     },
     {
       "id": "c0a8c037-5fe9-4e69-a2c3-9acaf362f4ad",
@@ -310,7 +322,8 @@
       "cidade": "Natal",
       "uf": "RN",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-10.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-10.svg",
+      "prestador_email": "prestador10@demo.example"
     },
     {
       "id": "c76559a9-00cd-4ecf-8888-90a6abe51c41",
@@ -334,7 +347,8 @@
       "cidade": "Recife",
       "uf": "PE",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-9.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-9.svg",
+      "prestador_email": "prestador9@demo.example"
     },
     {
       "id": "c0a79f7d-4dc5-4bfc-9222-fcf9bea7218c",
@@ -358,7 +372,8 @@
       "cidade": "João Pessoa",
       "uf": "PB",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-1.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-1.svg",
+      "prestador_email": "prestador1@demo.example"
     },
     {
       "id": "565a1c42-ca47-4a4b-a610-8560a6874a1d",
@@ -382,7 +397,8 @@
       "cidade": "Recife",
       "uf": "PE",
       "vip": true,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-2.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-2.svg",
+      "prestador_email": "prestador2@demo.example"
     },
     {
       "id": "0006628e-4b9e-4781-9dd4-92140f514056",
@@ -406,7 +422,8 @@
       "cidade": "Campina Grande",
       "uf": "PB",
       "vip": true,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-3.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-3.svg",
+      "prestador_email": "prestador3@demo.example"
     },
     {
       "id": "a125783b-8b8c-4b47-8403-a79c97cdec45",
@@ -430,7 +447,8 @@
       "cidade": "Campina Grande",
       "uf": "PB",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-14.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-14.svg",
+      "prestador_email": "prestador14@demo.example"
     },
     {
       "id": "7bfed4c5-a5ea-4ea7-9eb3-9e253bda4449",
@@ -454,7 +472,8 @@
       "cidade": "Aracaju",
       "uf": "SE",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-13.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-13.svg",
+      "prestador_email": "prestador13@demo.example"
     },
     {
       "id": "3b4fc41e-52c1-4bb3-86fb-91fd9ab54d1f",
@@ -478,7 +497,8 @@
       "cidade": "Fortaleza",
       "uf": "CE",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-12.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-12.svg",
+      "prestador_email": "prestador12@demo.example"
     },
     {
       "id": "3e69de67-b6f3-4fe6-826b-712621cf78f4",
@@ -502,7 +522,8 @@
       "cidade": "Recife",
       "uf": "PE",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-19.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-19.svg",
+      "prestador_email": "prestador19@demo.example"
     },
     {
       "id": "5270cecf-0ccb-4cae-8ae5-5794d29cd86a",
@@ -526,7 +547,8 @@
       "cidade": "Maceió",
       "uf": "AL",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-18.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-18.svg",
+      "prestador_email": "prestador18@demo.example"
     },
     {
       "id": "fe9bb970-8574-4abf-a4c6-174152582cb6",
@@ -550,7 +572,8 @@
       "cidade": "Natal",
       "uf": "RN",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-4.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-4.svg",
+      "prestador_email": "prestador4@demo.example"
     },
     {
       "id": "37ffe437-9f94-478e-88eb-b93d90a47cc6",
@@ -574,7 +597,8 @@
       "cidade": "Teresina",
       "uf": "PI",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-6.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-6.svg",
+      "prestador_email": "prestador6@demo.example"
     },
     {
       "id": "0d631f5a-d1db-4cdf-b680-be336767c8b5",
@@ -598,7 +622,8 @@
       "cidade": "João Pessoa",
       "uf": "PB",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-7.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-7.svg",
+      "prestador_email": "prestador7@demo.example"
     },
     {
       "id": "f1d770df-5b0e-44aa-81c1-7f69d54536b3",
@@ -622,7 +647,8 @@
       "cidade": "João Pessoa",
       "uf": "PB",
       "vip": false,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-17.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-17.svg",
+      "prestador_email": "prestador17@demo.example"
     },
     {
       "id": "064416d1-d114-4120-b545-88767ddca40a",
@@ -646,7 +672,8 @@
       "cidade": "Fortaleza",
       "uf": "CE",
       "vip": true,
-      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-5.svg"
+      "foto_url": "https://propostadev-one.vercel.app/demo/avatars/prestador-demo-5.svg",
+      "prestador_email": "prestador5@demo.example"
     }
   ],
   "avaliacoes": [
