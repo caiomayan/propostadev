@@ -7,7 +7,6 @@ export const priceSources: readonly PriceSource[] = [
   { serviceSlug: "site-institucional", name: "Cronoshare", url: "https://www.cronoshare.com.br/quanto-custa/criar-site", serviceDescription: "criação de um site institucional completo (vários blocos ou páginas)" },
   { serviceSlug: "site-institucional", name: "Hostinger", url: "https://www.hostinger.com/br/tutoriais/quanto-custa-fazer-um-site/", serviceDescription: "criação de um site institucional ou corporativo" },
   { serviceSlug: "site-institucional", name: "Nuvemshop", url: "https://www.nuvemshop.com.br/blog/quanto-custa-um-site/", serviceDescription: "criação de um site institucional" },
-  { serviceSlug: "e-commerce", name: "Hostinger", url: "https://www.hostinger.com/br/tutoriais/custo-de-site-ecommerce/", serviceDescription: "desenvolvimento sob medida de uma loja virtual (e-commerce)" },
   { serviceSlug: "sistema-web", name: "Sebrae PR", url: "https://sebraepr.com.br/comunidade/artigo/software-house-fatores-que-influenciam-no-orcamento-de-um-software-sob-medida", serviceDescription: "desenvolvimento de um sistema web ou software sob medida" },
   { serviceSlug: "sistema-web", name: "Hostinger", url: "https://www.hostinger.com/pt/tutoriais/?p=48824", serviceDescription: "desenvolvimento de um sistema web ou aplicativo sob medida" },
   { serviceSlug: "manutencao-web", name: "Hostinger", url: "https://www.hostinger.com/br/tutoriais/quanto-custa-manter-um-site", serviceDescription: "manutenção mensal de um site" },

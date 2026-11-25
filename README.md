@@ -103,7 +103,7 @@ Resultados e limites reais: docs/VALIDATION.md. Escopo: docs/SCOPE.md. Regras: d
 
 Uma coleta semanal com Firecrawl lê páginas públicas de "quanto custa" (lista versionada em `src/modules/external-prices/sources.ts`) e grava, por Tipo de serviço e por fonte, a faixa em reais, o trecho que a sustenta e a data. O resultado da Triagem e o painel de Ofertas mostram essas linhas ao lado do Preço de referência, sem misturar: o preço externo nunca entra na média. api, backend e integração de sistemas não têm fonte.
 
-- Segredos (variáveis sensíveis na Vercel, Production; localmente no `.env`): `FIRECRAWL_API_KEY` e `CRON_SECRET`. Cada página lida custa 5 créditos do Firecrawl (8 fontes por coleta).
+- Segredos (variáveis sensíveis na Vercel, Production; localmente no `.env`): `FIRECRAWL_API_KEY` e `CRON_SECRET`. Cada página lida custa 5 créditos do Firecrawl (7 fontes por coleta). E-commerce ficou sem fonte em 25/11: a página encontrada só trazia custo mensal de operação, não de desenvolvimento.
 - Agendamento: `vercel.json` chama `GET /api/cron/precos-externos` às segundas, 09:00 UTC. A rota exige `Authorization: Bearer ${CRON_SECRET}` (a Vercel envia sozinha) e recusa sem ele; `maxDuration` de 300 s, o limite do plano Hobby.
 - Coleta manual: `pnpm precos:coletar` (usa `.env`; contra a produção, a `DATABASE_URL` de produção precisa estar no ambiente, sem ir para o git).
 - Falha de uma fonte não afeta as outras e não apaga o último valor válido: a tela mostra a data antiga. Valores não numéricos, zero ou com mínimo maior que o máximo são descartados e registrados como FALHA.
