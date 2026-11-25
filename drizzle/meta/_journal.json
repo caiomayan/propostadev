@@ -57,6 +57,13 @@
       "when": 1795563173819,
       "tag": "0007_mvp3-vip-e-preco-externo",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795575372481,
+      "tag": "0008_avisos",
+      "breakpoints": true
     }
   ]
 }

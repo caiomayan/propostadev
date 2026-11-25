@@ -1,3 +1,4 @@
+import { seedDemoAvisos } from "./avisos";
 import { seedDemoIdentidades } from "./identidades";
 import { seedDemoOportunidades } from "./oportunidades";
 import { seedDemoPlataforma } from "./plataforma";
@@ -12,6 +13,8 @@ export async function seedDemoMvp3(options: { includeDemoExternalPrices: boolean
   await seedDemoSelo();
   await seedDemoOportunidades();
   await seedDemoVip();
-  await seedDemoPlataforma(); // depois do VIP: os pedidos só valem para quem não é VIP
+  // Depois das Oportunidades: lê os Convites e Propostas que elas criam.
+  await seedDemoAvisos();
   if (options.includeDemoExternalPrices) await seedDemoPrecosExternos();
+  await seedDemoPlataforma(); // depois do VIP: os pedidos só valem para quem não é VIP; por último porque pode exigir DEMO_PASSWORD
 }

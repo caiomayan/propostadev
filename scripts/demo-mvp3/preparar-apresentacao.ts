@@ -15,6 +15,11 @@ async function main() {
     UPDATE perfil_prestador p SET vip = false FROM "user" u
     WHERE u.id = p.usuario_id AND u.email LIKE '%@demo.example' AND p.vip`);
   console.info(`VIP da demo retirado antes de reaplicar o conjunto do seed: ${reset.rowCount ?? 0}.`);
+  const unread = await db.execute(sql`
+    UPDATE aviso a SET lido_em = NULL FROM "user" u
+    WHERE u.id = a.usuario_id AND u.email LIKE '%@demo.example' AND a.lido_em IS NOT NULL
+      AND a.tipo IN ('CONVITE_RECEBIDO', 'PROPOSTA_RECEBIDA', 'PROPOSTA_PRE_SELECIONADA')`);
+  console.info(`Avisos da demo de volta a não lidos: ${unread.rowCount ?? 0}.`);
   await seedDemoMvp3({ includeDemoExternalPrices: false });
   console.info("Demo do MVP 3 pronta para a apresentação.");
 }

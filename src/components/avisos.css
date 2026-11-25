@@ -1,0 +1,30 @@
+/* Avisos: sino do cabeçalho e lista em /painel/avisos. Cores só pelos tokens do tema. */
+.avisos-bell { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 999px; color: var(--foreground); transition: background-color var(--t-hover) ease, transform var(--t-press) var(--ease-out); }
+.avisos-bell:hover { text-decoration: none; }
+.avisos-bell:active { transform: scale(.94); }
+@media (hover: hover) { .avisos-bell:hover { background: var(--muted); } }
+.avisos-bell[aria-current="page"] { background: var(--lime); color: var(--lime-ink); }
+.avisos-bell svg { width: 22px; height: 22px; }
+.avisos-bell-count { position: absolute; top: 3px; right: 1px; min-width: 20px; height: 20px; padding-inline: 5px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; background: var(--forest); color: var(--on-forest); font-size: .75rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; box-shadow: 0 0 0 2px var(--background); }
+@media (prefers-color-scheme: dark) { .avisos-bell-count { background: var(--lime); color: var(--lime-ink); } }
+.mobile-menu-nav .avisos-link { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.mobile-menu-nav .avisos-link .avisos-link-count { min-width: 24px; padding: 2px 8px; border-radius: 999px; background: var(--forest); color: var(--on-forest); font-size: .8125rem; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums; }
+@media (prefers-color-scheme: dark) { .mobile-menu-nav .avisos-link .avisos-link-count { background: var(--lime); color: var(--lime-ink); } }
+
+.aviso-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.aviso-row { position: relative; display: flex; align-items: center; gap: 12px 20px; padding: 18px 24px; border-radius: var(--radius-lg); background: var(--card); transition: background-color var(--t-hover) ease, transform var(--t-press) var(--ease-out); }
+.aviso-row:active { transform: scale(.995); }
+@media (hover: hover) { .aviso-row:hover { background: var(--muted); } }
+.aviso-row[data-unread] { box-shadow: inset 4px 0 0 var(--forest); }
+@media (prefers-color-scheme: dark) { .aviso-row[data-unread] { box-shadow: inset 4px 0 0 var(--lime); } }
+.aviso-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
+.aviso-body h2 { font-size: 1.0625rem; font-weight: 600; }
+.aviso-row[data-unread] .aviso-body h2 { font-weight: 800; }
+.aviso-body h2 a { color: inherit; }
+.aviso-body h2 a::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.aviso-body h2 a:focus-visible { outline: 0; }
+.aviso-body h2 a:focus-visible::after { outline: 3px solid var(--ring); outline-offset: 2px; }
+.aviso-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--muted-foreground); font-size: .9375rem; }
+.aviso-meta span { overflow-wrap: anywhere; }
+.aviso-new { flex-shrink: 0; }
+@media (max-width: 560px) { .aviso-row { padding: 16px 18px; } }
