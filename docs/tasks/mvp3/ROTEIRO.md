@@ -62,6 +62,12 @@ Endereço: https://propostadev.caiomayan.com (ADR 0006). Mesma identidade do sit
 
 Depois do ensaio, volte a loja ao ponto de partida com o reset de `ecommerce/README.md` (apaga as Contratações e Avaliações feitas no ensaio e recria as duas de exemplo).
 
+## 5b. Como provar que a loja é WooCommerce (~1 min)
+1. **Painel do WooCommerce:** entre na loja como **plataforma@demo.example** (Equipe, senha das contas demo) → menu da conta → **Painel da Equipe**, ou abra `/wp-admin`. Mostre **WooCommerce → Pedidos** (as Contratações com os status Aguardando o Prestador e Concluída), **Produtos** (as 27 Ofertas), **Clientes** e **Relatórios**.
+2. **API do WooCommerce, ao vivo:** abra https://propostadev.caiomayan.com/wp-json/wc/store/v1/products, o catálogo em JSON pela API pública do WooCommerce.
+3. **Código da página:** Ctrl+U na loja e busque `generator`: aparecem `WordPress` e `WooCommerce 11.3.1`. O rodapé também diz "Loja feita com WooCommerce (WordPress)".
+4. **Repositório:** `ecommerce/seed/instalar.sh` instala o WooCommerce por WP-CLI (`wp plugin install woocommerce`), e as regras ficam em `ecommerce/seed/mu-plugin/`, que usa só os ganchos do WooCommerce, sem plugin pago.
+
 ## Perguntas prováveis
 - *O VIP é pago?* Nesta versão não: só registra interesse. Cobrança exige decisões de produto e jurídicas próprias.
 - *Por que não misturar o preço externo na média?* Porque o Preço de referência promete mostrar o mercado da plataforma, com o tamanho da amostra; misturar esconderia a origem do número.

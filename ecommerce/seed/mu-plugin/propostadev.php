@@ -429,7 +429,7 @@ add_filter('woocommerce_checkout_fields', function ($fields) {
 });
 add_filter('woocommerce_thankyou_order_received_text', fn () => 'O Prestador vai confirmar o escopo e combinar o pagamento com você. Nenhum valor foi cobrado.');
 add_filter('gettext', function ($translated, $text, $domain) {
-  if ($domain !== 'woocommerce') return $translated;
+  if ($domain !== 'woocommerce' || (is_admin() && !wp_doing_ajax())) return $translated; // o painel mostra os textos padrão do WooCommerce
   return match ($text) {
     'Your cart is currently empty!', 'Your cart is currently empty.' => 'Seu carrinho está vazio. Escolha uma Oferta para contratar.',
     'Return to shop' => 'Ver serviços',
@@ -461,7 +461,7 @@ function pd_footer(): void {
   echo '<li><a href="' . esc_url(home_url('/quero-oferecer-servicos/')) . '">Oferecer serviços na loja</a></li>';
   foreach (['/triagem' => 'Começar a Triagem', '/buscar' => 'Buscar desenvolvedores', '/' => 'Ir para o Proposta.dev'] as $path => $label) echo '<li><a href="' . esc_url(PROPOSTADEV_SITE . $path) . '">' . esc_html($label) . '</a></li>';
   echo '</ul></nav></div>';
-  echo '<p class="pd-footer-legal">© ' . esc_html(date('Y')) . ' Proposta.dev. Nenhum pagamento é processado nesta loja: o valor é combinado diretamente entre Cliente e Prestador.<br><span class="pd-demo">Projeto acadêmico em demonstração: Prestadores, Ofertas e Avaliações exibidos são fictícios.</span></p>';
+  echo '<p class="pd-footer-legal">© ' . esc_html(date('Y')) . ' Proposta.dev. Nenhum pagamento é processado nesta loja: o valor é combinado diretamente entre Cliente e Prestador.<br><span class="pd-demo">Projeto acadêmico em demonstração: Prestadores, Ofertas e Avaliações exibidos são fictícios. Loja feita com WooCommerce (WordPress).</span></p>';
   echo '<p class="pd-footer-giant" aria-hidden="true">Proposta.dev</p>';
   echo '</div>';
 }

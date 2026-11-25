@@ -248,7 +248,7 @@ add_action('woocommerce_account_contratacoes-recebidas_endpoint', function () {
 // Só quem teve a Contratação concluída avalia (opção "apenas proprietários verificados" + só "completed" conta como paga).
 add_filter('woocommerce_order_is_paid_statuses', fn () => ['completed']);
 add_filter('gettext', function ($translated, $text, $domain) {
-  if ($domain !== 'woocommerce') return $translated;
+  if ($domain !== 'woocommerce' || (is_admin() && !wp_doing_ajax())) return $translated; // o painel mostra os textos padrão do WooCommerce
   return match ($text) {
     'verified owner' => 'Contratação verificada',
     'Only logged in customers who have purchased this product may leave a review.' => 'Só quem contratou esta Oferta e teve a Contratação concluída pode avaliar. Entre na sua conta para avaliar.',
@@ -315,7 +315,7 @@ add_filter('the_title', function ($title, $id = 0) {
   return $title;
 }, 10, 2);
 add_filter('gettext', function ($translated, $text, $domain) {
-  if ($domain !== 'woocommerce') return $translated;
+  if ($domain !== 'woocommerce' || (is_admin() && !wp_doing_ajax())) return $translated; // o painel mostra os textos padrão do WooCommerce
   return match ($text) {
     'Login' => 'Entrar',
     'Register' => 'Criar conta',
@@ -346,7 +346,7 @@ add_filter('woocommerce_enable_order_notes_field', '__return_true');
 add_filter('woocommerce_order_button_text', fn () => 'Confirmar Contratação');
 add_filter('woocommerce_cart_needs_shipping_address', '__return_false');
 add_filter('gettext', function ($translated, $text, $domain) {
-  if ($domain !== 'woocommerce') return $translated;
+  if ($domain !== 'woocommerce' || (is_admin() && !wp_doing_ajax())) return $translated; // o painel mostra os textos padrão do WooCommerce
   return match ($text) {
     'Billing details' => 'Seus dados',
     'Your order' => 'Sua Contratação',

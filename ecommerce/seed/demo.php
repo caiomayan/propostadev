@@ -32,6 +32,9 @@ $clientId = pd_demo_user('cliente1@demo.example', 'Mariana Costa', 'customer', $
   'billing_state' => 'SP', 'billing_city' => 'São Paulo', 'billing_address_1' => 'Rua Augusta, 1200', 'billing_postcode' => '01304-001',
 ]);
 
+// Equipe da plataforma (mesma conta do site): Gerente da loja, vê o painel do WooCommerce (Pedidos, Produtos, Relatórios).
+pd_demo_user('plataforma@demo.example', 'Equipe Proposta.dev', 'shop_manager', $password, ['pd_demo' => '1']);
+
 if (getenv('PD_RESET') === '1') {
   foreach (wc_get_orders(['limit' => -1, 'status' => array_keys(wc_get_order_statuses()), 'return' => 'ids']) as $id) wc_get_order($id)->delete(true);
   $own = get_comments(['type' => 'review', 'meta_query' => [['key' => '_pd_avaliacao', 'compare' => 'NOT EXISTS']], 'fields' => 'ids']);
