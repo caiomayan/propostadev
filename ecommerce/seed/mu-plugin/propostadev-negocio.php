@@ -584,7 +584,8 @@ function pd_is_store_provider(string $slug): bool {
 add_action('template_redirect', function () {
   if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST' || empty($_POST['pd_cadastro_prestador'])) return;
   if (!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['_pd_nonce'] ?? '')), 'pd_cadastro_prestador')) { wc_add_notice('O formulário expirou. Envie de novo.', 'error'); return; }
-  if (is_user_logged_in()) { wc_add_notice('Saia da conta atual para criar uma conta de Prestador.', 'error'); return; }
+  $current = is_user_logged_in() ? wp_get_current_user() : null;
+  if ($current && (current_user_can('manage_woocommerce') || pd_user_provider_slug($current))) { wc_add_notice('Esta conta não pode virar Prestador aqui.', 'error'); return; }
   $in = wp_unslash($_POST);
   $name = trim(sanitize_text_field($in['nome'] ?? ''));
   $type = in_array($in['tipo'] ?? '', ['PESSOA_FISICA', 'PESSOA_JURIDICA'], true) ? $in['tipo'] : '';
@@ -601,22 +602,29 @@ add_action('template_redirect', function () {
   if (!ctype_digit($years) || (int) $years > 80) $e['anos'] = 'Informe de 0 a 80 anos.';
   if (mb_strlen($city) > 100) $e['cidade'] = 'Use até 100 caracteres.';
   if ($uf !== '' && !in_array($uf, PD_UFS, true)) $e['uf'] = 'Escolha a UF.';
-  if (!is_email($email)) $e['email'] = 'Informe um e-mail válido.';
-  elseif (email_exists($email)) $e['email'] = 'Já existe uma conta com este e-mail. Entre por ela ou use outro e-mail.';
-  if (mb_strlen($pass) < 12 || mb_strlen($pass) > 128) $e['senha'] = 'Use de 12 a 128 caracteres.';
+  if ($current) { $email = $current->user_email; }
+  else {
+    if (!is_email($email)) $e['email'] = 'Informe um e-mail válido.';
+    elseif (email_exists($email)) $e['email'] = 'Já existe uma conta com este e-mail. Entre por ela (ou com o Google) e volte aqui.';
+    if (mb_strlen($pass) < 12 || mb_strlen($pass) > 128) $e['senha'] = 'Use de 12 a 128 caracteres.';
+  }
   if (empty($in['consentimento'])) $e['consentimento'] = 'Autorize a publicação do contato para receber Contratações.';
   if ($e) { $GLOBALS['pd_signup_errors'] = $e; $GLOBALS['pd_signup_input'] = $in; wc_add_notice('Revise os campos marcados.', 'error'); return; }
 
   $slug = sanitize_title($name) . '-' . substr(bin2hex(random_bytes(4)), 0, 8);
-  $userId = wp_insert_user(['user_login' => $email, 'user_email' => $email, 'user_pass' => $pass, 'display_name' => $name, 'first_name' => strtok($name, ' '), 'role' => 'prestador']);
-  if (is_wp_error($userId)) { wc_add_notice('Não foi possível criar a conta. Tente de novo.', 'error'); return; }
+  if ($current) { $userId = $current->ID; }
+  else {
+    $userId = wp_insert_user(['user_login' => $email, 'user_email' => $email, 'user_pass' => $pass, 'display_name' => $name, 'first_name' => strtok($name, ' '), 'role' => 'prestador']);
+    if (is_wp_error($userId)) { wc_add_notice('Não foi possível criar a conta. Tente de novo.', 'error'); return; }
+  }
   $term = wp_insert_term($name, 'product_brand', ['slug' => $slug, 'description' => $desc]);
-  if (is_wp_error($term)) { wp_delete_user($userId); wc_add_notice('Não foi possível criar o Perfil na loja. Tente de novo.', 'error'); return; }
+  if (is_wp_error($term)) { if (!$current) wp_delete_user($userId); wc_add_notice('Não foi possível criar o Perfil na loja. Tente de novo.', 'error'); return; }
   $local = trim($city . ($uf ? '/' . $uf : ''), '/');
   foreach (['pd_loja' => '1', 'pd_slug' => $slug, 'pd_tipo' => $type, 'pd_local' => $local, 'pd_anos' => (int) $years, 'pd_foto' => ''] as $k => $v) update_term_meta($term['term_id'], $k, $v);
   update_user_meta($userId, 'pd_prestador_slug', $slug);
   update_user_meta($userId, 'billing_email', $email);
-  wc_set_customer_auth_cookie($userId);
+  if ($current) { $current->set_role('prestador'); wp_update_user(['ID' => $userId, 'display_name' => $name]); }
+  else wc_set_customer_auth_cookie($userId);
   wc_add_notice('Conta de Prestador criada. Agora crie sua primeira Oferta: ela entra no catálogo assim que você publicar.', 'success');
   wp_safe_redirect(add_query_arg('nova', '1', wc_get_account_endpoint_url('minhas-ofertas')));
   exit;
@@ -624,7 +632,8 @@ add_action('template_redirect', function () {
 
 add_shortcode('pd_cadastro_prestador', function () {
   if (pd_user_provider_slug()) return '<p>Você já é Prestador nesta loja. <a href="' . esc_url(wc_get_account_endpoint_url('minhas-ofertas')) . '">Ir para Minhas Ofertas</a></p>';
-  if (is_user_logged_in()) return '<p>Você está numa conta de Cliente. Para oferecer serviços, <a href="' . esc_url(wc_logout_url(pd_signup_url())) . '">saia</a> e crie uma conta de Prestador.</p>';
+  $logged = is_user_logged_in();
+  if ($logged && current_user_can('manage_woocommerce')) return '<p>A conta da Equipe não vira Prestador. Saia para criar uma conta de Prestador.</p>';
   $in = $GLOBALS['pd_signup_input'] ?? ['tipo' => 'PESSOA_FISICA'];
   $e = $GLOBALS['pd_signup_errors'] ?? [];
   $err = fn ($k) => isset($e[$k]) ? '<span class="pd-field-error" id="erro-' . $k . '">' . esc_html($e[$k]) . '</span>' : '';
@@ -632,7 +641,8 @@ add_shortcode('pd_cadastro_prestador', function () {
   $v = fn ($k) => esc_attr((string) ($in[$k] ?? ''));
   ob_start();
   echo '<div class="pd-signup"><div class="pd-signup-intro"><p>Crie sua conta de Prestador e publique Ofertas com preço e prazo claros. Clientes contratam sem pagar nada na loja: você confirma o escopo e combina o pagamento direto com eles.</p><ul><li>Publique uma Oferta por Tipo de serviço</li><li>Receba Contratações com o Projeto descrito</li><li>Confirme, recuse ou conclua; o Cliente avalia depois</li></ul><p class="pd-note">A loja tem cadastro próprio. O Perfil completo, o Selo de confiança e a Triagem ficam na <a href="' . esc_url(PROPOSTADEV_SITE . '/cadastro') . '">plataforma Proposta.dev</a>. Já é Prestador nesta loja? <a href="' . esc_url(wc_get_page_permalink('myaccount')) . '">Entrar</a>.</p></div>';
-  echo '<form method="post" class="pd-offer-form" novalidate><h2>Seus dados de Prestador</h2><input type="hidden" name="pd_cadastro_prestador" value="1">' . wp_nonce_field('pd_cadastro_prestador', '_pd_nonce', true, false);
+  if (!$logged && pd_sso_on()) echo '<div class="pd-auth-quick pd-auth-inline">' . pd_google_button('Começar com Google', '/quero-oferecer-servicos/') . '<p class="pd-note">Entra com sua conta Proposta.dev e volta aqui para completar os dados de Prestador.</p></div>';
+  echo '<form method="post" class="pd-offer-form" novalidate><h2>' . ($logged ? 'Completar como Prestador' : 'Seus dados de Prestador') . '</h2><input type="hidden" name="pd_cadastro_prestador" value="1">' . wp_nonce_field('pd_cadastro_prestador', '_pd_nonce', true, false);
   echo '<p class="form-row"><label for="pd-nome">Nome ou nome da empresa</label><input id="pd-nome" name="nome" maxlength="100" autocomplete="name" value="' . $v('nome') . '"' . $at('nome') . '>' . $err('nome') . '</p>';
   echo '<fieldset class="pd-fieldset"><legend>Você é</legend><p class="form-row pd-check"><label><input type="radio" name="tipo" value="PESSOA_FISICA"' . checked($in['tipo'] ?? '', 'PESSOA_FISICA', false) . '> Pessoa física</label><label><input type="radio" name="tipo" value="PESSOA_JURIDICA"' . checked($in['tipo'] ?? '', 'PESSOA_JURIDICA', false) . '> Pessoa jurídica</label>' . $err('tipo') . '</p></fieldset>';
   echo '<p class="form-row"><label for="pd-sobre">O que você faz</label><textarea id="pd-sobre" name="descricao" rows="4" maxlength="5000" placeholder="Tipos de projeto, tecnologias e como você trabalha. Aparece na sua página da loja."' . $at('descricao') . '>' . esc_textarea((string) ($in['descricao'] ?? '')) . '</textarea>' . $err('descricao') . '</p>';
@@ -641,10 +651,118 @@ add_shortcode('pd_cadastro_prestador', function () {
   echo '<p class="form-row"><label for="pd-uf">UF (opcional)</label><select id="pd-uf" name="uf"' . $at('uf') . '><option value="">—</option>';
   foreach (PD_UFS as $u) echo '<option' . selected($in['uf'] ?? '', $u, false) . '>' . $u . '</option>';
   echo '</select>' . $err('uf') . '</p>';
-  echo '<div class="pd-pair"><p class="form-row"><label for="pd-email">E-mail (login e contato)</label><input id="pd-email" name="email" type="email" autocomplete="email" value="' . $v('email') . '"' . $at('email') . '>' . $err('email') . '</p>';
-  echo '<p class="form-row"><label for="pd-senha">Senha (12 caracteres ou mais)</label><input id="pd-senha" name="senha" type="password" autocomplete="new-password"' . $at('senha') . '>' . $err('senha') . '</p></div>';
+  if (!$logged) echo '<div class="pd-pair"><p class="form-row"><label for="pd-email">E-mail (login e contato)</label><input id="pd-email" name="email" type="email" autocomplete="email" value="' . $v('email') . '"' . $at('email') . '>' . $err('email') . '</p>';
+  if (!$logged) echo '<p class="form-row"><label for="pd-senha">Senha (12 caracteres ou mais)</label><input id="pd-senha" name="senha" type="password" autocomplete="new-password"' . $at('senha') . '>' . $err('senha') . '</p></div>';
+  else echo '<p class="pd-note">Conta: ' . esc_html(wp_get_current_user()->user_email) . '</p>';
   echo '<p class="form-row pd-check"><label><input type="checkbox" name="consentimento" value="1"' . checked(!empty($in['consentimento']), true, false) . '> Autorizo mostrar meu e-mail aos Clientes que me contratarem.</label>' . $err('consentimento') . '</p>';
   echo '<p class="pd-note">Seus dados ficam só nesta loja de demonstração. Veja os <a href="' . esc_url(home_url('/termos-e-privacidade/')) . '">termos e a privacidade</a>.</p>';
-  echo '<p class="pd-actions"><button class="pd-btn pd-btn-primary" type="submit">Criar conta de Prestador</button></p></form></div>';
+  echo '<p class="pd-actions"><button class="pd-btn pd-btn-primary" type="submit">' . ($logged ? 'Tornar minha conta Prestador' : 'Criar conta de Prestador') . '</button></p></form></div>';
   return (string) ob_get_clean();
 });
+
+/* ---------------------------------------------------------------- Login único com a conta Proposta.dev (Google)
+ * O site (/api/loja/entrar) faz o login, inclusive com Google, e devolve um token HMAC (LOJA_SSO_SECRET) de 2 minutos.
+ * Aqui: confere assinatura, validade e uso único; entra na conta com aquele e-mail ou cria uma conta de Cliente.
+ * A loja nunca vê a senha nem as credenciais do Google (ADR 0006). */
+
+function pd_return_path($value, string $fallback = '/minha-conta/'): string {
+  $v = is_string($value) ? $value : '';
+  return ($v !== '' && $v[0] === '/' && !str_starts_with($v, '//') && !str_contains($v, '\\') && !preg_match('/[\x00-\x1f]/', $v)) ? $v : $fallback;
+}
+
+function pd_sso_url(string $back = '', bool $google = true): string {
+  $back = pd_return_path($back ?: (isset($_GET['redirect']) ? wp_parse_url(rawurldecode(wp_unslash($_GET['redirect'])), PHP_URL_PATH) : ''), '/minha-conta/');
+  return PROPOSTADEV_SITE . '/api/loja/entrar?' . ($google ? 'google=1&' : '') . 'volta=' . rawurlencode($back);
+}
+
+function pd_b64url_decode(string $v): string { return (string) base64_decode(strtr($v, '-_', '+/') . str_repeat('=', (4 - strlen($v) % 4) % 4)); }
+
+// As mensagens do login único vão no endereço (a sessão de visitante não sobrevive à troca de conta).
+const PD_SSO_MSGS = [
+  'email' => ['Confirme seu e-mail no Proposta.dev para entrar na loja com essa conta, ou entre com o Google.', 'error'],
+  'invalido' => ['Não foi possível confirmar o login. Tente de novo.', 'error'],
+  'expirado' => ['O link de login expirou. Tente de novo.', 'error'],
+  'usado' => ['Este link de login já foi usado. Tente de novo.', 'error'],
+  'falhou' => ['Não foi possível entrar com essa conta. Tente de novo.', 'error'],
+  'novo' => ['Conta criada com seu login do Proposta.dev. Bem-vindo!', 'success'],
+  'ok' => ['Você entrou com sua conta Proposta.dev.', 'success'],
+];
+add_action('template_redirect', function () {
+  foreach (['pd_sso_erro', 'pd_sso_msg'] as $k) if (!empty($_GET[$k]) && isset(PD_SSO_MSGS[$_GET[$k]])) wc_add_notice(...PD_SSO_MSGS[sanitize_key($_GET[$k])]);
+}, 2);
+add_action('template_redirect', function () {
+  if (empty($_GET['pd_sso'])) return;
+  $fail = function (string $code) { wp_safe_redirect(add_query_arg('pd_sso_msg', $code, wc_get_page_permalink('myaccount'))); exit; };
+  $secret = (string) getenv('LOJA_SSO_SECRET');
+  [$payload, $sig] = array_pad(explode('.', sanitize_text_field(wp_unslash($_GET['pd_sso'])), 2), 2, '');
+  $expected = rtrim(strtr(base64_encode(hash_hmac('sha256', $payload, $secret, true)), '+/', '-_'), '=');
+  if ($secret === '' || $payload === '' || !hash_equals($expected, $sig)) $fail('invalido');
+  $data = json_decode(pd_b64url_decode($payload), true);
+  if (!is_array($data) || (int) ($data['x'] ?? 0) < time()) $fail('expirado');
+  $nonce = preg_replace('/[^a-f0-9]/', '', (string) ($data['j'] ?? ''));
+  if ($nonce === '' || get_transient('pd_sso_' . $nonce)) $fail('usado');
+  set_transient('pd_sso_' . $nonce, 1, 10 * MINUTE_IN_SECONDS);
+  $email = sanitize_email((string) ($data['e'] ?? ''));
+  if (!is_email($email)) $fail('falhou');
+  $user = get_user_by('email', $email);
+  if (!$user) {
+    $name = sanitize_text_field((string) ($data['n'] ?? ''));
+    $id = wp_insert_user(['user_login' => $email, 'user_email' => $email, 'user_pass' => wp_generate_password(32), 'display_name' => $name ?: $email, 'first_name' => strtok($name, ' ') ?: '', 'last_name' => trim(substr($name, strlen((string) strtok($name, ' ')))), 'role' => 'customer']);
+    if (is_wp_error($id)) $fail('falhou');
+    update_user_meta($id, 'pd_sso', '1');
+    update_user_meta($id, 'billing_email', $email);
+    update_user_meta($id, 'billing_first_name', strtok($name, ' ') ?: '');
+    $user = get_user_by('id', $id);
+    $msg = 'novo';
+  } else {
+    $msg = 'ok';
+  }
+  wc_set_customer_auth_cookie($user->ID);
+  $back = pd_return_path(wp_unslash($_GET['volta'] ?? ''));
+  if (pd_user_provider_slug($user) && $back === '/minha-conta/') $back = '/minha-conta/contratacoes-recebidas/';
+  wp_safe_redirect(add_query_arg('pd_sso_msg', $msg, home_url($back)));
+  exit;
+}, 1);
+
+// O botão só aparece com a rota do site no ar e o segredo configurado (opção pd_sso_ativo = yes).
+function pd_sso_on(): bool { return get_option('pd_sso_ativo') === 'yes' && (string) getenv('LOJA_SSO_SECRET') !== ''; }
+
+function pd_google_button(string $label = 'Continuar com Google', string $back = ''): string {
+  if (!pd_sso_on()) return '';
+  $g = '<svg class="pd-g" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>';
+  return '<a class="pd-google" href="' . esc_url(pd_sso_url($back)) . '">' . $g . '<span>' . esc_html($label) . '</span></a>';
+}
+
+// Tela de login: Google primeiro, depois e-mail e senha da loja.
+add_action('woocommerce_before_customer_login_form', function () {
+  if (!pd_sso_on()) return;
+  echo '<div class="pd-auth-quick">' . pd_google_button('Continuar com Google') . '<p class="pd-note">Usa a sua conta Proposta.dev: se for o primeiro acesso, a conta é criada na hora. <a href="' . esc_url(pd_sso_url('', false)) . '">Entrar com e-mail e senha do Proposta.dev</a></p><p class="pd-divider"><span>ou com e-mail e senha da loja</span></p></div>';
+}, 20);
+// Contratação sem conta: atalho para entrar com Google e voltar à Contratação.
+add_action('woocommerce_before_checkout_form', function () {
+  if (is_user_logged_in() || !pd_sso_on()) return;
+  echo '<div class="pd-auth-quick pd-auth-inline">' . pd_google_button('Continuar com Google', '/finalizar-compra/') . '<p class="pd-note">Ou siga como convidado abaixo.</p></div>';
+}, 4);
+
+// Cadastro por e-mail: nome e senha forte, como no site.
+add_action('woocommerce_register_form_start', function () {
+  $v = isset($_POST['pd_nome']) ? esc_attr(sanitize_text_field(wp_unslash($_POST['pd_nome']))) : '';
+  echo '<p class="woocommerce-form-row form-row"><label for="pd_nome">Seu nome <span class="required" aria-hidden="true">*</span></label><input type="text" class="input-text" name="pd_nome" id="pd_nome" autocomplete="name" maxlength="100" required value="' . $v . '"></p>';
+});
+add_action('woocommerce_register_form', function () {
+  echo '<p class="pd-note">Senha com 12 caracteres ou mais.</p>';
+}, 5);
+add_filter('woocommerce_process_registration_errors', function ($errors, $username, $password, $email) {
+  $name = trim(sanitize_text_field(wp_unslash($_POST['pd_nome'] ?? '')));
+  if (mb_strlen($name) < 2) $errors->add('pd_nome', 'Informe seu nome (2 caracteres ou mais).');
+  if (mb_strlen((string) $password) < 12) $errors->add('pd_senha', 'Use uma senha com 12 caracteres ou mais.');
+  return $errors;
+}, 10, 4);
+add_action('woocommerce_created_customer', function ($userId) {
+  $name = trim(sanitize_text_field(wp_unslash($_POST['pd_nome'] ?? '')));
+  if (!$name) return;
+  $first = strtok($name, ' ');
+  wp_update_user(['ID' => $userId, 'display_name' => $name, 'first_name' => $first, 'last_name' => trim(substr($name, strlen($first)))]);
+  update_user_meta($userId, 'billing_first_name', $first);
+});
+add_action('woocommerce_login_form_end', function () { echo "<script>document.getElementById('rememberme')&&(document.getElementById('rememberme').checked=true)</script>"; });

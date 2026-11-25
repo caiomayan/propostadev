@@ -31,6 +31,10 @@ set -a; . ~/.config/propostadev/producao.env; set +a; export DEMO_PASSWORD
 docker compose --env-file ~/.config/propostadev/loja.env -f ecommerce/compose.yml run --rm -e DEMO_PASSWORD -e PD_RESET=1 cli wp eval-file /seed/demo.php
 ```
 
+## Login com Google (login único com o Proposta.dev)
+
+O botão "Continuar com Google" leva a `/api/loja/entrar` no site, que faz o login (Google ou e-mail) e devolve um token HMAC de 2 minutos e uso único. A loja confere com `LOJA_SSO_SECRET` (o mesmo valor na Vercel e em `loja.env`) e entra na conta com aquele e-mail, criando uma conta de Cliente no primeiro acesso. Só e-mails verificados no site entram. O botão aparece com `wp option update pd_sso_ativo yes` (depois de a rota do site estar em produção).
+
 ## Administração
 
 Login em `/wp-admin` com o usuário `equipe` e a senha `LOJA_ADMIN_PASSWORD` de `loja.env`.

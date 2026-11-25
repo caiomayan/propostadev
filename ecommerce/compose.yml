@@ -30,6 +30,7 @@ services:
         if (isset($$_SERVER['HTTP_X_FORWARDED_PROTO']) && $$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') { $$_SERVER['HTTPS'] = 'on'; }
         define('DISALLOW_FILE_EDIT', true);
       LOJA_URL: ${LOJA_URL:-http://localhost:8090}
+      LOJA_SSO_SECRET: ${LOJA_SSO_SECRET:-}
     volumes: [wp:/var/www/html]
     ports: ["127.0.0.1:8090:80"]
     mem_limit: 768m
