@@ -105,7 +105,7 @@ async function clientContext() {
   return { clientId: session.user.id };
 }
 
-const avisoByStatus: Partial<Record<string, AvisoType>> = { PRE_SELECIONADA: "PROPOSTA_PRE_SELECIONADA", RECUSADA: "PROPOSTA_RECUSADA" };
+const avisoByStatus: Partial<Record<"ENVIADA" | "PRE_SELECIONADA" | "RECUSADA", AvisoType>> = { PRE_SELECIONADA: "PROPOSTA_PRE_SELECIONADA", RECUSADA: "PROPOSTA_RECUSADA" };
 
 /** Um UPDATE condicional por transição: dono do Projeto, Projeto ABERTO e estado de origem permitido. */
 async function moveProposal(form: FormData, from: readonly ("ENVIADA" | "PRE_SELECIONADA")[], to: "ENVIADA" | "PRE_SELECIONADA" | "RECUSADA", done: string, blocked: string): Promise<ActionState> {

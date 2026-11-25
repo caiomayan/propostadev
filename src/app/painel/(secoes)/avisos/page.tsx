@@ -3,9 +3,8 @@ import { CheckCheck } from "lucide-react";
 import { requireAccount } from "@/lib/auth/session";
 import { dateLabel } from "@/modules/triage/labels";
 import { markAllAvisosRead } from "@/modules/avisos/actions";
-import { avisoTitles } from "@/modules/avisos/links";
 import { countUnread, listAvisos } from "@/modules/avisos/queries";
-import { unreadLabel } from "@/modules/avisos/links";
+import { avisoTitles, unreadLabel } from "@/modules/avisos/links";
 import "@/components/avisos.css";
 
 export const metadata: Metadata = { title: "Avisos" };

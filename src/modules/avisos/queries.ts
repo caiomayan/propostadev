@@ -3,7 +3,7 @@ import { cache } from "react";
 import { db } from "@/lib/db";
 import { avisoHref, type AvisoType } from "./links";
 
-export const AVISOS_LIMIT = 50;
+const AVISOS_LIMIT = 50;
 
 /** Uma consulta só (índice parcial por usuário); só roda para quem está logado. */
 export const countUnread = cache(async (userId: string): Promise<number> => {
