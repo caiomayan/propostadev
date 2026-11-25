@@ -86,6 +86,7 @@ dialog.panel .stack { gap: 16px; }
 .profile-hero { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 32px; align-items: end; padding: 40px; margin-top: 4px; border-radius: var(--radius-xl); }
 .profile-hero .provider-avatar { width: 132px; height: 132px; font-size: 3rem; }
 .profile-hero .badge { background: var(--forest-raised); }
+.profile-hero .vip-badge { background: var(--accent-fill); color: var(--accent-ink); }
 .profile-hero .button.accent { min-height: 54px; padding-inline: 28px; }
 .profile-hero-text { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .profile-hero-text h1 { font-size: clamp(2.25rem, 1.3rem + 3.6vw, 4.5rem); line-height: 1; letter-spacing: -.035em; overflow-wrap: anywhere; }
