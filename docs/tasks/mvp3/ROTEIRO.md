@@ -49,8 +49,8 @@ Endereço: https://propostadev.caiomayan.com (ADR 0006). Mesma identidade do sit
 1. Página inicial: o painel lima **O que você precisa?** leva direto a cada Tipo de serviço; abaixo, **Destaque VIP**, **Como funciona a contratação** e **Mais bem avaliados**.
 2. Clique em **Landing Page** no painel: o catálogo filtra pelo Tipo (os botões no topo trocam o filtro). Cada card mostra o Prestador, a nota, o prazo e o preço com unidade.
 3. Abra **Landing Page de lançamento** (Bruno Cavalcanti, VIP): ficha do Prestador com link para o Perfil no site, preço, prazo e as abas **O que está incluído**, **Sobre o Prestador** e **Avaliações**.
-4. **Contratar** → **Carrinho** → **Ir para a Contratação**: dados do Cliente e "Combinar pagamento com o Prestador". **Confirmar Contratação** mostra a Contratação recebida (nada é cobrado).
-5. **Regras de negócio** (logado, senha das contas demo):
+4. **Contratar** leva ao **Carrinho** → **Ir para a Contratação**: nome, e-mail e **Descreva seu Projeto** (obrigatório; sem endereço, porque nada é entregue nem cobrado) e "Combinar pagamento com o Prestador". **Confirmar Contratação** mostra a Contratação recebida, que chega ao Prestador com o Projeto e o contato do Cliente.
+5. **Regras de negócio** (o **Entrar** fica no cabeçalho; senha das contas demo):
    - Entre como **cliente1@demo.example** (Mariana Costa) → **Minhas Contratações**: uma *Aguardando o Prestador* (Bruno Cavalcanti) e uma *Concluída* (Aurora Web Studio), com as respostas do Prestador.
    - Saia e entre como **prestador2@demo.example** (Bruno) → **Contratações recebidas**: a Contratação da Mariana com a descrição do Projeto. **Confirmar escopo** e depois **Marcar como concluída**. Outro Prestador não vê essa Contratação, e Prestador não entra no `/wp-admin`.
    - Volte como Mariana e abra a Oferta do Bruno → aba **Avaliações**: agora o formulário aparece; a Avaliação sai com o selo **Contratação verificada**. Quem não contratou vê o aviso de que só quem teve a Contratação concluída avalia.

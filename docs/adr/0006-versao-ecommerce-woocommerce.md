@@ -24,7 +24,9 @@ O site (Next.js) é a versão própria da plataforma. A disciplina pede também 
    - Cada Prestador da demo tem conta (papel `prestador`, mesma senha das contas demo do site) e vê só as Contratações das suas Ofertas em "Contratações recebidas", onde confirma, recusa ou conclui. O servidor confere sessão, nonce, dono e transição permitida.
    - Cliente cria conta na loja ou na Contratação e acompanha status e respostas em "Minhas Contratações".
    - Só quem teve a Contratação concluída avalia; a Avaliação sai com o selo "Contratação verificada" e é publicada direto.
-   - Sem e-mail: os avisos ficam na conta (os endereços da demo não entregam).
+   - Sem e-mail: os avisos ficam na conta (os endereços da demo não entregam). Por isso a loja não oferece recuperação de senha nem verificação de e-mail.
+   - A Contratação usa o checkout clássico do WooCommerce, não o de blocos: só nele os campos são configuráveis em PHP. Pede nome, e-mail, telefone opcional e a descrição do Projeto (obrigatória, é o que o Prestador confirma); não pede endereço, porque nada é entregue nem cobrado.
+   - Conta no cabeçalho ("Entrar" ou o menu com nome, papel e Contratações aguardando); o login volta à página de origem, e o Prestador vai direto às Contratações recebidas.
    - Equipe: relatórios do WooCommerce ligados no `/wp-admin`.
 5. **O catálogo vem da demo de produção do site**, só Prestadores `@demo.example`, por um script só de leitura (`scripts/exportar-catalogo-loja.ts`). O rodapé da loja repete o aviso de dados fictícios do site (ADR 0005) e acrescenta que nada é cobrado.
 

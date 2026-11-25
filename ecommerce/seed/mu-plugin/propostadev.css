@@ -393,3 +393,45 @@ ul.products li.product img.pd-avatar-sm { width: 28px !important; height: 28px !
 @media (max-width: 900px) { .pd-header-tools .pd-account, .pd-header-tools .pd-login { display: none; } }
 .woocommerce-LostPassword, .lost_password { display: none !important; }
 .woocommerce-privacy-policy-text p { font-size: .9rem; color: var(--pd-muted-ink); }
+
+/* Revisão de UX */
+.woocommerce-info, .woocommerce-message, .woocommerce-error { position: relative; padding-left: 3.2em !important; }
+.woocommerce-info::before, .woocommerce-message::before, .woocommerce-error::before { left: 1.2em !important; top: 1.15em !important; }
+.woocommerce-MyAccount-content:has(.pd-account-intro) > p { display: none; }
+.pd-status .pd-actions { margin-top: 14px; }
+.pd-received-contact { margin: 0 0 10px; font-size: .95rem; }
+.pd-role-note a { font-weight: 700; }
+.pd-empty-cart { max-width: 640px; margin: 8px 0 40px; }
+.pd-empty-cart h2 { font-size: 2rem; }
+.error404 .site-main > *:not(.pd-404) , .error404 .content-area .error-404 { display: none !important; }
+.pd-404 { padding: clamp(24px, 5vw, 56px) var(--pd-gutter) clamp(40px, 6vw, 80px); }
+.pd-404 h1 { font-size: clamp(2.4rem, 5vw, 4rem); letter-spacing: -.045em; margin: 0 0 12px; }
+.pd-404 p { color: var(--pd-muted-ink); font-size: 1.1rem; max-width: 56ch; }
+.pd-404 .pd-search { max-width: 420px; margin: 20px 0; }
+.pd-404 .pd-search input[type=search], .pd-404 .pd-search input[type=search]:focus { width: 100%; }
+@media (max-width: 1360px) { .pd-search input[type=search], .pd-search input[type=search]:focus { width: 160px; } .pd-nav-list a { padding: 0 12px; } }
+@media (max-width: 1180px) { .pd-header-tools .pd-search { display: none; } }
+/* Contratação clássica */
+.woocommerce-checkout .col2-set, .woocommerce-checkout #customer_details { width: auto; }
+form.checkout { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(300px, 1fr); gap: clamp(24px, 4vw, 48px); align-items: start; }
+form.checkout > .woocommerce-NoticeGroup, form.checkout > .woocommerce-notices-wrapper { grid-column: 1 / -1; }
+form.checkout #customer_details { grid-column: 1; }
+form.checkout #customer_details .col-1, form.checkout #customer_details .col-2 { width: 100% !important; float: none !important; }
+form.checkout #order_review_heading, form.checkout #order_review { grid-column: 2; width: 100% !important; float: none !important; margin: 0 !important; }
+form.checkout #order_review_heading { grid-row: 1; align-self: end; margin-bottom: -12px !important; }
+form.checkout #order_review { grid-row: 2; background: var(--pd-card); border: 1px solid var(--pd-line); border-radius: var(--pd-r-lg); padding: 20px; }
+form.checkout #customer_details { grid-row: 1 / span 2; }
+.woocommerce-checkout h3 { font-size: 1.6rem; margin: 0 0 16px; }
+.woocommerce-checkout .form-row label { font-weight: 600; color: var(--pd-ink); }
+.woocommerce-checkout textarea#order_comments { min-height: 140px; }
+#payment { background: transparent !important; border-radius: var(--pd-r); }
+#payment .payment_methods { border: 0 !important; padding: 0 !important; }
+#payment .payment_methods li { background: var(--pd-bg) !important; border-radius: var(--pd-r); padding: 14px !important; }
+#payment .payment_box { background: transparent !important; color: var(--pd-muted-ink) !important; padding: 8px 0 0 !important; }
+#payment .payment_box::before { display: none !important; }
+#payment .place-order { padding: 16px 0 0 !important; }
+#place_order { width: 100%; min-height: 56px; font-size: 1.05rem; float: none !important; }
+.woocommerce-form-login-toggle .woocommerce-info { margin-bottom: 20px; }
+@media (max-width: 900px) { form.checkout { grid-template-columns: 1fr; } form.checkout #customer_details, form.checkout #order_review_heading, form.checkout #order_review { grid-column: 1; grid-row: auto; } }
+#payment input[type=radio], input[type=radio], input[type=checkbox] { accent-color: var(--pd-forest); }
+@media (max-width: 1360px) { .pd-search input[type=search], .pd-search input[type=search]:focus { width: 176px; } }

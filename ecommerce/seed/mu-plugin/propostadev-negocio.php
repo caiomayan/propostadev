@@ -117,11 +117,17 @@ add_filter('woocommerce_my_account_my_orders_columns', function ($cols) {
   $cols['order-actions'] = '';
   return $cols;
 });
-add_filter('woocommerce_my_account_my_orders_actions', function ($actions) {
+add_filter('woocommerce_my_account_my_orders_actions', function ($actions, $order) {
   if (isset($actions['view'])) $actions['view']['name'] = 'Ver';
-  unset($actions['pay']);
+  if (isset($actions['cancel'])) $actions['cancel']['name'] = 'Cancelar Contratação';
+  unset($actions['pay'], $actions['order-again']);
+  if ($order->get_status() === 'completed') {
+    foreach ($order->get_items() as $item) { $actions['avaliar'] = ['url' => get_permalink($item->get_product_id()) . '#tab-reviews', 'name' => 'Avaliar']; break; }
+  }
   return $actions;
-});
+}, 10, 2);
+// Sem e-mail, o pedido de "confirme seu e-mail para ver pedidos anteriores" seria um beco sem saída.
+add_action('wp', fn () => remove_all_actions('woocommerce_before_account_orders'));
 
 // Painel da conta: diz o que cada papel encontra aqui.
 add_action('woocommerce_account_dashboard', function () {
@@ -148,7 +154,17 @@ function pd_status_box($order): void {
   if (!$help) return;
   echo '<div class="pd-status pd-status-' . esc_attr($order->get_status()) . '"><span class="pd-status-label">' . esc_html(wc_get_order_status_name($order->get_status())) . '</span>';
   if ($provider['name']) echo '<span class="pd-status-provider">com ' . esc_html($provider['name']) . '</span>';
-  echo '<p>' . esc_html($help) . '</p></div>';
+  echo '<p>' . esc_html($help) . '</p>';
+  $links = [];
+  foreach ($order->get_items() as $item) {
+    $product = $item->get_product();
+    if (!$product) continue;
+    if ($order->get_status() === 'completed') $links[] = '<a class="pd-btn pd-btn-primary" href="' . esc_url(get_permalink($item->get_product_id()) . '#tab-reviews') . '">Avaliar a Oferta</a>';
+    if ($product->get_meta('_pd_prestador_slug')) $links[] = '<a class="pd-btn pd-btn-ghost" href="' . esc_url(PROPOSTADEV_SITE . '/prestadores/' . rawurlencode((string) $product->get_meta('_pd_prestador_slug'))) . '" target="_blank" rel="noopener">Ver perfil e contato do Prestador</a>';
+    break;
+  }
+  if ($links) echo '<p class="pd-actions">' . implode('', $links) . '</p>';
+  echo '</div>';
 }
 add_action('woocommerce_view_order', 'pd_status_box', 5);
 add_action('woocommerce_thankyou', 'pd_status_box', 5);
@@ -210,11 +226,16 @@ add_action('woocommerce_account_contratacoes-recebidas_endpoint', function () {
     echo '<div class="pd-received-head"><span class="pd-received-id">Contratação nº ' . (int) $order->get_id() . '</span><span class="pd-status-label pd-status-' . esc_attr($status) . '">' . esc_html(wc_get_order_status_name($status)) . '</span></div>';
     echo '<h3>' . esc_html($items) . '</h3>';
     echo '<p class="pd-received-meta">' . esc_html(trim($order->get_billing_first_name() . ' ' . $order->get_billing_last_name())) . ' · ' . esc_html(wc_format_datetime($order->get_date_created())) . ' · ' . wp_kses_post(wc_price($order->get_total())) . '</p>';
+    $phone = $order->get_billing_phone();
+    echo '<p class="pd-received-contact">Contato do Cliente: <a href="mailto:' . esc_attr($order->get_billing_email()) . '">' . esc_html($order->get_billing_email()) . '</a>' . ($phone ? ' · <a href="tel:' . esc_attr(preg_replace('/\D+/', '', $phone)) . '">' . esc_html($phone) . '</a>' : '') . '</p>';
     echo '<p class="pd-received-note">' . ($note ? '<strong>Projeto:</strong> ' . esc_html($note) : '<span>O Cliente não descreveu o Projeto; combine os detalhes antes de confirmar.</span>') . '</p>';
     $buttons = array_filter(pd_transitions(), fn ($t) => $t['from'] === $status);
     if ($buttons) {
       echo '<form method="post" class="pd-received-actions">' . '<input type="hidden" name="pd_pedido" value="' . (int) $order->get_id() . '"><input type="hidden" name="_pd_nonce" value="' . esc_attr(wp_create_nonce('pd_acao_' . $order->get_id())) . '">';
-      foreach ($buttons as $key => $t) echo '<button type="submit" name="pd_acao" value="' . esc_attr($key) . '" class="pd-btn ' . ($key === 'recusar' ? 'pd-btn-ghost' : 'pd-btn-primary') . '">' . esc_html($t['label']) . '</button>';
+      foreach ($buttons as $key => $t) {
+        $confirm = $key === 'recusar' ? ' onclick="return confirm(\'Recusar a Contratação nº ' . (int) $order->get_id() . '? O Cliente vê a recusa e isso não pode ser desfeito.\')"' : ($key === 'concluir' ? ' onclick="return confirm(\'Marcar a Contratação nº ' . (int) $order->get_id() . ' como concluída? O Cliente passa a poder avaliar.\')"' : '');
+        echo '<button type="submit" name="pd_acao" value="' . esc_attr($key) . '" class="pd-btn ' . ($key === 'recusar' ? 'pd-btn-ghost' : 'pd-btn-primary') . '"' . $confirm . '>' . esc_html($t['label']) . '</button>';
+      }
       echo '</form>';
     }
     echo '</li>';
@@ -278,7 +299,7 @@ add_filter('woocommerce_registration_redirect', function ($redirect) {
 add_filter('woocommerce_is_purchasable', fn ($ok) => pd_user_provider_slug() ? false : $ok, 20);
 add_action('woocommerce_single_product_summary', function () {
   if (!pd_user_provider_slug()) return;
-  echo '<p class="pd-note pd-role-note">Você está como Prestador. Para contratar, saia e entre com uma conta de Cliente.</p>';
+  echo '<p class="pd-note pd-role-note">Você está como Prestador. Para contratar, saia e entre com uma conta de Cliente. <a href="' . esc_url(wc_get_account_endpoint_url('contratacoes-recebidas')) . '">Ver Contratações recebidas</a> · <a href="' . esc_url(wc_logout_url(get_permalink())) . '">Sair</a></p>';
 }, 31);
 
 // Sem e-mail, a recuperação de senha não chegaria: o link sai e a tela de login diz o que fazer.
@@ -302,3 +323,49 @@ add_filter('gettext', function ($translated, $text, $domain) {
     default => $translated,
   };
 }, 30, 3);
+
+
+/* ---------------------------------------------------------------- Contratação (checkout clássico) */
+
+// Serviço digital: sem endereço postal. O que importa é quem contrata e o Projeto, que o Prestador confirma.
+add_filter('woocommerce_checkout_fields', function ($fields) {
+  foreach (['billing_company', 'billing_address_1', 'billing_address_2', 'billing_city', 'billing_state', 'billing_postcode', 'billing_country'] as $f) unset($fields['billing'][$f]);
+  if (isset($fields['billing']['billing_phone'])) { $fields['billing']['billing_phone']['required'] = false; $fields['billing']['billing_phone']['label'] = 'Telefone ou WhatsApp'; }
+  if (isset($fields['order']['order_comments'])) {
+    $fields['order']['order_comments']['required'] = true;
+    $fields['order']['order_comments']['label'] = 'Descreva seu Projeto';
+    $fields['order']['order_comments']['placeholder'] = 'O que você precisa, para quando e qualquer referência útil. O Prestador usa isto para confirmar o escopo.';
+  }
+  return $fields;
+}, 20);
+add_filter('woocommerce_billing_fields', function ($fields) {
+  if (is_checkout()) foreach (['billing_address_1', 'billing_address_2', 'billing_city', 'billing_state', 'billing_postcode', 'billing_country', 'billing_company'] as $f) unset($fields[$f]);
+  return $fields;
+}, 20);
+add_filter('woocommerce_enable_order_notes_field', '__return_true');
+add_filter('woocommerce_order_button_text', fn () => 'Confirmar Contratação');
+add_filter('woocommerce_cart_needs_shipping_address', '__return_false');
+add_filter('gettext', function ($translated, $text, $domain) {
+  if ($domain !== 'woocommerce') return $translated;
+  return match ($text) {
+    'Billing details' => 'Seus dados',
+    'Your order' => 'Sua Contratação',
+    'Additional information' => 'Sobre o Projeto',
+    'Returning customer?' => 'Já tem conta?',
+    'Click here to login' => 'Entrar',
+    'Create an account?' => 'Criar uma conta para acompanhar a Contratação',
+    'Continue shopping' => 'Ver mais serviços',
+    'Your review' => 'Como foi a Contratação?',
+    'Proceed to checkout' => 'Ir para a Contratação',
+    'Product' => 'Oferta',
+    'From your account dashboard you can view your <a href="%1$s">recent orders</a>, manage your <a href="%2$s">billing address</a>, and <a href="%3$s">edit your password and account details</a>.' => '',
+    'From your account dashboard you can view your <a href="%1$s">recent orders</a>, manage your <a href="%2$s">shipping and billing addresses</a>, and <a href="%3$s">edit your password and account details</a>.' => '',
+    default => $translated,
+  };
+}, 40, 3);
+
+// Confirmação antes de o Cliente cancelar (não dá para desfazer).
+add_action('wp_footer', function () {
+  if (!is_account_page()) return;
+  echo "<script>document.querySelectorAll('a.cancel').forEach(a=>a.addEventListener('click',e=>{if(!confirm('Cancelar esta Contratação? O Prestador deixa de vê-la e isso não pode ser desfeito.'))e.preventDefault()}));</script>";
+});

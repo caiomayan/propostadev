@@ -84,6 +84,7 @@ if ! wp menu list --fields=slug --format=csv | grep -q '^principal$'; then
   wp menu location assign principal primary
 fi
 wp eval-file /seed/textos.php
+wp eval-file /seed/checkout-classico.php
 wp eval-file /seed/termos.php
 wp eval-file /seed/demo.php
 wp rewrite flush >/dev/null 2>&1 || true

@@ -153,7 +153,7 @@ function pd_account_entry(): string {
   $user = wp_get_current_user();
   $first = $user->first_name ?: $user->display_name;
   $badge = array_sum(array_column(pd_account_links(), 2));
-  $out = '<details class="pd-account"><summary><span class="pd-account-avatar" aria-hidden="true">' . esc_html(mb_strtoupper(mb_substr($first, 0, 1))) . '</span><span class="pd-account-name">' . esc_html($first) . '</span>' . ($badge ? '<span class="pd-cart-count" aria-label="' . esc_attr($badge . ' Contratações aguardando') . '">' . $badge . '</span>' : '') . '</summary><div class="pd-account-panel"><p class="pd-account-who">' . esc_html($user->display_name) . '<span>' . esc_html(in_array('prestador', (array) $user->roles, true) ? 'Prestador' : (current_user_can('manage_woocommerce') ? 'Equipe da plataforma' : 'Cliente')) . '</span></p><ul>';
+  $out = '<details class="pd-account"><summary><span class="pd-account-avatar" aria-hidden="true">' . esc_html(mb_strtoupper(mb_substr($first, 0, 1))) . '</span><span class="pd-account-name">' . esc_html($first) . '</span>' . ($badge ? '<span class="pd-cart-count" title="' . esc_attr($badge . ($badge === 1 ? ' Contratação aguardando você' : ' Contratações aguardando você')) . '"><span aria-hidden="true">' . $badge . '</span><span class="screen-reader-text">' . esc_html($badge . ($badge === 1 ? ' Contratação aguardando você' : ' Contratações aguardando você')) . '</span></span>' : '') . '</summary><div class="pd-account-panel"><p class="pd-account-who">' . esc_html($user->display_name) . '<span>' . esc_html(in_array('prestador', (array) $user->roles, true) ? 'Prestador' : (current_user_can('manage_woocommerce') ? 'Equipe da plataforma' : 'Cliente')) . '</span></p><ul>';
   foreach (pd_account_links() as [$url, $label, $count]) $out .= '<li><a href="' . esc_url($url) . '">' . esc_html($label) . ($count ? ' <span class="pd-cart-count">' . (int) $count . '</span>' : '') . '</a></li>';
   return $out . '</ul></div></details>';
 }
@@ -435,6 +435,15 @@ add_filter('gettext', function ($translated, $text, $domain) {
     default => $translated,
   };
 }, 10, 3);
+
+// Carrinho vazio no tom do domínio (o bloco padrão traz título em inglês e uma vitrine com Ofertas que não vão ao carrinho).
+add_filter('render_block_woocommerce/empty-cart-block', fn () => '<div class="pd-empty pd-empty-cart"><h2>Seu carrinho está vazio</h2><p>Escolha uma Oferta com preço e prazo claros e contrate sem pagar nada agora.</p><p class="pd-actions"><a class="pd-btn pd-btn-primary" href="' . esc_url(wc_get_page_permalink('shop')) . '">Ver todos os serviços</a><a class="pd-btn pd-btn-ghost" href="' . esc_url(PROPOSTADEV_SITE . '/triagem') . '">Não sei o que preciso</a></p></div>');
+
+// 404: busca, caminho de volta e as Ofertas mais procuradas, sem os widgets padrão do tema.
+add_action('storefront_before_content', function () {
+  if (!is_404()) return;
+  echo '<div class="col-full pd-404"><h1>Esta página não existe</h1><p>O endereço pode ter mudado. Busque um serviço ou volte ao catálogo.</p>' . pd_search('pd-busca-404') . '<p class="pd-actions"><a class="pd-btn pd-btn-primary" href="' . esc_url(wc_get_page_permalink('shop')) . '">Ver todos os serviços</a><a class="pd-btn pd-btn-ghost" href="' . esc_url(home_url('/')) . '">Ir para o início</a></p></div>';
+}, 20);
 
 /* ---------------------------------------------------------------- Rodapé */
 
