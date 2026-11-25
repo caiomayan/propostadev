@@ -23,18 +23,19 @@ export const reputationSubquery = sql`(SELECT g.prestador_id, g.rating, g.count,
     avg(a.nota) FILTER (WHERE ${reviewIsVerified("a")}) AS verified_avg
     FROM avaliacao a GROUP BY a.prestador_id) g)`;
 
-export type TrustCriteria = { emailVerified: boolean; verifiedCount: number; verifiedAverage: string | null; trusted: boolean };
+export type TrustCriteria = { emailVerified: boolean; verifiedCount: number; verifiedAverage: string | null; averageOk: boolean; trusted: boolean };
 /** Os três critérios do Selo de confiança de um Prestador, para o checklist do painel. Sem Avaliações a média é null. */
 export async function getTrustCriteria(providerId: string): Promise<TrustCriteria> {
   // A média aparece truncada em 1 casa (3,96 nunca vira "4,0"); o veredito sai do numeric exato, no banco.
   const result = await db.execute<TrustCriteria>(sql`
     SELECT coalesce(u.email_verified, false) AS "emailVerified", coalesce(r.verified, 0)::int AS "verifiedCount",
       to_char(trunc(r.verified_avg, 1), 'FM9990.0') AS "verifiedAverage",
+      coalesce(r.verified_avg >= ${sql.raw(TRUST_MIN_AVERAGE)}, false) AS "averageOk",
       (coalesce(u.email_verified, false) AND coalesce(r.verified, 0) >= 1 AND coalesce(r.verified_avg >= ${sql.raw(TRUST_MIN_AVERAGE)}, false)) AS trusted
     FROM perfil_prestador pf JOIN "user" u ON u.id = pf.usuario_id
     LEFT JOIN (SELECT a.prestador_id, (count(*) FILTER (WHERE ${reviewIsVerified("a")}))::int AS verified, avg(a.nota) FILTER (WHERE ${reviewIsVerified("a")}) AS verified_avg FROM avaliacao a WHERE a.prestador_id = ${providerId}::uuid GROUP BY a.prestador_id) r ON r.prestador_id = pf.id
     WHERE pf.id = ${providerId}::uuid`);
-  return result.rows[0] ?? { emailVerified: false, verifiedCount: 0, verifiedAverage: null, trusted: false };
+  return result.rows[0] ?? { emailVerified: false, verifiedCount: 0, verifiedAverage: null, averageOk: false, trusted: false };
 }
 
 /** O usuário já pode criar a Avaliação deste Prestador? (Proposta ACEITA do Prestador em Projeto do usuário.) */

@@ -8,7 +8,7 @@ export function TrustChecklist({ criteria }: { criteria: TrustCriteria }) {
   const items = [
     { done: criteria.emailVerified, text: TRUST_CRITERIA[0], note: criteria.emailVerified ? "Confirmado." : "Confirme o e-mail da sua conta para cumprir este critério." },
     { done: criteria.verifiedCount >= 1, text: TRUST_CRITERIA[1], note: criteria.verifiedCount >= 1 ? `Você tem ${criteria.verifiedCount} ${criteria.verifiedCount === 1 ? "Avaliação verificada" : "Avaliações verificadas"}.` : "Ainda não há. Avaliações anteriores, sem contratação verificada, não contam." },
-    { done: criteria.verifiedAverage !== null && Number(criteria.verifiedAverage) >= 4, text: TRUST_CRITERIA[2], note: average ? `Sua média nas verificadas é ${average}.` : "Sem Avaliações verificadas ainda, não há média." },
+    { done: criteria.averageOk, text: TRUST_CRITERIA[2], note: average ? `Sua média nas verificadas é ${average}.` : "Sem Avaliações verificadas ainda, não há média." },
   ];
   return <div className="panel stack"><h2>{TRUST_SEAL}</h2>
     <p>{criteria.trusted ? "Você tem o selo: ele aparece no seu perfil, na busca e nos prestadores compatíveis." : "O selo é automático: aparece quando você cumprir os três critérios."} Ele sai sozinho se você deixar de cumprir algum.</p>
