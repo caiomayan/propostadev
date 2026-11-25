@@ -20,8 +20,8 @@ function testPool() {
 }
 
 test("busca sem acento, filtros, preço médio por tipo e estados vazios", async ({ page }) => {
-  await page.goto("/buscar?q=clara%20codigo");
-  await expect(page.getByRole("heading", { name: "Clara Código — Demo" })).toBeVisible();
+  await page.goto("/buscar?q=patricia%20lins");
+  await expect(page.getByRole("heading", { name: "Patrícia Lins" })).toBeVisible();
   await expect(page.locator(".search-results .provider-result")).toHaveCount(1);
   await page.goto("/buscar?tipo=landing-page");
   await expect(page.locator(".price-statistic")).toContainText("R$ 1.000,00");
@@ -32,7 +32,7 @@ test("busca sem acento, filtros, preço médio por tipo e estados vazios", async
   await form.getByLabel("Preço mínimo", { exact: true }).fill("900");
   await form.getByLabel("Preço máximo", { exact: true }).fill("1100");
   await form.getByRole("button", { name: "Buscar serviços", exact: true }).click();
-  await expect(page.locator(".search-results").getByRole("heading", { name: "Horizonte Digital — Demo" })).toBeVisible();
+  await expect(page.locator(".search-results").getByRole("heading", { name: "Bruno Cavalcanti" })).toBeVisible();
   await expect(page.locator(".search-results .provider-result")).toHaveCount(1);
   await expect(page.locator(".price-statistic")).toContainText("3 prestadores na amostra");
   await page.goto("/buscar?tipo=integracao-de-sistemas");
@@ -41,7 +41,7 @@ test("busca sem acento, filtros, preço médio por tipo e estados vazios", async
   await expect(page.locator(".search-results .provider-result")).toHaveCount(1);
   await expect(page.locator(".search-results .provider-result")).toContainText("R$ 90,00/hora");
   await page.goto("/buscar?prazo_ate=10");
-  await expect(page.locator(".search-results .provider-result").filter({ hasText: "— Demo" })).toHaveCount(3);
+  await expect(page.locator(".search-results .provider-result").filter({ hasText: /Aurora Web Studio|Bruno Cavalcanti|Nexo Studio|Clara Medeiros|Ponte Digital|Henrique Batista|Maré Sistemas|Diego Albuquerque/ })).toHaveCount(3);
   await page.goto("/buscar?q=consulta-inexistente-23891");
   await expect(page.getByRole("heading", { name: "Nenhum prestador encontrado" })).toBeVisible();
   await page.getByRole("link", { name: "Remover filtros", exact: true }).click();
@@ -57,32 +57,32 @@ test("comparação limita três, persiste após reload, substitui contexto e rem
   try {
     await pool.query(`INSERT INTO oferta_servico(id,prestador_id,tipo_servico_id,titulo,descricao,tipo_preco,preco_minimo,tipo_prazo,prazo_minimo_dias,ativo)
       SELECT $1,p.id,t.id,'Z API adicional para comparação','Oferta temporária de API para validar substituição de contexto na comparação.','FIXO',2500,'FIXO',15,true
-      FROM perfil_prestador p CROSS JOIN tipo_servico t WHERE p.slug='prestador-demo-1' AND t.slug='api'`, [extraId]);
+      FROM perfil_prestador p CROSS JOIN tipo_servico t WHERE p.slug='aurora-web-studio-3f9a1c2e' AND t.slug='api'`, [extraId]);
     await page.goto("/buscar");
-    for (const name of ["Aurora Web — Demo", "Horizonte Digital — Demo", "Nexo Studio — Demo"]) {
+    for (const name of ["Aurora Web Studio", "Bruno Cavalcanti", "Clara Medeiros"]) { // todos na página 1 (ordem por nome, 12 por página)
       await page.locator(".search-results .provider-result").filter({ has: page.getByRole("heading", { name, exact: true }) }).getByRole("button", { name: "Comparar", exact: true }).click();
       await expect(page.locator(".search-results .provider-result").filter({ has: page.getByRole("heading", { name, exact: true }) }).getByRole("button", { name: "Remover da comparação" })).toBeVisible();
     }
-    await page.locator(".search-results .provider-result").filter({ has: page.getByRole("heading", { name: "Clara Código — Demo", exact: true }) }).getByRole("button", { name: "Comparar", exact: true }).click();
+    await page.locator(".search-results .provider-result").filter({ has: page.getByRole("heading", { name: "Diego Albuquerque", exact: true }) }).getByRole("button", { name: "Comparar", exact: true }).click();
     await expect(page.getByRole("status")).toContainText("até três prestadores");
     const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("proposta-comparison-offers") ?? "[]") as string[]);
     expect(stored).toHaveLength(3);
     expect(stored.every((id) => typeof id === "string" && /^[\da-f-]{36}$/i.test(id))).toBe(true);
     await page.reload();
     await expect(page.locator(".search-results").getByRole("button", { name: "Remover da comparação" })).toHaveCount(3);
-    await page.goto("/prestadores/prestador-demo-1");
+    await page.goto("/prestadores/aurora-web-studio-3f9a1c2e");
     await page.locator(".profile-offer").filter({ has: page.getByRole("heading", { name: "Z API adicional para comparação", exact: true }) }).getByRole("button", { name: "Comparar", exact: true }).click();
     await expect(page.getByRole("status")).toContainText("substituída");
     await page.getByRole("link", { name: "Ver comparação", exact: true }).click();
     await expect(page.locator(".comparison-table thead th")).toHaveCount(4);
     await expect(page.locator(".comparison-table")).toContainText("Z API adicional para comparação");
-    const paused = await pool.query<{ id: string }>("SELECT o.id FROM oferta_servico o JOIN perfil_prestador p ON p.id=o.prestador_id WHERE p.slug='prestador-demo-2' AND o.ativo");
+    const paused = await pool.query<{ id: string }>("SELECT o.id FROM oferta_servico o JOIN perfil_prestador p ON p.id=o.prestador_id WHERE p.slug='bruno-cavalcanti-8d2e47b1' AND o.ativo");
     pausedId = paused.rows[0].id;
     await pool.query("UPDATE oferta_servico SET ativo=false WHERE id=$1", [pausedId]);
     await page.reload();
     await expect(page.getByRole("status")).toContainText("Algumas ofertas foram removidas");
     await expect(page.locator(".comparison-table thead th")).toHaveCount(3);
-    await expect(page.locator(".comparison-table")).not.toContainText("Horizonte Digital — Demo");
+    await expect(page.locator(".comparison-table")).not.toContainText("Bruno Cavalcanti");
     await page.goto("/comparar?ofertas=invalido");
     await expect(page.getByRole("heading", { name: "Sua comparação começa na busca" })).toBeVisible();
     await expect(page.getByRole("status")).toContainText("Algumas ofertas foram removidas");
@@ -105,14 +105,14 @@ test("usuário cria, edita e exclui avaliação sem publicar e-mail privado", as
   await page.getByRole("button", { name: "Criar conta", exact: true }).click();
   await confirmEmail(page, privateEmail);
   await expect(page).toHaveURL(/\/painel$/);
-  await page.goto("/prestadores/prestador-demo-3");
+  await page.goto("/prestadores/nexo-studio-c41f0a93");
   // Sem Aceite do Prestador, o Cliente não vê o formulário
   await expect(page.getByRole("button", { name: "Publicar avaliação", exact: true })).toHaveCount(0);
   await expect(page.locator(".review-section")).toContainText("Só quem contratou este prestador por uma Proposta aceita pode avaliar");
   const pool = testPool();
   try {
     const author = await pool.query<{ id: string }>('SELECT id FROM "user" WHERE email=$1', [privateEmail]);
-    const target = await pool.query<{ id: string }>("SELECT id FROM perfil_prestador WHERE slug='prestador-demo-3'");
+    const target = await pool.query<{ id: string }>("SELECT id FROM perfil_prestador WHERE slug='nexo-studio-c41f0a93'");
     await grantAcceptance(pool, author.rows[0].id, target.rows[0].id);
   } finally { await pool.end(); }
   await page.reload();
@@ -132,7 +132,7 @@ test("usuário cria, edita e exclui avaliação sem publicar e-mail privado", as
   // Quem vê é um visitante: a própria pessoa recebe o e-mail dela no menu da conta.
   const visitor = await browser.newContext({ baseURL });
   const visitorPage = await visitor.newPage();
-  await visitorPage.goto("/prestadores/prestador-demo-3");
+  await visitorPage.goto("/prestadores/nexo-studio-c41f0a93");
   await expect(visitorPage.locator(".review-item").filter({ hasText: name })).toBeVisible();
   expect(await visitorPage.content()).not.toContain(privateEmail);
   await visitor.close();
@@ -146,10 +146,10 @@ test("usuário cria, edita e exclui avaliação sem publicar e-mail privado", as
 
 test("perfil próprio impede autoavaliação e Prestador não avalia outros", async ({ page }) => {
   await login(page, "prestador1@demo.example");
-  await page.goto("/prestadores/prestador-demo-1");
+  await page.goto("/prestadores/aurora-web-studio-3f9a1c2e");
   await expect(page.getByText("Você pode acompanhar as avaliações do seu perfil aqui.", { exact: false })).toBeVisible();
   await expect(page.getByRole("button", { name: "Publicar avaliação", exact: true })).toHaveCount(0);
-  await page.goto("/prestadores/prestador-demo-2");
+  await page.goto("/prestadores/bruno-cavalcanti-8d2e47b1");
   await expect(page.locator(".review-section")).toContainText("Contas de Prestador não avaliam outros prestadores");
   await expect(page.getByRole("button", { name: "Publicar avaliação", exact: true })).toHaveCount(0);
 });
@@ -171,20 +171,20 @@ test("Prestador sem foto própria mostra a foto da conta; a foto informada tem p
   const pool = testPool();
   const accountPhoto = "https://photo-fixture.example.test/conta.png";
   const ownPhoto = "https://photo-fixture.example.test/propria.png";
-  const owner = "(SELECT usuario_id FROM perfil_prestador WHERE slug='prestador-demo-3')";
-  const original = await pool.query<{ photoUrl: string | null }>("SELECT foto_url AS \"photoUrl\" FROM perfil_prestador WHERE slug='prestador-demo-3'");
+  const owner = "(SELECT usuario_id FROM perfil_prestador WHERE slug='nexo-studio-c41f0a93')";
+  const original = await pool.query<{ photoUrl: string | null }>("SELECT foto_url AS \"photoUrl\" FROM perfil_prestador WHERE slug='nexo-studio-c41f0a93'");
   await page.route("https://photo-fixture.example.test/**", (route) => route.fulfill({ contentType: "image/svg+xml", body: "<svg xmlns='http://www.w3.org/2000/svg' width='1' height='1'/>" }));
   try {
-    await pool.query("UPDATE perfil_prestador SET foto_url=NULL WHERE slug='prestador-demo-3'");
+    await pool.query("UPDATE perfil_prestador SET foto_url=NULL WHERE slug='nexo-studio-c41f0a93'");
     await pool.query(`UPDATE "user" SET image=$1 WHERE id=${owner}`, [accountPhoto]);
-    await page.goto("/prestadores/prestador-demo-3");
+    await page.goto("/prestadores/nexo-studio-c41f0a93");
     await expect(page.locator(".profile-hero img.provider-avatar")).toHaveAttribute("src", accountPhoto);
-    await pool.query("UPDATE perfil_prestador SET foto_url=$1 WHERE slug='prestador-demo-3'", [ownPhoto]);
+    await pool.query("UPDATE perfil_prestador SET foto_url=$1 WHERE slug='nexo-studio-c41f0a93'", [ownPhoto]);
     await page.reload();
     await expect(page.locator(".profile-hero img.provider-avatar")).toHaveAttribute("src", ownPhoto);
   } finally {
     await pool.query(`UPDATE "user" SET image=NULL WHERE id=${owner}`);
-    await pool.query("UPDATE perfil_prestador SET foto_url=$1 WHERE slug='prestador-demo-3'", [original.rows[0]?.photoUrl ?? null]);
+    await pool.query("UPDATE perfil_prestador SET foto_url=$1 WHERE slug='nexo-studio-c41f0a93'", [original.rows[0]?.photoUrl ?? null]);
     await pool.end();
   }
 });
@@ -192,19 +192,19 @@ test("Prestador sem foto própria mostra a foto da conta; a foto informada tem p
 test("foto HTTPS indisponível mantém iniciais no perfil e na busca", async ({ page }) => {
   const pool = testPool();
   const photoUrl = "https://photo-fixture.example.test/unavailable.png";
-  const original = await pool.query<{ photoUrl: string | null }>("SELECT foto_url AS \"photoUrl\" FROM perfil_prestador WHERE slug='prestador-demo-3'");
+  const original = await pool.query<{ photoUrl: string | null }>("SELECT foto_url AS \"photoUrl\" FROM perfil_prestador WHERE slug='nexo-studio-c41f0a93'");
   try {
-    await pool.query("UPDATE perfil_prestador SET foto_url=$1 WHERE slug='prestador-demo-3'", [photoUrl]);
+    await pool.query("UPDATE perfil_prestador SET foto_url=$1 WHERE slug='nexo-studio-c41f0a93'", [photoUrl]);
     await page.route(photoUrl, (route) => route.abort("failed"));
-    await page.goto("/prestadores/prestador-demo-3");
+    await page.goto("/prestadores/nexo-studio-c41f0a93");
     await expect(page.locator(".profile-hero span.provider-avatar")).toHaveText("NS");
     await expect(page.locator(".profile-hero img.provider-avatar")).toHaveCount(0);
     await page.goto("/buscar?q=nexo");
-    const result = page.locator(".search-results .provider-result").filter({ has: page.getByRole("heading", { name: "Nexo Studio — Demo", exact: true }) });
+    const result = page.locator(".search-results .provider-result").filter({ has: page.getByRole("heading", { name: "Nexo Studio", exact: true }) });
     await expect(result.locator("span.provider-avatar")).toHaveText("NS");
     await expect(result.locator("img.provider-avatar")).toHaveCount(0);
   } finally {
-    await pool.query("UPDATE perfil_prestador SET foto_url=$1 WHERE slug='prestador-demo-3'", [original.rows[0]?.photoUrl ?? null]);
+    await pool.query("UPDATE perfil_prestador SET foto_url=$1 WHERE slug='nexo-studio-c41f0a93'", [original.rows[0]?.photoUrl ?? null]);
     await pool.end();
   }
 });

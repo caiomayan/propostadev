@@ -10,12 +10,12 @@ export async function seedDemoSelo(): Promise<void> {
   await db.execute(sql`
     UPDATE "user" u SET email_verified = true
     FROM perfil_prestador p
-    WHERE p.usuario_id = u.id AND p.slug LIKE 'prestador-demo-%' AND u.email LIKE '%@demo.example' AND NOT u.email_verified
+    WHERE p.usuario_id = u.id AND u.email LIKE 'prestador%@demo.example' AND NOT u.email_verified
       AND EXISTS (SELECT 1 FROM avaliacao a WHERE a.prestador_id = p.id AND ${reviewIsVerified("a")})`);
   const result = await db.execute<{ com: number; sem: number }>(sql`
     SELECT count(*) FILTER (WHERE r.trusted)::int AS com, count(*) FILTER (WHERE NOT coalesce(r.trusted, false))::int AS sem
-    FROM perfil_prestador p LEFT JOIN ${reputationSubquery} r ON r.prestador_id = p.id
-    WHERE p.slug LIKE 'prestador-demo-%'`);
+    FROM perfil_prestador p JOIN "user" u ON u.id = p.usuario_id LEFT JOIN ${reputationSubquery} r ON r.prestador_id = p.id
+    WHERE u.email LIKE 'prestador%@demo.example'`);
   const row = result.rows[0];
   console.info(`Selo de confiança na demo: ${row?.com ?? 0} Prestadores com selo e ${row?.sem ?? 0} sem.`);
 }

@@ -8,16 +8,17 @@ import { REVIEW_ACCEPTANCE_TRIGGER } from "../src/modules/reviews/rules";
 import { seedCatalog } from "./seed";
 import { demoPhoto, seedDemoScenarios } from "./demo-scenarios";
 import { seedDemoMvp3 } from "./demo-mvp3";
+import { LEGACY_REVIEW, demoIdentity, demoSlug } from "./demo-identidades";
 
 async function seedDemo() {
   if (process.env.NODE_ENV === "production" || process.env.ALLOW_DEMO_SEED !== "true") throw new Error("Demo recusada: use ALLOW_DEMO_SEED=true apenas em ambiente local.");
   await seedCatalog();
   const password = process.env.DEMO_PASSWORD ?? "Demo-local-2026!";
   const types = await db.select().from(serviceTypes);
-  const names = ["Aurora Web — Demo", "Horizonte Digital — Demo", "Nexo Studio — Demo", "Clara Código — Demo", "Ponte APIs — Demo", "Raiz Tecnologia — Demo", "Maré Sistemas — Demo", "Pixel Aberto — Demo"];
+  const names = Array.from({ length: 8 }, (_, i) => demoIdentity(i + 1).name);
   const profiles = [
     { about: "Crio páginas de venda enxutas e rápidas para pequenos negócios, com texto, imagem e botão de contato no lugar certo.", city: ["João Pessoa", "PB"], title: "Landing Page enxuta para pequenos negócios", offer: "Página única responsiva com seção de depoimentos, formulário ou botão de WhatsApp e publicação inclusa." },
-    { about: "Estúdio focado em páginas de lançamento: estrutura de oferta, prova social e carregamento rápido no celular.", city: ["Recife", "PE"], title: "Landing Page de lançamento", offer: "Página de campanha com vídeo, depoimentos, perguntas frequentes e integração com sua ferramenta de vendas." },
+    { about: demoIdentity(2).about ?? "", city: ["Recife", "PE"], title: "Landing Page de lançamento", offer: "Página de campanha com vídeo, depoimentos, perguntas frequentes e integração com sua ferramenta de vendas." },
     { about: "Design e desenvolvimento no mesmo lugar, do layout às fotos de produto, para marcas que querem se destacar.", city: ["Campina Grande", "PB"], title: "Landing Page com design exclusivo", offer: "Layout criado para a sua marca, com tratamento de imagens, animações leves e duas rodadas de ajuste." },
     { about: "Desenvolvedora independente. Trabalho por hora em sites institucionais de clínicas, consultórios e profissionais liberais.", city: ["Natal", "RN"], title: "Site institucional por hora", offer: "Ideal para quem já tem textos e identidade visual e quer pagar só pelas horas de desenvolvimento." },
     { about: "Integrações e sites para empresas de serviços, com atenção a formulários que chegam certo ao seu sistema.", city: ["Fortaleza", "CE"], title: "Site institucional integrado", offer: "Site com formulários ligados ao seu e-mail ou CRM. O valor varia com o número de páginas e integrações." },
@@ -31,7 +32,7 @@ async function seedDemo() {
     const existing = await db.select({ id: user.id }).from(user).where(eq(user.email, email)).limit(1);
     const account = existing[0] ?? (await auth.api.signUpEmail({ body: { email, password, name: names[i] } })).user;
     await setAccountType(account.id, "PRESTADOR"); // no-op se o tipo já estiver definido
-    const [provider] = await db.insert(providers).values({ userId: account.id, slug: `prestador-demo-${i + 1}`, type: i % 2 === 0 ? "PESSOA_JURIDICA" : "PESSOA_FISICA", displayName: names[i], description: profiles[i].about, yearsExperience: i + 1, contactEmail: email, contactsPublishedAt: new Date(), city: profiles[i].city[0], state: profiles[i].city[1], photoUrl: demoPhoto(i + 1) }).onConflictDoUpdate({ target: providers.userId, set: { displayName: names[i], photoUrl: demoPhoto(i + 1) } }).returning();
+    const [provider] = await db.insert(providers).values({ userId: account.id, slug: demoSlug(i + 1), type: i % 2 === 0 ? "PESSOA_JURIDICA" : "PESSOA_FISICA", displayName: names[i], description: profiles[i].about, yearsExperience: i + 1, contactEmail: demoIdentity(i + 1).contact, contactsPublishedAt: new Date(), city: profiles[i].city[0], state: profiles[i].city[1], photoUrl: demoPhoto(i + 1) }).onConflictDoUpdate({ target: providers.userId, set: { displayName: names[i], slug: demoSlug(i + 1), contactEmail: demoIdentity(i + 1).contact, description: profiles[i].about, photoUrl: demoPhoto(i + 1) } }).returning();
     const service = types.find((type) => type.slug === (i < 3 ? "landing-page" : i === 7 ? "api" : "site-institucional"));
     if (!service) throw new Error("Catálogo de demonstração incompleto.");
     const exists = await db.select({ id: offers.id }).from(offers).where(and(eq(offers.providerId, provider.id), eq(offers.serviceTypeId, service.id), eq(offers.active, true), isNull(offers.deletedAt))).limit(1);
@@ -40,16 +41,16 @@ async function seedDemo() {
     }
   }
   const client = await db.select({ id: user.id }).from(user).where(eq(user.email, "cliente1@demo.example")).limit(1);
-  const clientAccount = client[0] ?? (await auth.api.signUpEmail({ body: { email: "cliente1@demo.example", password, name: "Cliente Demo" } })).user;
+  const clientAccount = client[0] ?? (await auth.api.signUpEmail({ body: { email: "cliente1@demo.example", password, name: "Mariana Costa" } })).user;
   await setAccountType(clientAccount.id, "CLIENTE");
-  const targets = await db.select({ id: providers.id }).from(providers).where(eq(providers.slug, "prestador-demo-1"));
+  const targets = await db.select({ id: providers.id }).from(providers).where(eq(providers.slug, demoSlug(1)));
   if (targets[0]) {
     // Exemplo de "Avaliação anterior, sem contratação verificada" (herança do MVP 1): sem Proposta ACEITA, então o trigger
     // da migration 0005 a recusaria. Ele é desativado só neste INSERT, na mesma transação (mesma conexão), e reativado em seguida.
     const [existing] = await db.select({ id: reviews.id }).from(reviews).where(and(eq(reviews.userId, clientAccount.id), eq(reviews.providerId, targets[0].id))).limit(1);
     if (!existing) await db.transaction(async (tx) => {
       await tx.execute(sql.raw(`ALTER TABLE avaliacao DISABLE TRIGGER ${REVIEW_ACCEPTANCE_TRIGGER}`));
-      await tx.insert(reviews).values({ userId: clientAccount.id, providerId: targets[0].id, rating: 4, comment: "Bom atendimento em um trabalho feito antes de a contratação pela plataforma existir." }).onConflictDoNothing();
+      await tx.insert(reviews).values({ userId: clientAccount.id, providerId: targets[0].id, rating: 4, comment: LEGACY_REVIEW }).onConflictDoNothing();
       await tx.execute(sql.raw(`ALTER TABLE avaliacao ENABLE TRIGGER ${REVIEW_ACCEPTANCE_TRIGGER}`));
     });
   }

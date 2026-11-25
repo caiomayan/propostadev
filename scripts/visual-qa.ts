@@ -24,9 +24,9 @@ async function main() {
     for (const width of widths) {
       const context = await browser.newContext({ baseURL, viewport: { width, height: 960 }, deviceScaleFactor: 1 });
       const page = await context.newPage();
-      for (const [name, url] of [["home", "/"], ["search", "/buscar"], ["search-filtered", "/buscar?tipo=landing-page&modelo_preco=FIXO"], ["profile", "/prestadores/prestador-demo-1"], ["profile-consultation", "/prestadores/prestador-demo-7"], ["login", "/entrar"], ["registration", "/cadastro"]]) await capture(page, name, url, width);
+      for (const [name, url] of [["home", "/"], ["search", "/buscar"], ["search-filtered", "/buscar?tipo=landing-page&modelo_preco=FIXO"], ["profile", "/prestadores/aurora-web-studio-3f9a1c2e"], ["profile-consultation", "/prestadores/mare-sistemas-0f6d3e29"], ["login", "/entrar"], ["registration", "/cadastro"]]) await capture(page, name, url, width);
       await page.goto("/buscar");
-      for (const name of ["Aurora Web — Demo", "Horizonte Digital — Demo", "Clara Código — Demo"]) {
+      for (const name of ["Aurora Web Studio", "Bruno Cavalcanti", "Clara Medeiros"]) {
         await page.locator(".provider-result").filter({ has: page.getByRole("heading", { name, exact: true }) }).getByRole("button", { name: "Comparar", exact: true }).click();
         await page.locator(".provider-result").filter({ has: page.getByRole("heading", { name, exact: true }) }).getByRole("button", { name: "Remover da comparação" }).waitFor();
       }

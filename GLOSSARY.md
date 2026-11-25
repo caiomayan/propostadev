@@ -107,6 +107,14 @@ _Evitar_: patrocinado, anúncio
 **Interesse no VIP**:
 Registro de que um Prestador quer ser VIP; não ativa nada nem gera cobrança.
 
+**Equipe da plataforma**:
+Pessoas que operam o Proposta.dev e concedem ou retiram o VIP; não é um tipo de conta.
+_Evitar_: admin, moderador
+
+**Aviso**:
+Mensagem dentro do site sobre algo que aconteceu com o usuário (Convite recebido, Proposta recebida, Proposta pré-selecionada, aceita ou recusada). Fica não lido até o usuário abri-lo.
+_Evitar_: notificação push, alerta
+
 **Comparação**:
 Seleção local de até três Prestadores para confrontar dados.
 
