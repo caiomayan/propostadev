@@ -44,7 +44,16 @@ Isso apaga só os Interesses no VIP das contas `@demo.example` (o botão "Tenho 
 3. Explique: o Firecrawl lê as páginas toda segunda-feira e extrai a faixa com um schema JSON; o valor só é gravado se aparecer no trecho citado. Fica separado do Preço de referência, que continua sendo só o mercado da plataforma.
 4. Volte e escolha "Preciso de uma API para meu aplicativo" → **API**: "Ainda não há preço externo para este Tipo de serviço" (sem fonte pública confiável em reais).
 
+## 5. Versão e-commerce com WooCommerce (~2 min, visitante)
+Endereço: https://propostadev.caiomayan.com (ADR 0006).
+1. Página inicial: **Destaque VIP** (as Ofertas dos Prestadores VIP), serviços por categoria e os mais bem avaliados.
+2. Entre em **Web → Landing Page**: as Ofertas da categoria, com Prestador, preço e estrelas.
+3. Abra uma Oferta: ficha com Prestador (link para o Perfil no site), prazo, preço conforme o tipo (fixo, a partir de, intervalo, por hora) e a aba **Avaliações**.
+4. **Contratar** → carrinho → **Contratação**: dados do Cliente e "Combinar pagamento com o Prestador" (nada é cobrado). Finalize: aparece o pedido recebido.
+5. Explique o mapeamento: Oferta vira produto, Tipo de serviço vira categoria, Prestador vira marca, Avaliação do Prestador aparece no produto. Triagem, Preço de referência, Projetos e Propostas ficam só na plataforma própria: é o que uma loja pronta não faz.
+
 ## Perguntas prováveis
 - *O VIP é pago?* Nesta versão não: só registra interesse. Cobrança exige decisões de produto e jurídicas próprias.
 - *Por que não misturar o preço externo na média?* Porque o Preço de referência promete mostrar o mercado da plataforma, com o tamanho da amostra; misturar esconderia a origem do número.
+- *Por que WooCommerce?* É gratuito, é a plataforma de e-commerce mais usada e é configurável por linha de comando, então a loja inteira se recria a partir do repositório. Shopify e Nuvemshop exigem conta, e o Shopify cobra depois do teste.
 - *E se uma fonte mudar ou sair do ar?* A coleta grava FALHA e a tela continua mostrando o último valor válido, com a data.
