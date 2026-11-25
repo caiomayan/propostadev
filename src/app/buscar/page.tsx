@@ -6,7 +6,7 @@ import { PriceFilters } from "@/components/provider-price-filters";
 import { FilterPanel } from "@/components/provider-filter-panel";
 import { FilterSelect } from "@/components/provider-filter-select";
 import { getCatalog, getPriceAverage } from "@/modules/catalog/queries";
-import { searchProviders } from "@/modules/search/queries";
+import { searchProviders, searchVipHighlight } from "@/modules/search/queries";
 import { searchSchema } from "@/modules/search/validation";
 import { money, priceLabels } from "@/lib/format";
 
@@ -17,7 +17,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const raw = Object.fromEntries(Object.entries(params).map(([key, value]) => [key, Array.isArray(value) ? value[0] : value]).filter(([, value]) => value !== "" && value !== undefined));
   const parsed = searchSchema.safeParse(raw);
   const input = parsed.success ? parsed.data : searchSchema.parse({ q: typeof raw.q === "string" ? raw.q.slice(0, 120) : "" });
-  const [catalog, search, average] = await Promise.all([getCatalog(), searchProviders(input), input.tipo ? getPriceAverage(input.tipo) : Promise.resolve(null)]);
+  const [catalog, search, average, highlight] = await Promise.all([getCatalog(), searchProviders(input), input.tipo ? getPriceAverage(input.tipo) : Promise.resolve(null), input.pagina === 1 ? searchVipHighlight(input) : Promise.resolve([])]);
   const selectedType = catalog.types.find((type) => type.slug === input.tipo);
   const selectedCategory = catalog.categories.find((category) => category.slug === input.categoria);
   const pages = Math.min(1000, Math.ceil(search.total / 12));
@@ -43,7 +43,8 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
       {search.total > 1 && <SortLinks name="prestadores" options={sorts}/>}
       {activeFilters.length > 0 && <div className="active-filters" aria-label="Filtros ativos">{activeFilters.map((filter, index) => <span className="badge" key={index}>{filter}</span>)}</div>}
       {selectedType && average && <aside className="price-statistic"><p className="eyebrow">Neste tipo de serviço · {selectedType.name}</p>{average.average ? <><strong>{money(average.average)}</strong><p>Média dos preços fixos anunciados; não é orçamento.</p><p className="muted">{average.count} prestadores na amostra. Este indicador considera todas as ofertas elegíveis do tipo, independentemente dos demais filtros.</p></> : <><p>Dados insuficientes para calcular uma média.</p><p className="muted">{average.count} de pelo menos 3 prestadores com preços fixos elegíveis.</p></>}</aside>}
-      {search.results.length ? <div className="result-list">{search.results.map((offer) => <ProviderCard key={offer.providerId} offer={offer}/>)}</div> : <div className="empty panel"><h2>{search.total > 0 ? "Esta página não tem resultados" : "Nenhum prestador encontrado"}</h2><p className="muted">{search.total > 0 ? "Volte para uma página disponível para ver os prestadores." : "Tente outro termo ou remova alguns filtros para ampliar sua busca."}</p><Link className="button secondary" href={search.total > 0 ? href(1) : "/buscar"}>{search.total > 0 ? "Voltar à primeira página" : "Remover filtros"}</Link></div>}
+      {highlight.length > 0 && <section className="vip-highlight" aria-labelledby="destaque-vip"><div className="vip-highlight-head"><h2 id="destaque-vip">Destaque VIP</h2><p className="muted">Prestadores VIP que atendem aos filtros aplicados. Não altera a ordem dos resultados abaixo.</p></div><div className="result-list">{highlight.map((offer) => <ProviderCard key={offer.providerId} offer={offer}/>)}</div></section>}
+      {search.results.length ? <div className="result-list search-results">{search.results.map((offer) => <ProviderCard key={offer.providerId} offer={offer}/>)}</div> : <div className="empty panel"><h2>{search.total > 0 ? "Esta página não tem resultados" : "Nenhum prestador encontrado"}</h2><p className="muted">{search.total > 0 ? "Volte para uma página disponível para ver os prestadores." : "Tente outro termo ou remova alguns filtros para ampliar sua busca."}</p><Link className="button secondary" href={search.total > 0 ? href(1) : "/buscar"}>{search.total > 0 ? "Voltar à primeira página" : "Remover filtros"}</Link></div>}
       {pages > 1 && <nav className="pagination" aria-label="Paginação da busca">{input.pagina > 1 ? <Link className="button secondary" href={href(input.pagina - 1)}>Anterior</Link> : <span/>}<span className="muted">Página {input.pagina} de {pages}</span>{input.pagina < pages ? <Link className="button secondary" href={href(input.pagina + 1)}>Próxima</Link> : <span/>}</nav>}
     </div></div>
   </section>;

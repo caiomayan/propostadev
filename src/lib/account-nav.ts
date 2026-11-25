@@ -1,6 +1,6 @@
 import type { AccountType } from "@/lib/auth/user-fields";
 
-export type PanelIcon = "home" | "profile" | "offers" | "opportunities" | "proposals" | "projects" | "triage" | "account" | "mail" | "public";
+export type PanelIcon = "home" | "profile" | "offers" | "opportunities" | "proposals" | "vip" | "projects" | "triage" | "account" | "mail" | "public";
 export type PanelLink = { href: string; label: string; icon: PanelIcon };
 export type SiteLink = { href: string; label: string };
 
@@ -10,7 +10,7 @@ export function panelLinks(type: AccountType): PanelLink[] {
   return [
     { href: "/painel", label: provider ? "Visão geral" : "Início", icon: "home" },
     ...(provider
-      ? [{ href: "/painel/perfil", label: "Perfil", icon: "profile" }, { href: "/painel/ofertas", label: "Ofertas", icon: "offers" }, { href: "/painel/oportunidades", label: "Oportunidades", icon: "opportunities" }, { href: "/painel/propostas", label: "Propostas", icon: "proposals" }] as PanelLink[]
+      ? [{ href: "/painel/perfil", label: "Perfil", icon: "profile" }, { href: "/painel/ofertas", label: "Ofertas", icon: "offers" }, { href: "/painel/oportunidades", label: "Oportunidades", icon: "opportunities" }, { href: "/painel/propostas", label: "Propostas", icon: "proposals" }, { href: "/painel/vip", label: "VIP", icon: "vip" }] as PanelLink[]
       : [{ href: "/painel/projetos", label: "Projetos", icon: "projects" }, { href: "/triagem", label: "Nova triagem", icon: "triage" }] as PanelLink[]),
     { href: "/painel/conta", label: "Conta", icon: "account" },
   ];

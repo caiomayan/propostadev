@@ -12,7 +12,7 @@ test("Selo de confiança aparece no Perfil, na busca e explica os critérios; qu
   await expect(seal.getByText("E-mail da conta confirmado")).toBeVisible();
 
   await page.goto("/buscar?q=Clara%20C%C3%B3digo");
-  await expect(page.locator(".provider-result .trust-seal")).toHaveCount(1);
+  await expect(page.locator(".search-results .provider-result .trust-seal")).toHaveCount(1);
 
   // Sem Avaliação verificada (só uma Avaliação anterior) → sem selo.
   await page.goto("/prestadores/prestador-demo-1");

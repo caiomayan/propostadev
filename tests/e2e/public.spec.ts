@@ -22,30 +22,30 @@ function testPool() {
 test("busca sem acento, filtros, preço médio por tipo e estados vazios", async ({ page }) => {
   await page.goto("/buscar?q=clara%20codigo");
   await expect(page.getByRole("heading", { name: "Clara Código — Demo" })).toBeVisible();
-  await expect(page.locator(".provider-result")).toHaveCount(1);
+  await expect(page.locator(".search-results .provider-result")).toHaveCount(1);
   await page.goto("/buscar?tipo=landing-page");
   await expect(page.locator(".price-statistic")).toContainText("R$ 1.000,00");
   await expect(page.locator(".price-statistic")).toContainText("3 prestadores na amostra");
-  await expect(page.locator(".provider-result")).toHaveCount(3);
+  await expect(page.locator(".search-results .provider-result")).toHaveCount(3);
   const form = page.locator(".desktop-filters");
   await form.getByLabel("Modelo de preço", { exact: true }).selectOption("FIXO");
   await form.getByLabel("Preço mínimo", { exact: true }).fill("900");
   await form.getByLabel("Preço máximo", { exact: true }).fill("1100");
   await form.getByRole("button", { name: "Buscar serviços", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Horizonte Digital — Demo" })).toBeVisible();
-  await expect(page.locator(".provider-result")).toHaveCount(1);
+  await expect(page.locator(".search-results").getByRole("heading", { name: "Horizonte Digital — Demo" })).toBeVisible();
+  await expect(page.locator(".search-results .provider-result")).toHaveCount(1);
   await expect(page.locator(".price-statistic")).toContainText("3 prestadores na amostra");
   await page.goto("/buscar?tipo=integracao-de-sistemas");
   await expect(page.locator(".price-statistic")).toContainText("Dados insuficientes");
   await page.goto("/buscar?modelo_preco=POR_HORA&ordenar=preco");
-  await expect(page.locator(".provider-result")).toHaveCount(1);
-  await expect(page.locator(".provider-result")).toContainText("R$ 90,00/hora");
+  await expect(page.locator(".search-results .provider-result")).toHaveCount(1);
+  await expect(page.locator(".search-results .provider-result")).toContainText("R$ 90,00/hora");
   await page.goto("/buscar?prazo_ate=10");
-  await expect(page.locator(".provider-result").filter({ hasText: "— Demo" })).toHaveCount(3);
+  await expect(page.locator(".search-results .provider-result").filter({ hasText: "— Demo" })).toHaveCount(3);
   await page.goto("/buscar?q=consulta-inexistente-23891");
   await expect(page.getByRole("heading", { name: "Nenhum prestador encontrado" })).toBeVisible();
   await page.getByRole("link", { name: "Remover filtros", exact: true }).click();
-  await expect(page.locator(".provider-result").first()).toBeVisible();
+  await expect(page.locator(".search-results .provider-result").first()).toBeVisible();
   await page.goto("/buscar?modelo_preco=SOB_CONSULTA&preco_min=10");
   await expect(page.locator("main").getByRole("alert")).toContainText("Alguns filtros são inválidos");
 });
@@ -60,16 +60,16 @@ test("comparação limita três, persiste após reload, substitui contexto e rem
       FROM perfil_prestador p CROSS JOIN tipo_servico t WHERE p.slug='prestador-demo-1' AND t.slug='api'`, [extraId]);
     await page.goto("/buscar");
     for (const name of ["Aurora Web — Demo", "Horizonte Digital — Demo", "Nexo Studio — Demo"]) {
-      await page.locator(".provider-result").filter({ has: page.getByRole("heading", { name, exact: true }) }).getByRole("button", { name: "Comparar", exact: true }).click();
-      await expect(page.locator(".provider-result").filter({ has: page.getByRole("heading", { name, exact: true }) }).getByRole("button", { name: "Remover da comparação" })).toBeVisible();
+      await page.locator(".search-results .provider-result").filter({ has: page.getByRole("heading", { name, exact: true }) }).getByRole("button", { name: "Comparar", exact: true }).click();
+      await expect(page.locator(".search-results .provider-result").filter({ has: page.getByRole("heading", { name, exact: true }) }).getByRole("button", { name: "Remover da comparação" })).toBeVisible();
     }
-    await page.locator(".provider-result").filter({ has: page.getByRole("heading", { name: "Clara Código — Demo", exact: true }) }).getByRole("button", { name: "Comparar", exact: true }).click();
+    await page.locator(".search-results .provider-result").filter({ has: page.getByRole("heading", { name: "Clara Código — Demo", exact: true }) }).getByRole("button", { name: "Comparar", exact: true }).click();
     await expect(page.getByRole("status")).toContainText("até três prestadores");
     const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("proposta-comparison-offers") ?? "[]") as string[]);
     expect(stored).toHaveLength(3);
     expect(stored.every((id) => typeof id === "string" && /^[\da-f-]{36}$/i.test(id))).toBe(true);
     await page.reload();
-    await expect(page.getByRole("button", { name: "Remover da comparação" })).toHaveCount(3);
+    await expect(page.locator(".search-results").getByRole("button", { name: "Remover da comparação" })).toHaveCount(3);
     await page.goto("/prestadores/prestador-demo-1");
     await page.locator(".profile-offer").filter({ has: page.getByRole("heading", { name: "Z API adicional para comparação", exact: true }) }).getByRole("button", { name: "Comparar", exact: true }).click();
     await expect(page.getByRole("status")).toContainText("substituída");
@@ -200,7 +200,7 @@ test("foto HTTPS indisponível mantém iniciais no perfil e na busca", async ({ 
     await expect(page.locator(".profile-hero span.provider-avatar")).toHaveText("NS");
     await expect(page.locator(".profile-hero img.provider-avatar")).toHaveCount(0);
     await page.goto("/buscar?q=nexo");
-    const result = page.locator(".provider-result").filter({ has: page.getByRole("heading", { name: "Nexo Studio — Demo", exact: true }) });
+    const result = page.locator(".search-results .provider-result").filter({ has: page.getByRole("heading", { name: "Nexo Studio — Demo", exact: true }) });
     await expect(result.locator("span.provider-avatar")).toHaveText("NS");
     await expect(result.locator("img.provider-avatar")).toHaveCount(0);
   } finally {
