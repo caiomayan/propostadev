@@ -99,6 +99,16 @@ Para screenshots, mantenha um servidor separado em 3100 apontando ao DATABASE_UR
 
 Resultados e limites reais: docs/VALIDATION.md. Escopo: docs/SCOPE.md. Regras: docs/specs/MVP.md e docs/DATABASE-RULES.md. Progresso: docs/tasks/BACKLOG.md. Decisões de implementação: docs/adr/0002-implementation.md.
 
+## Preço de mercado externo
+
+Uma coleta semanal com Firecrawl lê páginas públicas de "quanto custa" (lista versionada em `src/modules/external-prices/sources.ts`) e grava, por Tipo de serviço e por fonte, a faixa em reais, o trecho que a sustenta e a data. O resultado da Triagem e o painel de Ofertas mostram essas linhas ao lado do Preço de referência, sem misturar: o preço externo nunca entra na média. api, backend e integração de sistemas não têm fonte.
+
+- Segredos (variáveis sensíveis na Vercel, Production; localmente no `.env`): `FIRECRAWL_API_KEY` e `CRON_SECRET`. Cada página lida custa 5 créditos do Firecrawl (8 fontes por coleta).
+- Agendamento: `vercel.json` chama `GET /api/cron/precos-externos` às segundas, 09:00 UTC. A rota exige `Authorization: Bearer ${CRON_SECRET}` (a Vercel envia sozinha) e recusa sem ele; `maxDuration` de 300 s, o limite do plano Hobby.
+- Coleta manual: `pnpm precos:coletar` (usa `.env`; contra a produção, a `DATABASE_URL` de produção precisa estar no ambiente, sem ir para o git).
+- Falha de uma fonte não afeta as outras e não apaga o último valor válido: a tela mostra a data antiga. Valores não numéricos, zero ou com mínimo maior que o máximo são descartados e registrados como FALHA.
+- O seed demo grava preços de uma "Fonte de demonstração" (example.com) só em banco local.
+
 ## Dados e alterações
 
 Sessões e hashes pertencem ao Better Auth; schema gerado com `pnpm auth:generate`. Domínio usa Drizzle e migrations SQL versionadas. Depois de alterar o schema, `pnpm db:generate`, revise o SQL e execute `pnpm db:migrate`. Não use push destrutivo. Triggers adicionais são uma migration separada, 0001_domain-rules.sql; domain-rules.sql serve apenas como fonte legível, não deve ser executado novamente manualmente.
