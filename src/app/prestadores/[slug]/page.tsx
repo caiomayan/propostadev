@@ -11,6 +11,7 @@ import { REVIEW_NOT_ELIGIBLE, VERIFIED_SEAL } from "@/modules/reviews/rules";
 import { deadline, location, price } from "@/lib/format";
 import { VipBadge } from "@/components/vip-badge";
 import { Reputation } from "@/components/reputation";
+import { TrustSeal } from "@/components/trust-seal";
 import { StarRating } from "@/components/star-rating";
 import { SortLinks } from "@/components/sort-links";
 import { reviewOrders, reviewSorts, sortOptions, type ReviewOrder } from "@/lib/list-sorts";
@@ -37,7 +38,7 @@ export default async function ProviderPage({ params, searchParams }: { params: P
   const experience = `${provider.yearsExperience} ${provider.yearsExperience === 1 ? "ano" : "anos"} de experiência`;
   return <section className="container section profile">
     <p><Link href="/buscar" className="back-link">← Voltar à busca</Link></p>
-    <header className="profile-hero panel on-forest"><ProviderAvatar name={provider.displayName} photoUrl={provider.photoUrl}/><div className="profile-hero-text"><div className="inline"><span className="badge">{provider.type === "PESSOA_FISICA" ? "Pessoa física" : "Pessoa jurídica"}</span><span className="badge">{experience}</span>{provider.vip && <VipBadge/>}</div><h1>{provider.displayName}</h1><p className="muted">{location(provider)}</p><p className="profile-reputation"><Reputation rating={provider.rating} count={provider.reviewCount} verified={provider.verifiedCount}/></p></div><a className="button accent profile-hero-cta" href="#contato">Falar com o prestador</a></header>
+    <header className="profile-hero panel on-forest"><ProviderAvatar name={provider.displayName} photoUrl={provider.photoUrl}/><div className="profile-hero-text"><div className="inline"><span className="badge">{provider.type === "PESSOA_FISICA" ? "Pessoa física" : "Pessoa jurídica"}</span><span className="badge">{experience}</span>{provider.vip && <VipBadge/>}</div><h1>{provider.displayName}</h1><p className="muted">{location(provider)}</p><p className="profile-reputation"><Reputation rating={provider.rating} count={provider.reviewCount} verified={provider.verifiedCount}/></p>{provider.trusted && <TrustSeal/>}</div><a className="button accent profile-hero-cta" href="#contato">Falar com o prestador</a></header>
     <div className="profile-layout">
       <div className="profile-main">
         <section className="profile-section"><h2>Sobre o prestador</h2><p className="profile-description">{provider.description}</p><p className="muted">Tipo de prestador e experiência são informações autodeclaradas.</p></section>

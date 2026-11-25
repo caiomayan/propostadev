@@ -11,7 +11,7 @@ import type { ReviewOrder } from "@/lib/list-sorts";
 export type PublicOffer = Pick<Offer, "id" | "title" | "description" | "priceType" | "priceMin" | "priceMax" | "deadlineType" | "deadlineMinDays" | "deadlineMaxDays"> & {
   providerId: string; slug: string; displayName: string; type: "PESSOA_FISICA" | "PESSOA_JURIDICA"; yearsExperience: number;
   city: string | null; state: string | null; country: string; photoUrl: string | null;
-  serviceName: string; serviceSlug: string; rating: string | null; reviewCount: number; verifiedCount: number;
+  serviceName: string; serviceSlug: string; rating: string | null; reviewCount: number; verifiedCount: number; trusted: boolean;
   /** Prestador VIP (MVP 3): só exibição do selo; nunca entra em ordenação da busca, da Triagem ou dos compatíveis. */
   vip: boolean;
 };
@@ -21,7 +21,7 @@ const projection = sql`o.id, o.titulo AS title, o.descricao AS description,
   o.tipo_prazo AS "deadlineType", o.prazo_minimo_dias AS "deadlineMinDays", o.prazo_maximo_dias AS "deadlineMaxDays",
   p.id AS "providerId", p.slug, p.nome_exibicao AS "displayName", p.tipo AS type, p.anos_experiencia AS "yearsExperience",
   p.cidade AS city, p.uf AS state, p.pais AS country, coalesce(nullif(p.foto_url, ''), conta.image) AS "photoUrl", t.nome AS "serviceName", t.slug AS "serviceSlug",
-  r.rating, coalesce(r.count, 0)::int AS "reviewCount", coalesce(r.verified, 0)::int AS "verifiedCount", p.vip`;
+  r.rating, coalesce(r.count, 0)::int AS "reviewCount", coalesce(r.verified, 0)::int AS "verifiedCount", coalesce(r.trusted, false) AS trusted, p.vip`;
 const fromPublic = sql`FROM oferta_servico o JOIN perfil_prestador p ON p.id = o.prestador_id JOIN "user" conta ON conta.id = p.usuario_id
   JOIN tipo_servico t ON t.id = o.tipo_servico_id JOIN categoria c ON c.id = t.categoria_id
   LEFT JOIN ${reputationSubquery} r ON r.prestador_id = p.id`;
@@ -88,9 +88,9 @@ export async function getPublicProvider(slug: string) {
   if (!provider) return null;
   const [offerRows, stats] = await Promise.all([
     db.execute<PublicOffer>(sql`SELECT ${projection} ${fromPublic} WHERE ${active} AND p.id = ${provider.id}::uuid ORDER BY o.titulo, o.id`),
-    db.execute<{ rating: string | null; count: number; verified: number }>(sql`SELECT r.rating, r.count, r.verified FROM ${reputationSubquery} r WHERE r.prestador_id = ${provider.id}::uuid`),
+    db.execute<{ rating: string | null; count: number; verified: number; trusted: boolean }>(sql`SELECT r.rating, r.count, r.verified, r.trusted FROM ${reputationSubquery} r WHERE r.prestador_id = ${provider.id}::uuid`),
   ]);
-  return { ...provider, offers: offerRows.rows, rating: stats.rows[0]?.rating ?? null, reviewCount: stats.rows[0]?.count ?? 0, verifiedCount: stats.rows[0]?.verified ?? 0 };
+  return { ...provider, offers: offerRows.rows, rating: stats.rows[0]?.rating ?? null, reviewCount: stats.rows[0]?.count ?? 0, verifiedCount: stats.rows[0]?.verified ?? 0, trusted: stats.rows[0]?.trusted ?? false };
 }
 
 export type ProviderReview = { id: string; name: string; rating: number; comment: string | null; createdAt: Date; updatedAt: Date; verified: boolean };

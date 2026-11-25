@@ -243,3 +243,17 @@ dialog::backdrop { background: var(--overlay); }
 .vip-badge { gap: 4px; background: var(--accent-fill); color: var(--accent-ink); }
 .vip-highlight { display: flex; flex-direction: column; gap: 16px; padding: 20px; border: 1px solid var(--accent-fill); border-radius: var(--radius-lg); }
 .vip-highlight-head { display: flex; flex-direction: column; gap: 4px; }
+
+/* Selo de confiança (ticket 02 do MVP 3): pílula limão com "por quê" em <details>. */
+.trust-seal { display: block; font-size: .8125rem; }
+.trust-seal summary { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; padding: 3px 12px 3px 8px; border-radius: 999px; background: var(--accent-fill); color: var(--accent-ink); font-weight: 700; cursor: pointer; list-style: none; }
+.trust-seal summary::-webkit-details-marker { display: none; }
+.trust-seal summary:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
+.trust-why { margin-top: 8px; padding: 12px 14px; border-radius: var(--radius); background: var(--muted); color: var(--foreground); max-width: 46ch; }
+.trust-why p { margin: 0 0 8px; }
+.trust-why ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; list-style: disc; }
+.trust-checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.trust-checklist li { display: flex; gap: 12px; align-items: flex-start; }
+.trust-checklist .mark { flex: none; width: 24px; height: 24px; border-radius: 999px; display: grid; place-items: center; background: var(--muted); color: var(--muted-foreground); }
+.trust-checklist li.done .mark { background: var(--accent-fill); color: var(--accent-ink); }
+.trust-checklist small { display: block; color: var(--muted-foreground); }
