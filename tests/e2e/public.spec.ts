@@ -69,7 +69,7 @@ test("comparação limita três, persiste após reload, substitui contexto e rem
     expect(stored).toHaveLength(3);
     expect(stored.every((id) => typeof id === "string" && /^[\da-f-]{36}$/i.test(id))).toBe(true);
     await page.reload();
-    await expect(page.getByRole("button", { name: "Remover da comparação" })).toHaveCount(3);
+    await expect(page.locator(".search-results").getByRole("button", { name: "Remover da comparação" })).toHaveCount(3);
     await page.goto("/prestadores/prestador-demo-1");
     await page.locator(".profile-offer").filter({ has: page.getByRole("heading", { name: "Z API adicional para comparação", exact: true }) }).getByRole("button", { name: "Comparar", exact: true }).click();
     await expect(page.getByRole("status")).toContainText("substituída");
