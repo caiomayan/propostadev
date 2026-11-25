@@ -1,6 +1,6 @@
 # Roteiro da apresentação: MVP 3 (Sprint 4 Review, 25/11/2026)
 
-Endereço: https://propostadev-one.vercel.app. Dados da demo são fictícios (nomes com "— Demo"). Senha das contas demo: a combinada com a equipe, fora do repositório.
+Endereço: https://propostadev-one.vercel.app. Dados da demo são fictícios, com nomes de pessoa e de empresa; o rodapé do site avisa isso (ADR 0005). Diga ao abrir a apresentação. Senha das contas demo: a combinada com a equipe, fora do repositório.
 
 ## Antes da apresentação (substitui a instrução do MVP 2)
 Depois de qualquer ensaio, volte a demo ao ponto de partida. Na VM, com a URL de produção no ambiente (sem gravar em arquivo do repo):
@@ -16,12 +16,12 @@ Isso apaga só os Interesses no VIP das contas `@demo.example` (o botão "Tenho 
 ## 1. Selo de confiança (Erick, ~1 min, visitante)
 1. Abra **Buscar desenvolvedores**. Mostre o selo verde "Selo de confiança" nos cards.
 2. Clique no selo: aparece o porquê (e-mail confirmado, ao menos uma Avaliação verificada, média das verificadas de 4,0 ou mais).
-3. Abra o Perfil de **Horizonte Digital — Demo**: selo no topo. Explique que o selo é calculado, nunca dado à mão, e some sozinho se o Prestador deixar de cumprir um critério.
+3. Abra o Perfil de **Bruno Cavalcanti**: selo no topo. Explique que o selo é calculado, nunca dado à mão, e some sozinho se o Prestador deixar de cumprir um critério.
 
 ## 2. Prestador VIP (Rogério e Esdras, ~1,5 min)
 1. Em **Buscar**, filtre **Tipo de serviço: Landing Page**. No topo aparece a faixa **Destaque VIP** com até 3 Prestadores VIP que atendem ao filtro; a lista abaixo não muda de ordem.
-2. Mostre o selo VIP no Perfil de Horizonte Digital.
-3. Entre como **prestador1@demo.example** (Aurora Web, não é VIP) → painel → **VIP**: benefícios, aviso "Nesta versão não há assinatura nem cobrança" e o botão **Tenho interesse**. Clique: fica registrado com a data.
+2. Mostre o selo VIP no Perfil de Bruno Cavalcanti.
+3. Entre como **prestador1@demo.example** (Aurora Web Studio, não é VIP) → painel → **VIP**: benefícios, aviso "Nesta versão não há assinatura nem cobrança" e o botão **Tenho interesse**. Clique: fica registrado com a data.
 4. Explique a decisão (ADR 0004): a plataforma concede o VIP; o interesse mede a demanda sem prometer cobrança. A Triagem continua neutra.
 
 ## 3. Filtros de Oportunidades (Messias, ~1,5 min, ainda como prestador1)

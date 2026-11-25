@@ -65,7 +65,7 @@ Abra http://localhost:3000. Cadastre uma conta, crie o perfil e publique uma ofe
 ## Demonstração opcional
 
 O seed demo exige opt-in (`ALLOW_DEMO_SEED=true`) e é recusado com `NODE_ENV=production`. Ele cria:
-- 20 Prestadores fictícios, identificados como Demo, cobrindo todos os tipos de serviço. Só Integração de sistemas fica de propósito sem Preço de referência, como exemplo de "Dados insuficientes";
+- 20 Prestadores fictícios com nomes de pessoa ou de empresa (o rodapé avisa que são fictícios; nomes, slugs e contatos `.example` em `scripts/demo-identidades.ts`), cobrindo todos os tipos de serviço. Só Integração de sistemas fica de propósito sem Preço de referência, como exemplo de "Dados insuficientes";
 - seis Clientes (Mariana Costa, Rafael Lima, Juliana Alves, Pedro Nogueira, Camila Rocha e Thiago Santos);
 - 25 Projetos: sete abertos, 17 encerrados com Aceite e um cancelado;
 - Propostas em todos os status (enviada, pré-selecionada, recusada, aceita e retirada) e Convites;
