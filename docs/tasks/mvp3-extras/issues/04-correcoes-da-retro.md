@@ -4,7 +4,7 @@
 
 **Blocked by:** None
 
-**Status:** in-progress (coordenador; falta rodar o workflow depois do merge)
+**Status:** done
 
 - [x] Migration com senha errada mostra `28P01` no log, sem a URL. Evidência: `DATABASE_URL=<senha errada> tsx scripts/migrate.ts` → "Não foi possível aplicar migrations: Failed query: CREATE SCHEMA IF NOT EXISTS \"drizzle\" ← 28P01 password authentication failed for user \"proposta\""; tests/unit/db-error.test.ts (3 testes).
-- [ ] Workflow roda manualmente (`workflow_dispatch`) e passa.
+- [x] Workflow roda manualmente (`workflow_dispatch`) e passa: run 45538912174, `/ -> 200`, `/buscar -> 200`.

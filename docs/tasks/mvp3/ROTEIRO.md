@@ -11,7 +11,7 @@ cd ~/dev/propostadev && set -a && . ~/.config/propostadev/producao.env && set +a
   && pnpm demo:apresentacao
 ```
 
-Isso apaga só os Interesses no VIP das contas `@demo.example` (o botão "Tenho interesse" volta) e reaplica selo, Oportunidades e VIP. Não use `DEMO_RESET=true` sem necessidade: ele recria todos os Projetos dos Clientes demo. Os preços externos não mudam.
+Isso apaga só os Interesses no VIP das contas `@demo.example` (o botão "Tenho interesse" volta), devolve o VIP da demo ao conjunto original (desfaz o que foi concedido no painel), volta os Avisos da demo a "não lido" e reaplica selo, Oportunidades, VIP, pedidos de VIP e Avisos. Para criar a conta da Equipe na primeira vez, `producao.env` precisa de `DEMO_PASSWORD`. Não use `DEMO_RESET=true` sem necessidade: ele recria todos os Projetos dos Clientes demo. Os preços externos não mudam.
 
 ## 1. Selo de confiança (Erick, ~1 min, visitante)
 1. Abra **Buscar desenvolvedores**. Mostre o selo verde "Selo de confiança" nos cards.
@@ -23,6 +23,7 @@ Isso apaga só os Interesses no VIP das contas `@demo.example` (o botão "Tenho 
 2. Mostre o selo VIP no Perfil de Bruno Cavalcanti.
 3. Entre como **prestador1@demo.example** (Aurora Web Studio, não é VIP) → painel → **VIP**: benefícios, aviso "Nesta versão não há assinatura nem cobrança" e o botão **Tenho interesse**. Clique: fica registrado com a data.
 4. Explique a decisão (ADR 0004): a plataforma concede o VIP; o interesse mede a demanda sem prometer cobrança. A Triagem continua neutra.
+5. Saia e entre como **plataforma@demo.example** (Equipe da plataforma) → menu da conta → **Plataforma**. Em "Pediram o VIP" aparecem Clara Medeiros, Henrique Batista e, agora, Aurora Web Studio com a data do pedido. Clique **Conceder VIP** na Aurora: ela passa para "VIP agora" e o selo VIP aparece no Perfil dela. Para quem não é da Equipe, `/plataforma` responde 404 (ADR 0005).
 
 ## 3. Filtros de Oportunidades (Messias, ~1,5 min, ainda como prestador1)
 1. Painel → **Oportunidades**. Abra **Filtros**.
@@ -30,6 +31,12 @@ Isso apaga só os Interesses no VIP das contas `@demo.example` (o botão "Tenho 
 3. Limpe e use **Orçamento a partir de R$ 1.500**: Projetos com orçamento "não sei" continuam aparecendo, marcados.
 4. Mostre que os filtros ficam no endereço da página (dá para voltar e compartilhar).
 5. Explique a mudança desde a daily de 18/11: tecnologias, modalidade e nível foram descartados porque o Cliente leigo não sabe informar a stack, modalidade não faz sentido para freelancer e orçamento e prazo já dizem o porte. Os filtros usam o que o Projeto já tem.
+
+## 3b. Avisos (extra, ~1 min)
+1. Entre como **prestador1@demo.example**: o **sino** no topo mostra quantos Avisos não lidos há (Convites recebidos, Proposta pré-selecionada, aceita ou recusada).
+2. Clique no sino → **Avisos**. Abra o Aviso de Convite: ele leva à Oportunidade e deixa de contar como não lido.
+3. Como **cliente1@demo.example**, o sino mostra as Propostas recebidas nos seus Projetos.
+4. Explique: o Aviso é gravado junto com a ação (se a ação falha, não há Aviso solto) e fica só dentro do site, sem e-mail.
 
 ## 4. Preço de mercado externo com Firecrawl (Caio, ~2 min, visitante)
 1. **Triagem** → "Preciso de um site para minha empresa" → **Site institucional**; preencha e veja o resultado.

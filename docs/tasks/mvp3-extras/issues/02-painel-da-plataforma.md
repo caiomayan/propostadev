@@ -4,7 +4,7 @@
 
 **Blocked by:** None
 
-**Status:** review (e2e roda só no CI do PR)
+**Status:** done
 
 - [x] Unidade: leitura de `PLATAFORMA_EMAILS` (vazia, espaços, caixa).  
   Evidência: `pnpm test` → 106 passam, incluindo `tests/unit/plataforma-emails.test.ts`.
@@ -17,3 +17,5 @@
 - [x] `.env.example` e README documentam `PLATAFORMA_EMAILS`.
 - [x] Verificado no browser em 375 e 1440 px, console limpo.  
   Evidência: portal do Maestri, `next dev` na 3101; sem overflow horizontal em 375; visitante recebe 404; log do dev só com o aviso preexistente de `scroll-behavior`.
+
+- Produção (25/11, PR #12): `/plataforma` 404 para visitante; pedidos de VIP de Clara Medeiros e Henrique Batista gravados. A conta `plataforma@demo.example` só é criada quando `DEMO_PASSWORD` estiver em `~/.config/propostadev/producao.env` (o reset recusa a senha pública fora do banco local).

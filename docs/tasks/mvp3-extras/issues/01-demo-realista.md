@@ -4,9 +4,9 @@
 
 **Blocked by:** None
 
-**Status:** in-progress (coordenador; falta rodar em produção depois do merge)
+**Status:** done
 
 - [x] Nenhum "— Demo" nem `prestador-demo-` visível nas telas públicas (local: /buscar sem "— Demo"; `/prestadores/bruno-cavalcanti-8d2e47b1` 200 e `/prestadores/prestador-demo-2` 404).
 - [x] Rodapé com o aviso de dados fictícios (portal local em 1900 e 375 px, sem overflow).
 - [x] Módulos de demo identificam Prestadores pelo e-mail de login ou pela identidade em `scripts/demo-identidades.ts`; `scripts/demo-mvp3/identidades.ts` aplica a mudança ao banco existente (rodado 2x no banco local: 20 renomeados, idempotente; textos antigos zerados).
-- [ ] Rodado em produção; `/prestadores/<novo-slug>` responde 200.
+- [x] Rodado em produção em 25/11 (PR #11): "Identidade realista aplicada a 20 Prestadores demo"; `/prestadores/bruno-cavalcanti-8d2e47b1` 200, `/prestadores/prestador-demo-2` 404, `/buscar` sem "— Demo", rodapé publicado.
