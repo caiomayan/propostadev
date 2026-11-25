@@ -14,3 +14,5 @@
   Evidência: `tests/e2e/avisos.spec.ts` escrito (não rodado localmente; CI roda).
 - [x] Verificado no browser em 375 e 1440 px (sino no menu mobile também), console limpo.
   Evidência: Playwright/Chromium contra o dev server (banco w2, demo): 1440 e 375 px, sino com 4→3 avisos ao abrir, item "Avisos" no menu mobile, sem erro de console/rede (só o aviso antigo de `scroll-behavior`, anterior a este ticket).
+
+- Produção (25/11, PR #12): migration 0008 aplicada no deploy; demo com 13 Avisos (12 não lidos) para prestador1 e cliente1; `/painel/avisos` sem sessão redireciona para o login.
