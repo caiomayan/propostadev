@@ -84,7 +84,7 @@ add_filter('woocommerce_get_price_html', function ($html, $product) {
     'INTERVALO' => wc_price($min) . ' <span class="pd-price-pre">a</span> ' . wc_price($max),
     'POR_HORA' => wc_price($min) . '<span class="pd-price-unit">/hora</span>',
     'SOB_CONSULTA' => '<span class="pd-price-pre">Sob consulta</span>',
-    default => wc_price($min) . '<span class="pd-price-unit">por projeto</span>',
+    default => wc_price($min) . ' <span class="pd-price-unit">por projeto</span>',
   };
 }, 10, 2);
 

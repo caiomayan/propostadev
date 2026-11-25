@@ -369,3 +369,197 @@ add_action('wp_footer', function () {
   if (!is_account_page()) return;
   echo "<script>document.querySelectorAll('a.cancel').forEach(a=>a.addEventListener('click',e=>{if(!confirm('Cancelar esta Contratação? O Prestador deixa de vê-la e isso não pode ser desfeito.'))e.preventDefault()}));</script>";
 });
+
+/* ---------------------------------------------------------------- Prestador: Minhas Ofertas
+ * O Prestador cria, edita, pausa e reativa as próprias Ofertas na loja, com as mesmas regras do formulário do site
+ * (src/modules/offers/validation.ts): título 5–120, descrição 30–5000, preço e prazo por modelo, e uma Oferta ativa por
+ * Tipo de serviço. O cadastro do Prestador (Perfil, PF/PJ, contatos, Selo) continua na plataforma (ADR 0006). */
+
+const PD_PRICE_TYPES = ['FIXO' => 'Preço fixo', 'A_PARTIR_DE' => 'A partir de', 'INTERVALO' => 'Intervalo de preços', 'POR_HORA' => 'Por hora', 'SOB_CONSULTA' => 'Sob consulta'];
+const PD_DEADLINE_TYPES = ['FIXO' => 'Prazo fixo', 'A_PARTIR_DE' => 'A partir de', 'INTERVALO' => 'Intervalo de dias', 'A_COMBINAR' => 'A combinar'];
+
+add_action('init', fn () => add_rewrite_endpoint('minhas-ofertas', EP_ROOT | EP_PAGES));
+add_filter('woocommerce_get_query_vars', fn ($vars) => $vars + ['minhas-ofertas' => 'minhas-ofertas']);
+add_filter('woocommerce_endpoint_minhas-ofertas_title', fn () => 'Minhas Ofertas');
+add_filter('woocommerce_account_menu_items', function ($items) {
+  if (!pd_user_provider_slug()) return $items;
+  $out = [];
+  foreach ($items as $k => $v) { $out[$k] = $v; if ($k === 'contratacoes-recebidas') $out['minhas-ofertas'] = 'Minhas Ofertas'; }
+  return $out;
+}, 30);
+
+function pd_provider_products(string $slug): array {
+  return $slug ? wc_get_products(['limit' => 100, 'status' => ['publish', 'draft'], 'meta_key' => '_pd_prestador_slug', 'meta_value' => $slug, 'orderby' => 'title', 'order' => 'ASC']) : [];
+}
+
+function pd_service_types(): array {
+  $out = [];
+  foreach (pd_top_categories() as $cat) foreach (get_terms(['taxonomy' => 'product_cat', 'parent' => $cat->term_id, 'hide_empty' => false]) as $t) $out[$t->term_id] = [$t, $cat];
+  return $out;
+}
+
+function pd_product_type_id(WC_Product $p): int {
+  foreach ($p->get_category_ids() as $id) { $t = get_term($id, 'product_cat'); if ($t && $t->parent) return (int) $id; }
+  return 0;
+}
+
+function pd_money(string $raw): ?string {
+  $v = trim($raw);
+  if ($v === '') return null;
+  if (str_contains($v, ',')) $v = str_replace(',', '.', str_replace('.', '', $v));
+  return preg_match('/^\d{1,8}(?:\.\d{1,2})?$/', $v) && (float) $v > 0 ? number_format((float) $v, 2, '.', '') : 'invalido';
+}
+
+function pd_days(string $raw): ?int {
+  $v = trim($raw);
+  if ($v === '') return null;
+  return ctype_digit($v) && (int) $v >= 1 && (int) $v <= 3650 ? (int) $v : -1;
+}
+
+// Mesmas regras de src/modules/offers/validation.ts. Devolve [dados normalizados, erros por campo].
+function pd_validate_offer(array $in, string $slug, int $editingId): array {
+  $e = [];
+  $title = trim(sanitize_text_field($in['titulo'] ?? ''));
+  $desc = trim(sanitize_textarea_field($in['descricao'] ?? ''));
+  $typeId = absint($in['tipo'] ?? 0);
+  $pt = (string) ($in['tipo_preco'] ?? '');
+  $dt = (string) ($in['tipo_prazo'] ?? '');
+  $pmin = pd_money((string) ($in['preco_min'] ?? ''));
+  $pmax = pd_money((string) ($in['preco_max'] ?? ''));
+  $dmin = pd_days((string) ($in['prazo_min'] ?? ''));
+  $dmax = pd_days((string) ($in['prazo_max'] ?? ''));
+  $active = !empty($in['ativa']);
+  if (mb_strlen($title) < 5 || mb_strlen($title) > 120) $e['titulo'] = 'Use de 5 a 120 caracteres.';
+  if (mb_strlen($desc) < 30 || mb_strlen($desc) > 5000) $e['descricao'] = 'Descreva o que está incluído em 30 a 5.000 caracteres.';
+  if (!isset(pd_service_types()[$typeId])) $e['tipo'] = 'Escolha o Tipo de serviço.';
+  if (!isset(PD_PRICE_TYPES[$pt])) $e['tipo_preco'] = 'Escolha o modelo de preço.';
+  if (!isset(PD_DEADLINE_TYPES[$dt])) $e['tipo_prazo'] = 'Escolha o modelo de prazo.';
+  if ($pmin === 'invalido') $e['preco_min'] = 'Informe um valor positivo, como 1500 ou 1.500,00.';
+  if ($pmax === 'invalido') $e['preco_max'] = 'Informe um valor positivo, como 3000 ou 3.000,00.';
+  if ($pt === 'SOB_CONSULTA') { if ($pmin !== null || $pmax !== null) $e['preco_min'] = 'Sob consulta não aceita valores.'; }
+  elseif (isset(PD_PRICE_TYPES[$pt]) && !isset($e['preco_min'])) {
+    if ($pmin === null) $e['preco_min'] = 'Informe o preço mínimo.';
+    if ($pt === 'INTERVALO') { if ($pmax === null) $e['preco_max'] = 'Informe o preço máximo.'; elseif (!isset($e['preco_max']) && $pmin !== null && (float) $pmax < (float) $pmin) $e['preco_max'] = 'O máximo deve ser maior ou igual ao mínimo.'; }
+    elseif ($pmax !== null && !isset($e['preco_max'])) $e['preco_max'] = 'Este modelo não aceita valor máximo.';
+  }
+  if ($dmin === -1) $e['prazo_min'] = 'Use de 1 a 3.650 dias.';
+  if ($dmax === -1) $e['prazo_max'] = 'Use de 1 a 3.650 dias.';
+  if ($dt === 'A_COMBINAR') { if ($dmin !== null || $dmax !== null) $e['prazo_min'] = 'A combinar não aceita quantidade de dias.'; }
+  elseif (isset(PD_DEADLINE_TYPES[$dt]) && !isset($e['prazo_min'])) {
+    if ($dmin === null) $e['prazo_min'] = 'Informe o prazo mínimo.';
+    if ($dt === 'INTERVALO') { if ($dmax === null) $e['prazo_max'] = 'Informe o prazo máximo.'; elseif (!isset($e['prazo_max']) && $dmin !== null && $dmax < $dmin) $e['prazo_max'] = 'O máximo deve ser maior ou igual ao mínimo.'; }
+    elseif ($dmax !== null && !isset($e['prazo_max'])) $e['prazo_max'] = 'Este modelo não aceita prazo máximo.';
+  }
+  if ($active && !isset($e['tipo'])) {
+    foreach (pd_provider_products($slug) as $p) {
+      if ($p->get_id() !== $editingId && $p->get_status() === 'publish' && pd_product_type_id($p) === $typeId) { $e['tipo'] = 'Você já tem uma Oferta ativa deste Tipo de serviço (' . $p->get_name() . '). Pause a outra ou salve esta como pausada.'; break; }
+    }
+  }
+  return [compact('title', 'desc', 'typeId', 'pt', 'dt', 'pmin', 'pmax', 'dmin', 'dmax', 'active'), $e];
+}
+
+function pd_save_offer(array $d, string $slug, ?WC_Product $product): int {
+  $model = pd_provider_products($slug)[0] ?? null; // copia os dados do Prestador de uma Oferta dele
+  $brand = get_term_by('slug', $slug, 'product_brand');
+  [$type, $cat] = pd_service_types()[$d['typeId']];
+  $product = $product ?: new WC_Product_Simple();
+  $product->set_name($d['title']);
+  $product->set_description(wpautop(esc_html($d['desc'])));
+  $product->set_short_description(esc_html($type->name . ' por ' . ($brand ? $brand->name : '') . '.'));
+  $product->set_status($d['active'] ? 'publish' : 'draft');
+  $product->set_virtual(true);
+  $product->set_sold_individually($d['pt'] !== 'POR_HORA');
+  $product->set_regular_price($d['pt'] === 'SOB_CONSULTA' ? '' : (string) $d['pmin']);
+  $product->set_category_ids([$cat->term_id, $type->term_id]);
+  $product->set_reviews_allowed(true);
+  if (!$product->get_image_id() || pd_product_type_id($product) !== $d['typeId']) {
+    $thumb = (int) get_term_meta($type->term_id, 'thumbnail_id', true);
+    if ($thumb && !$product->get_meta('_pd_oferta_id')) $product->set_image_id($thumb);
+  }
+  $meta = ['_pd_tipo_preco' => $d['pt'], '_pd_preco_minimo' => $d['pmin'] ?? '', '_pd_preco_maximo' => $d['pmax'] ?? '', '_pd_tipo_prazo' => $d['dt'], '_pd_prazo_minimo' => $d['dmin'] ?? '', '_pd_prazo_maximo' => $d['dmax'] ?? '', '_pd_prestador_slug' => $slug];
+  if ($model) foreach (['_pd_prestador', '_pd_vip', '_pd_foto', '_pd_local', '_pd_anos'] as $k) if (!$product->get_meta($k)) $meta[$k] = $model->get_meta($k);
+  foreach ($meta as $k => $v) $product->update_meta_data($k, $v);
+  $id = $product->save();
+  if ($brand) wp_set_object_terms($id, [$brand->term_id], 'product_brand');
+  return $id;
+}
+
+// Salvar, pausar e reativar: sessão, nonce e dono conferidos no servidor.
+add_action('template_redirect', function () {
+  if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST' || empty($_POST['pd_oferta_acao'])) return;
+  $slug = pd_user_provider_slug();
+  $list = wc_get_account_endpoint_url('minhas-ofertas');
+  $id = absint($_POST['pd_oferta'] ?? 0);
+  $product = $id ? wc_get_product($id) : null;
+  if (!$slug || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['_pd_nonce'] ?? '')), 'pd_oferta_' . $id) || ($id && (!$product || $product->get_meta('_pd_prestador_slug') !== $slug))) {
+    wc_add_notice('Não foi possível salvar. Recarregue a página e tente de novo.', 'error'); wp_safe_redirect($list); exit;
+  }
+  $action = sanitize_key(wp_unslash($_POST['pd_oferta_acao']));
+  if ($action === 'pausar' && $product) { $product->set_status('draft'); $product->save(); wc_add_notice('Oferta pausada: ela saiu do catálogo e não recebe novas Contratações.', 'success'); wp_safe_redirect($list); exit; }
+  if ($action === 'reativar' && $product) {
+    [, $e] = pd_validate_offer(['titulo' => $product->get_name(), 'descricao' => wp_strip_all_tags($product->get_description()), 'tipo' => pd_product_type_id($product), 'tipo_preco' => $product->get_meta('_pd_tipo_preco'), 'tipo_prazo' => $product->get_meta('_pd_tipo_prazo'), 'preco_min' => (string) $product->get_meta('_pd_preco_minimo'), 'preco_max' => (string) $product->get_meta('_pd_preco_maximo'), 'prazo_min' => (string) $product->get_meta('_pd_prazo_minimo'), 'prazo_max' => (string) $product->get_meta('_pd_prazo_maximo'), 'ativa' => 1], $slug, $product->get_id());
+    if ($e) { wc_add_notice(implode(' ', $e), 'error'); } else { $product->set_status('publish'); $product->save(); wc_add_notice('Oferta reativada: ela voltou ao catálogo.', 'success'); }
+    wp_safe_redirect($list); exit;
+  }
+  if ($action === 'salvar') {
+    $in = wp_unslash($_POST);
+    [$d, $e] = pd_validate_offer($in, $slug, $id);
+    if ($e) { $GLOBALS['pd_offer_errors'] = $e; $GLOBALS['pd_offer_input'] = $in; wc_add_notice('Revise os campos marcados.', 'error'); return; }
+    $saved = pd_save_offer($d, $slug, $product);
+    wc_add_notice($d['active'] ? 'Oferta publicada. <a href="' . esc_url(get_permalink($saved)) . '">Ver como o Cliente vê</a>' : 'Oferta salva como pausada: ela só aparece no catálogo quando você reativar.', 'success');
+    wp_safe_redirect($list); exit;
+  }
+});
+
+add_action('woocommerce_account_minhas-ofertas_endpoint', function () {
+  $slug = pd_user_provider_slug();
+  if (!$slug) { echo '<p>Esta área é dos Prestadores da loja.</p>'; return; }
+  $editing = isset($_GET['editar']) ? absint($_GET['editar']) : null;
+  $new = isset($_GET['nova']) || isset($GLOBALS['pd_offer_errors']) && !absint($_POST['pd_oferta'] ?? 0);
+  if ($editing || $new || isset($GLOBALS['pd_offer_errors'])) { pd_offer_form($slug, $editing ?: absint($_POST['pd_oferta'] ?? 0)); return; }
+  echo '<div class="pd-offers-head"><p>Estas são as suas Ofertas na loja. Seu Perfil, contatos e Selo de confiança ficam no <a href="' . esc_url(PROPOSTADEV_SITE . '/painel') . '">painel do Proposta.dev</a>.</p><a class="pd-btn pd-btn-primary" href="' . esc_url(add_query_arg('nova', '1', wc_get_account_endpoint_url('minhas-ofertas'))) . '">Nova Oferta</a></div>';
+  $products = pd_provider_products($slug);
+  if (!$products) { echo '<div class="pd-empty"><h2>Nenhuma Oferta ainda</h2><p>Crie a primeira: Clientes contratam pelo preço e prazo que você definir.</p></div>'; return; }
+  echo '<ul class="pd-received">';
+  foreach ($products as $p) {
+    $live = $p->get_status() === 'publish';
+    $type = get_term(pd_product_type_id($p), 'product_cat');
+    echo '<li class="pd-received-item"><div class="pd-received-head"><span class="pd-received-id">' . esc_html($type && !is_wp_error($type) ? $type->name : '') . '</span><span class="pd-status-label ' . ($live ? 'pd-status-confirmada' : '') . '">' . ($live ? 'Ativa' : 'Pausada') . '</span></div>';
+    echo '<h3>' . esc_html($p->get_name()) . '</h3><p class="pd-received-meta">' . wp_kses_post($p->get_price_html()) . ' · ' . esc_html(pd_prazo($p)) . ' · ' . sprintf(_n('%d Avaliação', '%d Avaliações', $p->get_review_count()), $p->get_review_count()) . '</p>';
+    echo '<form method="post" class="pd-received-actions"><input type="hidden" name="pd_oferta" value="' . (int) $p->get_id() . '"><input type="hidden" name="_pd_nonce" value="' . esc_attr(wp_create_nonce('pd_oferta_' . $p->get_id())) . '">';
+    echo '<a class="pd-btn pd-btn-primary" href="' . esc_url(add_query_arg('editar', $p->get_id(), wc_get_account_endpoint_url('minhas-ofertas'))) . '">Editar</a>';
+    echo $live ? '<button class="pd-btn pd-btn-ghost" name="pd_oferta_acao" value="pausar" onclick="return confirm(\'Pausar esta Oferta? Ela sai do catálogo até você reativar.\')">Pausar</button><a class="pd-link" href="' . esc_url(get_permalink($p->get_id())) . '">Ver no catálogo' . pd_icon('arrow') . '</a>' : '<button class="pd-btn pd-btn-ghost" name="pd_oferta_acao" value="reativar">Reativar</button>';
+    echo '</form></li>';
+  }
+  echo '</ul>';
+});
+
+function pd_offer_form(string $slug, int $id): void {
+  $p = $id ? wc_get_product($id) : null;
+  if ($p && $p->get_meta('_pd_prestador_slug') !== $slug) { echo '<p>Esta Oferta não é sua.</p>'; return; }
+  $in = $GLOBALS['pd_offer_input'] ?? ($p ? ['titulo' => $p->get_name(), 'descricao' => wp_strip_all_tags($p->get_description()), 'tipo' => pd_product_type_id($p), 'tipo_preco' => $p->get_meta('_pd_tipo_preco'), 'tipo_prazo' => $p->get_meta('_pd_tipo_prazo'), 'preco_min' => (string) $p->get_meta('_pd_preco_minimo'), 'preco_max' => (string) $p->get_meta('_pd_preco_maximo'), 'prazo_min' => (string) $p->get_meta('_pd_prazo_minimo'), 'prazo_max' => (string) $p->get_meta('_pd_prazo_maximo'), 'ativa' => $p->get_status() === 'publish'] : ['tipo_preco' => 'FIXO', 'tipo_prazo' => 'FIXO', 'ativa' => 1]);
+  $e = $GLOBALS['pd_offer_errors'] ?? [];
+  $err = fn ($k) => isset($e[$k]) ? '<span class="pd-field-error" id="erro-' . $k . '">' . esc_html($e[$k]) . '</span>' : '';
+  $attrs = fn ($k) => isset($e[$k]) ? ' aria-invalid="true" aria-describedby="erro-' . $k . '"' : '';
+  $v = fn ($k) => esc_attr((string) ($in[$k] ?? ''));
+  echo '<p><a class="pd-link" href="' . esc_url(wc_get_account_endpoint_url('minhas-ofertas')) . '">← Voltar para Minhas Ofertas</a></p>';
+  echo '<form method="post" class="pd-offer-form" novalidate><h2>' . ($p ? 'Editar Oferta' : 'Nova Oferta') . '</h2>';
+  echo '<input type="hidden" name="pd_oferta" value="' . (int) $id . '"><input type="hidden" name="_pd_nonce" value="' . esc_attr(wp_create_nonce('pd_oferta_' . $id)) . '"><input type="hidden" name="pd_oferta_acao" value="salvar">';
+  echo '<p class="form-row"><label for="pd-titulo">Título</label><input id="pd-titulo" name="titulo" maxlength="120" value="' . $v('titulo') . '"' . $attrs('titulo') . '>' . $err('titulo') . '</p>';
+  echo '<p class="form-row"><label for="pd-tipo">Tipo de serviço</label><select id="pd-tipo" name="tipo"' . $attrs('tipo') . '><option value="">Escolha</option>';
+  foreach (pd_service_types() as $tid => [$t, $c]) echo '<option value="' . (int) $tid . '"' . selected((int) ($in['tipo'] ?? 0), $tid, false) . '>' . esc_html($c->name . ' · ' . $t->name) . '</option>';
+  echo '</select>' . $err('tipo') . '</p>';
+  echo '<p class="form-row"><label for="pd-descricao">O que está incluído</label><textarea id="pd-descricao" name="descricao" rows="5" maxlength="5000"' . $attrs('descricao') . '>' . esc_textarea((string) ($in['descricao'] ?? '')) . '</textarea>' . $err('descricao') . '</p>';
+  echo '<fieldset class="pd-fieldset"><legend>Preço</legend><p class="form-row"><label for="pd-tipo-preco">Modelo</label><select id="pd-tipo-preco" name="tipo_preco">';
+  foreach (PD_PRICE_TYPES as $k => $l) echo '<option value="' . $k . '"' . selected($in['tipo_preco'] ?? '', $k, false) . '>' . esc_html($l) . '</option>';
+  echo '</select></p><div class="pd-pair"><p class="form-row"><label for="pd-preco-min">Valor (mínimo) em R$</label><input id="pd-preco-min" name="preco_min" inputmode="decimal" placeholder="1.500,00" value="' . $v('preco_min') . '"' . $attrs('preco_min') . '>' . $err('preco_min') . '</p>';
+  echo '<p class="form-row"><label for="pd-preco-max">Valor máximo em R$ (só intervalo)</label><input id="pd-preco-max" name="preco_max" inputmode="decimal" placeholder="3.000,00" value="' . $v('preco_max') . '"' . $attrs('preco_max') . '>' . $err('preco_max') . '</p></div>';
+  echo '<small class="pd-note">Por hora é R$/hora; os demais modelos são R$ por projeto. Sob consulta não leva valores.</small></fieldset>';
+  echo '<fieldset class="pd-fieldset"><legend>Prazo</legend><p class="form-row"><label for="pd-tipo-prazo">Modelo</label><select id="pd-tipo-prazo" name="tipo_prazo">';
+  foreach (PD_DEADLINE_TYPES as $k => $l) echo '<option value="' . $k . '"' . selected($in['tipo_prazo'] ?? '', $k, false) . '>' . esc_html($l) . '</option>';
+  echo '</select></p><div class="pd-pair"><p class="form-row"><label for="pd-prazo-min">Dias (mínimo)</label><input id="pd-prazo-min" name="prazo_min" inputmode="numeric" value="' . $v('prazo_min') . '"' . $attrs('prazo_min') . '>' . $err('prazo_min') . '</p>';
+  echo '<p class="form-row"><label for="pd-prazo-max">Dias máximo (só intervalo)</label><input id="pd-prazo-max" name="prazo_max" inputmode="numeric" value="' . $v('prazo_max') . '"' . $attrs('prazo_max') . '>' . $err('prazo_max') . '</p></div>';
+  echo '<small class="pd-note">A combinar não leva dias.</small></fieldset>';
+  echo '<p class="form-row pd-check"><label><input type="checkbox" name="ativa" value="1"' . checked(!empty($in['ativa']), true, false) . '> Publicar no catálogo (só uma Oferta ativa por Tipo de serviço)</label></p>';
+  echo '<p class="pd-actions"><button class="pd-btn pd-btn-primary" type="submit">' . ($p ? 'Salvar alterações' : 'Criar Oferta') . '</button><a class="pd-btn pd-btn-ghost" href="' . esc_url(wc_get_account_endpoint_url('minhas-ofertas')) . '">Cancelar</a></p></form>';
+}

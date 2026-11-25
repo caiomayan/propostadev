@@ -39,6 +39,9 @@ if (getenv('PD_RESET') === '1') {
   delete_metadata('user', 0, '_woocommerce_persistent_cart_' . get_current_blog_id(), '', true);
   global $wpdb;
   $wpdb->query("DELETE FROM {$wpdb->prefix}woocommerce_sessions");
+  // Ofertas criadas na loja saem; as importadas voltam ao estado do catálogo (preço, prazo, texto e publicação).
+  foreach (wc_get_products(['limit' => -1, 'status' => ['publish', 'draft', 'private', 'pending'], 'return' => 'ids']) as $pid) if (!get_post_meta($pid, '_pd_oferta_id', true)) wp_delete_post($pid, true);
+  WP_CLI::runcommand('eval-file /seed/importar.php', ['launch' => false]);
   WP_CLI::log(sprintf('Reset: Contratações e carrinhos apagados e %d Avaliação(ões) feitas na loja removidas.', count($own)));
 }
 

@@ -22,6 +22,8 @@ O site (Next.js) é a versão própria da plataforma. A disciplina pede também 
    - Contratação tem os status do domínio: Aguardando o Prestador → Escopo confirmado → Concluída, ou Recusada pelo Prestador. Só "Concluída" conta como paga.
    - Uma Contratação é com um Prestador por vez (o carrinho recusa misturar), como a Proposta no site.
    - Cada Prestador da demo tem conta (papel `prestador`, mesma senha das contas demo do site) e vê só as Contratações das suas Ofertas em "Contratações recebidas", onde confirma, recusa ou conclui. O servidor confere sessão, nonce, dono e transição permitida.
+   - Em "Minhas Ofertas" o Prestador cria, edita, pausa e reativa as próprias Ofertas, com as mesmas regras do formulário do site (`src/modules/offers/validation.ts`) e uma Oferta ativa por Tipo de serviço, validadas no servidor. Alternativa descartada: plugin de marketplace (Dokan, WCFM), que traz o modelo de vendedor de produto físico (estoque, frete, repasse, comissão) e não o de Oferta de serviço.
+   - O cadastro de Prestador (Perfil, PF/PJ, contatos, Selo de confiança) fica só na plataforma: a loja é um canal de venda das Ofertas e não mantém um segundo cadastro do mesmo Prestador. A tela de login da loja manda quem quer oferecer serviços para o cadastro no Proposta.dev.
    - Cliente cria conta na loja ou na Contratação e acompanha status e respostas em "Minhas Contratações".
    - Só quem teve a Contratação concluída avalia; a Avaliação sai com o selo "Contratação verificada" e é publicada direto.
    - Sem e-mail: os avisos ficam na conta (os endereços da demo não entregam). Por isso a loja não oferece recuperação de senha nem verificação de e-mail.
