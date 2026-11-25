@@ -4,9 +4,10 @@ import type { ExternalPrice } from "@/modules/external-prices/queries";
 const dateLabel = (date: Date) => new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "America/Sao_Paulo" }).format(date);
 
 /** Preço de mercado externo: uma linha por fonte, separado do Preço de referência (que nunca o inclui). */
-export function ExternalPrices({ prices, serviceName, headingId = "preco-externo" }: { prices: ExternalPrice[]; serviceName: string; headingId?: string }) {
+export function ExternalPrices({ prices, serviceName, headingId = "preco-externo", level = 3 }: { prices: ExternalPrice[]; serviceName: string; headingId?: string; level?: 2 | 3 }) {
+  const Heading = level === 2 ? "h2" : "h3";
   return <section className="external-prices stack" aria-labelledby={headingId}>
-    <div><p className="eyebrow">Preço de mercado externo</p><h3 id={headingId}>Quanto cobram fora da plataforma: {serviceName}</h3></div>
+    <div><p className="eyebrow">Preço de mercado externo</p><Heading id={headingId}>Quanto cobram fora da plataforma: {serviceName}</Heading></div>
     {prices.length ? <>
       <ul className="external-price-list">{prices.map((price) => <li key={price.sourceUrl}>
         <strong>{money(price.min)} – {money(price.max)}</strong>

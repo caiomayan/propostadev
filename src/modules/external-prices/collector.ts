@@ -25,7 +25,7 @@ export function validateExtraction(raw: ExtractedPrice): Validation {
 
 export type CollectionOutcome = { serviceSlug: string; source: string; url: string; status: "OK" | "FALHA"; error?: string };
 
-const describe = (error: unknown) => (error instanceof Error ? error.message : "Erro desconhecido").slice(0, 300);
+const errorMessage = (error: unknown) => (error instanceof Error ? error.message : "Erro desconhecido").slice(0, 300);
 
 /**
  * Coleta todas as fontes em paralelo. Cada fonte grava uma linha nova (OK ou FALHA) e a falha de uma não afeta as outras.
@@ -40,11 +40,11 @@ export async function collectExternalPrices(extractor: PriceExtractor, sources: 
     if (!serviceTypeId) return { ...base, status: "FALHA", error: "Tipo de serviço não existe no catálogo" };
     let result: Validation;
     try { result = validateExtraction(await extractor.extract({ url: source.url, serviceDescription: source.serviceDescription })); }
-    catch (error) { result = { ok: false, reason: describe(error) }; }
+    catch (error) { result = { ok: false, reason: errorMessage(error) }; }
     try {
-      if (result.ok) await db.insert(externalPrices).values({ serviceTypeId, sourceName: source.name, sourceUrl: source.url, minPrice: result.price.min, maxPrice: result.price.max, excerpt: result.price.excerpt, status: "OK" });
-      else await db.insert(externalPrices).values({ serviceTypeId, sourceName: source.name, sourceUrl: source.url, status: "FALHA", error: result.reason });
-    } catch (error) { return { ...base, status: "FALHA", error: describe(error) }; }
+      const row = { serviceTypeId, sourceName: source.name, sourceUrl: source.url };
+      await db.insert(externalPrices).values(result.ok ? { ...row, minPrice: result.price.min, maxPrice: result.price.max, excerpt: result.price.excerpt, status: "OK" } : { ...row, status: "FALHA", error: result.reason });
+    } catch (error) { return { ...base, status: "FALHA", error: errorMessage(error) }; }
     return result.ok ? { ...base, status: "OK" } : { ...base, status: "FALHA", error: result.reason };
   }));
 }

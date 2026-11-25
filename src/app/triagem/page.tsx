@@ -110,7 +110,7 @@ async function ResultStep({ serviceType, draft, goalSlug, ordem }: { serviceType
       </> : <div className="insufficient"><strong>Dados insuficientes</strong><p>Só {reference.n} {reference.n === 1 ? "prestador anuncia" : "prestadores anunciam"} preço por projeto neste tipo de serviço. Precisamos de pelo menos 3 para mostrar uma média ou faixa sem enganar. Você ainda pode publicar o projeto e receber propostas.</p></div>}
     </section>
 
-    <ExternalPrices prices={external} serviceName={serviceType.name} headingId="preco-externo"/>
+    <ExternalPrices prices={external} serviceName={serviceType.name} headingId="preco-externo" level={2}/>
 
     <section className="stack" aria-labelledby="compativeis">
       <div><p className="eyebrow">Prestadores compatíveis</p><h2 id="compativeis">{providers.length ? `${providers.length} ${providers.length === 1 ? "prestador oferece" : "prestadores oferecem"} ${serviceType.name}` : "Ainda não há prestadores neste tipo"}</h2><p className="muted">{isDefault ? "Ordenados por orçamento, prazo, avaliações verificadas e nota. " : ""}Cada card mostra o motivo.</p></div>
