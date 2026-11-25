@@ -55,7 +55,9 @@ function pd_avatar(WC_Product $product, string $class = 'pd-avatar'): string {
 }
 
 function pd_profile_url(WC_Product $product): string {
-  return PROPOSTADEV_SITE . '/prestadores/' . rawurlencode((string) $product->get_meta('_pd_prestador_slug'));
+  $slug = (string) $product->get_meta('_pd_prestador_slug');
+  if (function_exists('pd_is_store_provider') && pd_is_store_provider($slug)) { $link = get_term_link($slug, 'product_brand'); if (!is_wp_error($link)) return $link; }
+  return PROPOSTADEV_SITE . '/prestadores/' . rawurlencode($slug);
 }
 
 function pd_prazo(WC_Product $product): string {
@@ -360,9 +362,10 @@ add_action('woocommerce_before_main_content', function () {
   if ($term && $term->taxonomy === 'product_brand') {
     $foto = get_term_meta($term->term_id, 'pd_foto', true);
     $slug = get_term_meta($term->term_id, 'pd_slug', true);
-    echo '<div class="pd-brand-head">' . ($foto ? '<img class="pd-avatar pd-avatar-xl" src="' . esc_url($foto) . '" alt="" width="96" height="96">' : '') . '<div><h1>' . esc_html($term->name) . '</h1>';
+    echo '<div class="pd-brand-head">' . ($foto ? '<img class="pd-avatar pd-avatar-xl" src="' . esc_url($foto) . '" alt="" width="96" height="96">' : '<span class="pd-avatar pd-avatar-xl pd-avatar-initial" aria-hidden="true">' . esc_html(mb_strtoupper(mb_substr($term->name, 0, 1))) . '</span>') . '<div><h1>' . esc_html($term->name) . '</h1>';
     if ($term->description) echo '<p>' . esc_html($term->description) . '</p>';
-    if ($slug) echo '<a class="pd-link" href="' . esc_url(PROPOSTADEV_SITE . '/prestadores/' . rawurlencode($slug)) . '" target="_blank" rel="noopener">Ver Perfil completo no Proposta.dev' . pd_icon('external') . '</a>';
+    if (get_term_meta($term->term_id, 'pd_loja', true) === '1') { $facts = array_filter([get_term_meta($term->term_id, 'pd_local', true), ($y = (int) get_term_meta($term->term_id, 'pd_anos', true)) ? $y . ' anos de experiência' : '', 'Prestador da loja']); echo '<p class="pd-note">' . esc_html(implode(' · ', $facts)) . '</p>'; }
+    elseif ($slug) echo '<a class="pd-link" href="' . esc_url(PROPOSTADEV_SITE . '/prestadores/' . rawurlencode($slug)) . '" target="_blank" rel="noopener">Ver Perfil completo no Proposta.dev' . pd_icon('external') . '</a>';
     echo '</div></div>';
   } else {
     $title = is_search() ? sprintf('Resultados para “%s”', get_search_query()) : ($term ? $term->name : 'Todos os serviços');
@@ -455,7 +458,8 @@ function pd_footer(): void {
   foreach (pd_top_categories() as $cat) echo '<li><a href="' . esc_url(get_term_link($cat)) . '">' . esc_html($cat->name) . '</a></li>';
   echo '<li><a href="' . esc_url(wc_get_cart_url()) . '">Carrinho</a></li><li><a href="' . esc_url(wc_get_page_permalink('myaccount')) . '">Minha conta</a></li></ul></nav>';
   echo '<nav aria-label="Plataforma"><h2>Plataforma</h2><ul>';
-  foreach (['/triagem' => 'Começar a Triagem', '/buscar' => 'Buscar desenvolvedores', '/cadastro' => 'Oferecer serviços', '/' => 'Ir para o Proposta.dev'] as $path => $label) echo '<li><a href="' . esc_url(PROPOSTADEV_SITE . $path) . '">' . esc_html($label) . '</a></li>';
+  echo '<li><a href="' . esc_url(home_url('/quero-oferecer-servicos/')) . '">Oferecer serviços na loja</a></li>';
+  foreach (['/triagem' => 'Começar a Triagem', '/buscar' => 'Buscar desenvolvedores', '/' => 'Ir para o Proposta.dev'] as $path => $label) echo '<li><a href="' . esc_url(PROPOSTADEV_SITE . $path) . '">' . esc_html($label) . '</a></li>';
   echo '</ul></nav></div>';
   echo '<p class="pd-footer-legal">© ' . esc_html(date('Y')) . ' Proposta.dev. Nenhum pagamento é processado nesta loja: o valor é combinado diretamente entre Cliente e Prestador.<br><span class="pd-demo">Projeto acadêmico em demonstração: Prestadores, Ofertas e Avaliações exibidos são fictícios.</span></p>';
   echo '<p class="pd-footer-giant" aria-hidden="true">Proposta.dev</p>';

@@ -53,7 +53,8 @@ Endereço: https://propostadev.caiomayan.com (ADR 0006). Mesma identidade do sit
 5. **Regras de negócio** (o **Entrar** fica no cabeçalho; senha das contas demo):
    - Entre como **cliente1@demo.example** (Mariana Costa) → **Minhas Contratações**: uma *Aguardando o Prestador* (Bruno Cavalcanti) e uma *Concluída* (Aurora Web Studio), com as respostas do Prestador.
    - Saia e entre como **prestador2@demo.example** (Bruno) → **Contratações recebidas**: a Contratação da Mariana com a descrição do Projeto. **Confirmar escopo** e depois **Marcar como concluída**. Outro Prestador não vê essa Contratação, e Prestador não entra no `/wp-admin`.
-   - Ainda como Bruno, abra **Minhas Ofertas**: ele edita, pausa e cria Ofertas com as mesmas regras do site. Tente criar outra Landing Page ativa: a loja recusa (uma Oferta ativa por Tipo de serviço, como no site).
+   - (Opcional) Saia e abra **Quero oferecer serviços** no rodapé: o cadastro de Prestador cria a conta e leva direto a Minhas Ofertas.
+   - Como Bruno, abra **Minhas Ofertas**: ele edita, pausa e cria Ofertas com as mesmas regras do site. Tente criar outra Landing Page ativa: a loja recusa (uma Oferta ativa por Tipo de serviço, como no site).
    - Volte como Mariana e abra a Oferta do Bruno → aba **Avaliações**: agora o formulário aparece; a Avaliação sai com o selo **Contratação verificada**. Quem não contratou vê o aviso de que só quem teve a Contratação concluída avalia.
    - Tente pôr no carrinho Ofertas de dois Prestadores: a loja recusa (uma Contratação é com um Prestador por vez, como a Proposta no site).
 6. Mostre também uma Oferta **sob consulta** (Site institucional sob medida, Maré Sistemas): não vai para o carrinho, o botão pede orçamento no site.
@@ -64,6 +65,7 @@ Depois do ensaio, volte a loja ao ponto de partida com o reset de `ecommerce/REA
 ## Perguntas prováveis
 - *O VIP é pago?* Nesta versão não: só registra interesse. Cobrança exige decisões de produto e jurídicas próprias.
 - *Por que não misturar o preço externo na média?* Porque o Preço de referência promete mostrar o mercado da plataforma, com o tamanho da amostra; misturar esconderia a origem do número.
-- *E o cadastro de Prestador na loja?* O Prestador opera a venda na loja (Minhas Ofertas e Contratações recebidas), mas se cadastra uma vez só, na plataforma: Perfil, PF/PJ, contatos e Selo de confiança são o que a plataforma própria faz. A loja é um canal de venda das Ofertas; dois cadastros do mesmo Prestador ficariam divergentes. Um plugin de marketplace (Dokan, WCFM) traria o modelo de vendedor de produto físico (estoque, frete, comissão), que não é o nosso.
+- *E o cadastro de Prestador na loja?* Existe: **Quero oferecer serviços** (rodapé e tela de login) cria a conta de Prestador com as mesmas regras do Perfil do site e leva a Minhas Ofertas. O Perfil completo, o Selo de confiança e a Triagem ficam na plataforma própria, que é o diferencial dela.
+- *O banco é compartilhado?* Não. A loja tem banco próprio (MariaDB do WordPress) e o site tem o Postgres. O catálogo da loja é uma cópia da demo do site, refeita a cada reset. É a separação típica de uma loja pronta como canal de venda; integrar os dois pela API do site é o próximo passo.
 - *Por que WooCommerce?* É gratuito, é a plataforma de e-commerce mais usada e é configurável por linha de comando, então a loja inteira se recria a partir do repositório. Shopify e Nuvemshop exigem conta, e o Shopify cobra depois do teste.
 - *E se uma fonte mudar ou sair do ar?* A coleta grava FALHA e a tela continua mostrando o último valor válido, com a data.

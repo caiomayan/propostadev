@@ -24,10 +24,10 @@ function pd_demo_user(string $email, string $name, string $role, string $passwor
 // Prestadores: uma conta por Prestador da demo, ligada à marca dele.
 $providers = [];
 foreach ($data['ofertas'] as $o) $providers[$o['prestador_email']] = $o;
-foreach ($providers as $email => $o) pd_demo_user($email, $o['prestador'], 'prestador', $password, ['pd_prestador_slug' => $o['prestador_slug']]);
+foreach ($providers as $email => $o) pd_demo_user($email, $o['prestador'], 'prestador', $password, ['pd_prestador_slug' => $o['prestador_slug'], 'pd_demo' => '1']);
 
 // Cliente da demo (o mesmo nome do site).
-$clientId = pd_demo_user('cliente1@demo.example', 'Mariana Costa', 'customer', $password, [
+$clientId = pd_demo_user('cliente1@demo.example', 'Mariana Costa', 'customer', $password, ['pd_demo' => '1',
   'billing_first_name' => 'Mariana', 'billing_last_name' => 'Costa', 'billing_email' => 'cliente1@demo.example', 'billing_country' => 'BR',
   'billing_state' => 'SP', 'billing_city' => 'São Paulo', 'billing_address_1' => 'Rua Augusta, 1200', 'billing_postcode' => '01304-001',
 ]);
@@ -42,6 +42,10 @@ if (getenv('PD_RESET') === '1') {
   // Ofertas criadas na loja saem; as importadas voltam ao estado do catálogo (preço, prazo, texto e publicação).
   foreach (wc_get_products(['limit' => -1, 'status' => ['publish', 'draft', 'private', 'pending'], 'return' => 'ids']) as $pid) if (!get_post_meta($pid, '_pd_oferta_id', true)) wp_delete_post($pid, true);
   WP_CLI::runcommand('eval-file /seed/importar.php', ['launch' => false]);
+  // Contas e Prestadores criados no ensaio saem (as contas da demo e a da Equipe ficam).
+  require_once ABSPATH . 'wp-admin/includes/user.php';
+  foreach (get_users(['role__in' => ['prestador', 'customer'], 'fields' => 'ID']) as $uid) if (!get_user_meta($uid, 'pd_demo', true)) wp_delete_user((int) $uid);
+  foreach (get_terms(['taxonomy' => 'product_brand', 'hide_empty' => false, 'meta_key' => 'pd_loja', 'meta_value' => '1']) as $t) wp_delete_term($t->term_id, 'product_brand');
   WP_CLI::log(sprintf('Reset: Contratações e carrinhos apagados e %d Avaliação(ões) feitas na loja removidas.', count($own)));
 }
 

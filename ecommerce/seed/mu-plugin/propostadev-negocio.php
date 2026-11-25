@@ -160,7 +160,7 @@ function pd_status_box($order): void {
     $product = $item->get_product();
     if (!$product) continue;
     if ($order->get_status() === 'completed') $links[] = '<a class="pd-btn pd-btn-primary" href="' . esc_url(get_permalink($item->get_product_id()) . '#tab-reviews') . '">Avaliar a Oferta</a>';
-    if ($product->get_meta('_pd_prestador_slug')) $links[] = '<a class="pd-btn pd-btn-ghost" href="' . esc_url(PROPOSTADEV_SITE . '/prestadores/' . rawurlencode((string) $product->get_meta('_pd_prestador_slug'))) . '" target="_blank" rel="noopener">Ver perfil e contato do Prestador</a>';
+    if ($product->get_meta('_pd_prestador_slug')) $links[] = '<a class="pd-btn pd-btn-ghost" href="' . esc_url(pd_profile_url($product)) . '">Ver perfil e contato do Prestador</a>';
     break;
   }
   if ($links) echo '<p class="pd-actions">' . implode('', $links) . '</p>';
@@ -308,7 +308,7 @@ add_action('woocommerce_login_form_end', function () {
   echo '<p class="pd-note">Esqueceu a senha? Esta loja de demonstração não envia e-mail; fale com a Equipe da plataforma.</p>';
 });
 add_action('woocommerce_before_customer_login_form', function () {
-  echo '<p class="pd-login-lead">Entre para acompanhar suas Contratações. Ainda não tem conta? Crie ao lado: leva menos de um minuto. Quer oferecer serviços? <a href="https://propostadev-one.vercel.app/cadastro">Cadastre-se como Prestador no Proposta.dev</a>.</p>';
+  echo '<p class="pd-login-lead">Entre para acompanhar suas Contratações. Ainda não tem conta? Crie ao lado: leva menos de um minuto. Quer oferecer serviços? <a href="' . esc_url(pd_signup_url()) . '">Crie uma conta de Prestador</a>.</p>';
 });
 add_filter('the_title', function ($title, $id = 0) {
   if (!is_user_logged_in() && function_exists('is_account_page') && is_account_page() && (int) $id === (int) wc_get_page_id('myaccount') && in_the_loop()) return 'Entrar ou criar conta';
@@ -478,6 +478,7 @@ function pd_save_offer(array $d, string $slug, ?WC_Product $product): int {
   }
   $meta = ['_pd_tipo_preco' => $d['pt'], '_pd_preco_minimo' => $d['pmin'] ?? '', '_pd_preco_maximo' => $d['pmax'] ?? '', '_pd_tipo_prazo' => $d['dt'], '_pd_prazo_minimo' => $d['dmin'] ?? '', '_pd_prazo_maximo' => $d['dmax'] ?? '', '_pd_prestador_slug' => $slug];
   if ($model) foreach (['_pd_prestador', '_pd_vip', '_pd_foto', '_pd_local', '_pd_anos'] as $k) if (!$product->get_meta($k)) $meta[$k] = $model->get_meta($k);
+  if (!$model && $brand) $meta += ['_pd_prestador' => $brand->name, '_pd_vip' => 'nao', '_pd_foto' => (string) get_term_meta($brand->term_id, 'pd_foto', true), '_pd_local' => (string) get_term_meta($brand->term_id, 'pd_local', true), '_pd_anos' => (string) get_term_meta($brand->term_id, 'pd_anos', true)];
   foreach ($meta as $k => $v) $product->update_meta_data($k, $v);
   $id = $product->save();
   if ($brand) wp_set_object_terms($id, [$brand->term_id], 'product_brand');
@@ -563,3 +564,87 @@ function pd_offer_form(string $slug, int $id): void {
   echo '<p class="form-row pd-check"><label><input type="checkbox" name="ativa" value="1"' . checked(!empty($in['ativa']), true, false) . '> Publicar no catálogo (só uma Oferta ativa por Tipo de serviço)</label></p>';
   echo '<p class="pd-actions"><button class="pd-btn pd-btn-primary" type="submit">' . ($p ? 'Salvar alterações' : 'Criar Oferta') . '</button><a class="pd-btn pd-btn-ghost" href="' . esc_url(wc_get_account_endpoint_url('minhas-ofertas')) . '">Cancelar</a></p></form>';
 }
+
+/* ---------------------------------------------------------------- Cadastro de Prestador na loja
+ * Página "Quero oferecer serviços" ([pd_cadastro_prestador]). Mesmas regras do Perfil do site (src/modules/providers/validation.ts):
+ * nome 2–100, PF/PJ, descrição 30–5000, experiência 0–80 anos, cidade até 100, UF de 2 letras, autorização para publicar o contato;
+ * senha com 12+ caracteres (como o login do site). Cria a conta de Prestador e a marca dele, entra e leva a "Minhas Ofertas".
+ * O Perfil completo, o Selo de confiança e a Triagem continuam na plataforma (ADR 0006). */
+
+const PD_UFS = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
+
+function pd_signup_url(): string { return home_url('/quero-oferecer-servicos/'); }
+
+// Prestador criado na loja não tem Perfil no site: os links de Perfil levam à página dele na loja.
+function pd_is_store_provider(string $slug): bool {
+  $brand = get_term_by('slug', $slug, 'product_brand');
+  return $brand && get_term_meta($brand->term_id, 'pd_loja', true) === '1';
+}
+
+add_action('template_redirect', function () {
+  if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST' || empty($_POST['pd_cadastro_prestador'])) return;
+  if (!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['_pd_nonce'] ?? '')), 'pd_cadastro_prestador')) { wc_add_notice('O formulário expirou. Envie de novo.', 'error'); return; }
+  if (is_user_logged_in()) { wc_add_notice('Saia da conta atual para criar uma conta de Prestador.', 'error'); return; }
+  $in = wp_unslash($_POST);
+  $name = trim(sanitize_text_field($in['nome'] ?? ''));
+  $type = in_array($in['tipo'] ?? '', ['PESSOA_FISICA', 'PESSOA_JURIDICA'], true) ? $in['tipo'] : '';
+  $desc = trim(sanitize_textarea_field($in['descricao'] ?? ''));
+  $years = trim((string) ($in['anos'] ?? ''));
+  $city = trim(sanitize_text_field($in['cidade'] ?? ''));
+  $uf = strtoupper(trim(sanitize_text_field($in['uf'] ?? '')));
+  $email = strtolower(trim(sanitize_email($in['email'] ?? '')));
+  $pass = (string) ($in['senha'] ?? '');
+  $e = [];
+  if (mb_strlen($name) < 2 || mb_strlen($name) > 100) $e['nome'] = 'Use de 2 a 100 caracteres.';
+  if (!$type) $e['tipo'] = 'Escolha pessoa física ou jurídica.';
+  if (mb_strlen($desc) < 30 || mb_strlen($desc) > 5000) $e['descricao'] = 'Conte o que você faz em 30 a 5.000 caracteres.';
+  if (!ctype_digit($years) || (int) $years > 80) $e['anos'] = 'Informe de 0 a 80 anos.';
+  if (mb_strlen($city) > 100) $e['cidade'] = 'Use até 100 caracteres.';
+  if ($uf !== '' && !in_array($uf, PD_UFS, true)) $e['uf'] = 'Escolha a UF.';
+  if (!is_email($email)) $e['email'] = 'Informe um e-mail válido.';
+  elseif (email_exists($email)) $e['email'] = 'Já existe uma conta com este e-mail. Entre por ela ou use outro e-mail.';
+  if (mb_strlen($pass) < 12 || mb_strlen($pass) > 128) $e['senha'] = 'Use de 12 a 128 caracteres.';
+  if (empty($in['consentimento'])) $e['consentimento'] = 'Autorize a publicação do contato para receber Contratações.';
+  if ($e) { $GLOBALS['pd_signup_errors'] = $e; $GLOBALS['pd_signup_input'] = $in; wc_add_notice('Revise os campos marcados.', 'error'); return; }
+
+  $slug = sanitize_title($name) . '-' . substr(bin2hex(random_bytes(4)), 0, 8);
+  $userId = wp_insert_user(['user_login' => $email, 'user_email' => $email, 'user_pass' => $pass, 'display_name' => $name, 'first_name' => strtok($name, ' '), 'role' => 'prestador']);
+  if (is_wp_error($userId)) { wc_add_notice('Não foi possível criar a conta. Tente de novo.', 'error'); return; }
+  $term = wp_insert_term($name, 'product_brand', ['slug' => $slug, 'description' => $desc]);
+  if (is_wp_error($term)) { wp_delete_user($userId); wc_add_notice('Não foi possível criar o Perfil na loja. Tente de novo.', 'error'); return; }
+  $local = trim($city . ($uf ? '/' . $uf : ''), '/');
+  foreach (['pd_loja' => '1', 'pd_slug' => $slug, 'pd_tipo' => $type, 'pd_local' => $local, 'pd_anos' => (int) $years, 'pd_foto' => ''] as $k => $v) update_term_meta($term['term_id'], $k, $v);
+  update_user_meta($userId, 'pd_prestador_slug', $slug);
+  update_user_meta($userId, 'billing_email', $email);
+  wc_set_customer_auth_cookie($userId);
+  wc_add_notice('Conta de Prestador criada. Agora crie sua primeira Oferta: ela entra no catálogo assim que você publicar.', 'success');
+  wp_safe_redirect(add_query_arg('nova', '1', wc_get_account_endpoint_url('minhas-ofertas')));
+  exit;
+}, 5);
+
+add_shortcode('pd_cadastro_prestador', function () {
+  if (pd_user_provider_slug()) return '<p>Você já é Prestador nesta loja. <a href="' . esc_url(wc_get_account_endpoint_url('minhas-ofertas')) . '">Ir para Minhas Ofertas</a></p>';
+  if (is_user_logged_in()) return '<p>Você está numa conta de Cliente. Para oferecer serviços, <a href="' . esc_url(wc_logout_url(pd_signup_url())) . '">saia</a> e crie uma conta de Prestador.</p>';
+  $in = $GLOBALS['pd_signup_input'] ?? ['tipo' => 'PESSOA_FISICA'];
+  $e = $GLOBALS['pd_signup_errors'] ?? [];
+  $err = fn ($k) => isset($e[$k]) ? '<span class="pd-field-error" id="erro-' . $k . '">' . esc_html($e[$k]) . '</span>' : '';
+  $at = fn ($k) => isset($e[$k]) ? ' aria-invalid="true" aria-describedby="erro-' . $k . '"' : '';
+  $v = fn ($k) => esc_attr((string) ($in[$k] ?? ''));
+  ob_start();
+  echo '<div class="pd-signup"><div class="pd-signup-intro"><p>Crie sua conta de Prestador e publique Ofertas com preço e prazo claros. Clientes contratam sem pagar nada na loja: você confirma o escopo e combina o pagamento direto com eles.</p><ul><li>Publique uma Oferta por Tipo de serviço</li><li>Receba Contratações com o Projeto descrito</li><li>Confirme, recuse ou conclua; o Cliente avalia depois</li></ul><p class="pd-note">A loja tem cadastro próprio. O Perfil completo, o Selo de confiança e a Triagem ficam na <a href="' . esc_url(PROPOSTADEV_SITE . '/cadastro') . '">plataforma Proposta.dev</a>. Já é Prestador nesta loja? <a href="' . esc_url(wc_get_page_permalink('myaccount')) . '">Entrar</a>.</p></div>';
+  echo '<form method="post" class="pd-offer-form" novalidate><h2>Seus dados de Prestador</h2><input type="hidden" name="pd_cadastro_prestador" value="1">' . wp_nonce_field('pd_cadastro_prestador', '_pd_nonce', true, false);
+  echo '<p class="form-row"><label for="pd-nome">Nome ou nome da empresa</label><input id="pd-nome" name="nome" maxlength="100" autocomplete="name" value="' . $v('nome') . '"' . $at('nome') . '>' . $err('nome') . '</p>';
+  echo '<fieldset class="pd-fieldset"><legend>Você é</legend><p class="form-row pd-check"><label><input type="radio" name="tipo" value="PESSOA_FISICA"' . checked($in['tipo'] ?? '', 'PESSOA_FISICA', false) . '> Pessoa física</label><label><input type="radio" name="tipo" value="PESSOA_JURIDICA"' . checked($in['tipo'] ?? '', 'PESSOA_JURIDICA', false) . '> Pessoa jurídica</label>' . $err('tipo') . '</p></fieldset>';
+  echo '<p class="form-row"><label for="pd-sobre">O que você faz</label><textarea id="pd-sobre" name="descricao" rows="4" maxlength="5000" placeholder="Tipos de projeto, tecnologias e como você trabalha. Aparece na sua página da loja."' . $at('descricao') . '>' . esc_textarea((string) ($in['descricao'] ?? '')) . '</textarea>' . $err('descricao') . '</p>';
+  echo '<div class="pd-pair"><p class="form-row"><label for="pd-anos">Anos de experiência</label><input id="pd-anos" name="anos" inputmode="numeric" value="' . $v('anos') . '"' . $at('anos') . '>' . $err('anos') . '</p>';
+  echo '<p class="form-row"><label for="pd-cidade">Cidade (opcional)</label><input id="pd-cidade" name="cidade" maxlength="100" autocomplete="address-level2" value="' . $v('cidade') . '"' . $at('cidade') . '>' . $err('cidade') . '</p></div>';
+  echo '<p class="form-row"><label for="pd-uf">UF (opcional)</label><select id="pd-uf" name="uf"' . $at('uf') . '><option value="">—</option>';
+  foreach (PD_UFS as $u) echo '<option' . selected($in['uf'] ?? '', $u, false) . '>' . $u . '</option>';
+  echo '</select>' . $err('uf') . '</p>';
+  echo '<div class="pd-pair"><p class="form-row"><label for="pd-email">E-mail (login e contato)</label><input id="pd-email" name="email" type="email" autocomplete="email" value="' . $v('email') . '"' . $at('email') . '>' . $err('email') . '</p>';
+  echo '<p class="form-row"><label for="pd-senha">Senha (12 caracteres ou mais)</label><input id="pd-senha" name="senha" type="password" autocomplete="new-password"' . $at('senha') . '>' . $err('senha') . '</p></div>';
+  echo '<p class="form-row pd-check"><label><input type="checkbox" name="consentimento" value="1"' . checked(!empty($in['consentimento']), true, false) . '> Autorizo mostrar meu e-mail aos Clientes que me contratarem.</label>' . $err('consentimento') . '</p>';
+  echo '<p class="pd-note">Seus dados ficam só nesta loja de demonstração. Veja os <a href="' . esc_url(home_url('/termos-e-privacidade/')) . '">termos e a privacidade</a>.</p>';
+  echo '<p class="pd-actions"><button class="pd-btn pd-btn-primary" type="submit">Criar conta de Prestador</button></p></form></div>';
+  return (string) ob_get_clean();
+});

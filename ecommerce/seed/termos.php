@@ -13,3 +13,9 @@ update_option('woocommerce_registration_privacy_policy_text', 'Seus dados são u
 update_option('woocommerce_checkout_privacy_policy_text', 'Seus dados são usados apenas para esta Contratação e sua conta. Veja a [privacy_policy].');
 update_option('woocommerce_checkout_terms_and_conditions_checkbox_text', 'Li e concordo com os [terms]');
 WP_CLI::success('Página Termos e privacidade publicada.');
+
+// Página de cadastro de Prestador da loja.
+$signup = get_page_by_path('quero-oferecer-servicos');
+$body = '<!-- wp:shortcode -->[pd_cadastro_prestador]<!-- /wp:shortcode -->';
+if (!$signup) wp_insert_post(['post_type' => 'page', 'post_status' => 'publish', 'post_title' => 'Quero oferecer serviços', 'post_name' => 'quero-oferecer-servicos', 'post_content' => $body]);
+WP_CLI::success('Página Quero oferecer serviços publicada.');

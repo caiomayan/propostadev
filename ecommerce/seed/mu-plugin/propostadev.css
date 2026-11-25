@@ -443,7 +443,10 @@ form.checkout #customer_details { grid-row: 1 / span 2; }
 .pd-offer-form h2 { font-size: 1.8rem; margin: 0 0 16px; }
 .pd-offer-form .form-row { display: flex; flex-direction: column; gap: 6px; margin: 0 0 16px; }
 .pd-offer-form label, .pd-fieldset legend { font-weight: 700; }
-.pd-offer-form input:not([type=checkbox]), .pd-offer-form select, .pd-offer-form textarea { width: 100%; min-height: 48px; padding: 10px 14px; box-sizing: border-box; font: 500 1rem var(--pd-body); }
+.pd-offer-form input:not([type=checkbox]):not([type=radio]), .pd-offer-form select, .pd-offer-form textarea { width: 100%; min-height: 48px; padding: 10px 14px; box-sizing: border-box; font: 500 1rem var(--pd-body); border-radius: var(--pd-r) !important; border: 1px solid var(--pd-line) !important; background: var(--pd-card) !important; color: var(--pd-ink); }
+.pd-offer-form input[type=radio], .pd-offer-form input[type=checkbox] { width: 20px; height: 20px; margin: 0; flex: none; }
+.pd-offer-form .pd-check { flex-direction: row; flex-wrap: wrap; gap: 20px; }
+.pd-avatar-initial { display: inline-grid; place-items: center; background: var(--pd-forest); color: var(--pd-lime); font-family: var(--pd-display); font-weight: 800; font-size: 2.6rem; }
 .pd-offer-form select { border-radius: var(--pd-r) !important; }
 .pd-offer-form [aria-invalid=true] { border-color: var(--pd-danger) !important; }
 .pd-field-error { color: var(--pd-danger); font-size: .9rem; font-weight: 600; }
@@ -455,3 +458,14 @@ form.checkout #customer_details { grid-row: 1 / span 2; }
 
 .woocommerce-account .woocommerce:not(:has(.woocommerce-MyAccount-navigation)) { display: block; }
 .pd-received-meta .pd-price-unit { margin-left: .25em; }
+
+/* Quero oferecer serviços */
+.pd-signup { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: clamp(24px, 4vw, 48px); align-items: start; }
+.pd-signup-intro { background: var(--pd-lime); color: var(--pd-lime-ink); border-radius: var(--pd-r-xl); padding: clamp(20px, 3vw, 32px); }
+.pd-signup-intro p { margin: 0 0 14px; }
+.pd-signup-intro ul { margin: 0 0 16px; padding-left: 1.2em; font-weight: 600; }
+.pd-signup-intro .pd-note { color: var(--pd-lime-ink); }
+.pd-signup-intro a { color: var(--pd-lime-ink); font-weight: 700; }
+.pd-signup .pd-check label + label { margin-left: 16px; }
+.page .entry-header + .entry-content .pd-signup { margin-top: 8px; }
+@media (max-width: 900px) { .pd-signup { grid-template-columns: 1fr; } }
