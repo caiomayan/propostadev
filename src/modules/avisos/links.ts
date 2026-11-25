@@ -1,4 +1,4 @@
-import { avisoTypes } from "@/lib/db/schema";
+import type { avisoTypes } from "@/lib/db/schema";
 
 export type AvisoType = (typeof avisoTypes)[number];
 
