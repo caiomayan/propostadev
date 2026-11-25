@@ -50,6 +50,13 @@
       "when": 1793649519444,
       "tag": "0006_rls-tabelas-mvp2",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795563173819,
+      "tag": "0007_mvp3-vip-e-preco-externo",
+      "breakpoints": true
     }
   ]
 }

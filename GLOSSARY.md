@@ -56,6 +56,14 @@ _Evitar_: filtro, matching
 O que o mercado da plataforma anuncia para um Tipo de serviço: a média dos preços fixos e a faixa de preços anunciados, sempre com o tamanho da amostra; não é orçamento.
 _Evitar_: preço justo, estimativa, orçamento
 
+**Oportunidade**:
+Projeto aberto visto por um Prestador que pode enviar Proposta a ele.
+_Evitar_: vaga, job
+
+**Preço de mercado externo**:
+Preço de um Tipo de serviço coletado fora da plataforma, sempre com fonte e data da coleta; fica ao lado do Preço de referência e nunca entra na média dele.
+_Evitar_: preço justo, preço real
+
 **Prestador compatível**:
 Prestador com Oferta ativa no Tipo de serviço do Projeto, listado com os motivos explícitos da compatibilidade.
 _Evitar_: recomendado, match
@@ -83,6 +91,21 @@ Nota de 1 a 5 e comentário de um Cliente sobre um Prestador.
 **Avaliação verificada**:
 Avaliação feita por Cliente que teve Proposta aceita daquele Prestador. É derivada (não há coluna): existe Proposta ACEITA do autor com o Prestador. Aparece com o selo "Contratado pela Proposta.dev". As do MVP 1 sem esse Aceite aparecem como "Avaliação anterior, sem contratação verificada".
 _Evitar_: avaliação confirmada
+
+**Selo de confiança**:
+Marca de um Prestador com e-mail confirmado, pelo menos uma Avaliação verificada e média das Avaliações verificadas de 4,0 ou mais. É derivado, nunca concedido à mão, e sempre mostra os critérios.
+_Evitar_: prestador verificado, selo verificado
+
+**Prestador VIP**:
+Prestador marcado como VIP pela plataforma; ganha o selo VIP e pode aparecer no Destaque VIP. O próprio Prestador não ativa o VIP nem paga por ele nesta versão.
+_Evitar_: premium, assinante
+
+**Destaque VIP**:
+Faixa identificada no topo da busca com até três Prestadores VIP; não altera a Triagem nem os Prestadores compatíveis.
+_Evitar_: patrocinado, anúncio
+
+**Interesse no VIP**:
+Registro de que um Prestador quer ser VIP; não ativa nada nem gera cobrança.
 
 **Comparação**:
 Seleção local de até três Prestadores para confrontar dados.

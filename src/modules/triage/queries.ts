@@ -88,7 +88,7 @@ export type CompatibleProvider = {
   cabeOrcamento: boolean | null;
   /** true/false; null = desconhecido (prazo flexível ou oferta A_COMBINAR). */
   cabePrazo: boolean | null;
-  rating: string | null; reviewCount: number; verificadas: number;
+  rating: string | null; reviewCount: number; verificadas: number; trusted: boolean;
 };
 
 const tri = (column: string) => sql.raw(`CASE WHEN "${column}" IS TRUE THEN 2 WHEN "${column}" IS NULL THEN 1 ELSE 0 END`);
@@ -107,7 +107,7 @@ export async function prestadoresCompativeis(input: { tipoServicoId: string; orc
         o.tipo_prazo AS "deadlineType", o.prazo_minimo_dias AS "deadlineMinDays", o.prazo_maximo_dias AS "deadlineMaxDays",
         CASE WHEN ${ceiling}::numeric IS NULL OR o.tipo_preco IN ('SOB_CONSULTA', 'POR_HORA') OR o.preco_minimo IS NULL THEN NULL ELSE o.preco_minimo <= ${ceiling}::numeric END AS "cabeOrcamento",
         CASE WHEN ${input.prazoDias}::int IS NULL OR o.prazo_minimo_dias IS NULL THEN NULL ELSE o.prazo_minimo_dias <= ${input.prazoDias}::int END AS "cabePrazo",
-        r.rating, coalesce(r.count, 0)::int AS "reviewCount", coalesce(r.verified, 0)::int AS verificadas
+        r.rating, coalesce(r.count, 0)::int AS "reviewCount", coalesce(r.verified, 0)::int AS verificadas, coalesce(r.trusted, false) AS trusted
       ${fromActive}
       LEFT JOIN ${reputationSubquery} r ON r.prestador_id = p.id
       WHERE ${activeOffer} AND o.tipo_servico_id = ${input.tipoServicoId}::uuid

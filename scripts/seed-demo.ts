@@ -7,6 +7,7 @@ import { setAccountType } from "../src/lib/auth/account-type";
 import { REVIEW_ACCEPTANCE_TRIGGER } from "../src/modules/reviews/rules";
 import { seedCatalog } from "./seed";
 import { demoPhoto, seedDemoScenarios } from "./demo-scenarios";
+import { seedDemoMvp3 } from "./demo-mvp3";
 
 async function seedDemo() {
   if (process.env.NODE_ENV === "production" || process.env.ALLOW_DEMO_SEED !== "true") throw new Error("Demo recusada: use ALLOW_DEMO_SEED=true apenas em ambiente local.");
@@ -53,6 +54,9 @@ async function seedDemo() {
     });
   }
   const scenarios = await seedDemoScenarios(password);
+  // Preços externos fictícios só em banco local; contra a produção, a demo nunca grava preços atribuídos a sites reais.
+  const localDatabase = ["localhost", "127.0.0.1"].includes(new URL(process.env.DATABASE_URL ?? "postgres://invalid").hostname);
+  await seedDemoMvp3({ includeDemoExternalPrices: localDatabase });
   console.info(`Demo pronta: 20 perfis, ${scenarios.clients} clientes e ${scenarios.projects} projetos (${scenarios.created} criados agora). Login prestador1@demo.example ou cliente1@demo.example; senha definida por DEMO_PASSWORD ou padrão local documentado.`);
 }
 
