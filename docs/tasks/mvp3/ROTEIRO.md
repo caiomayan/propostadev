@@ -45,12 +45,15 @@ Isso apaga só os Interesses no VIP das contas `@demo.example` (o botão "Tenho 
 4. Volte e escolha "Preciso de uma API para meu aplicativo" → **API**: "Ainda não há preço externo para este Tipo de serviço" (sem fonte pública confiável em reais).
 
 ## 5. Versão e-commerce com WooCommerce (~2 min, visitante)
-Endereço: https://propostadev.caiomayan.com (ADR 0006).
-1. Página inicial: **Destaque VIP** (as Ofertas dos Prestadores VIP), serviços por categoria e os mais bem avaliados.
-2. Entre em **Web → Landing Page**: as Ofertas da categoria, com Prestador, preço e estrelas.
-3. Abra uma Oferta: ficha com Prestador (link para o Perfil no site), prazo, preço conforme o tipo (fixo, a partir de, intervalo, por hora) e a aba **Avaliações**.
-4. **Contratar** → carrinho → **Contratação**: dados do Cliente e "Combinar pagamento com o Prestador" (nada é cobrado). Finalize: aparece o pedido recebido.
-5. Explique o mapeamento: Oferta vira produto, Tipo de serviço vira categoria, Prestador vira marca, Avaliação do Prestador aparece no produto. Triagem, Preço de referência, Projetos e Propostas ficam só na plataforma própria: é o que uma loja pronta não faz.
+Endereço: https://propostadev.caiomayan.com (ADR 0006). Mesma identidade do site.
+1. Página inicial: o painel lima **O que você precisa?** leva direto a cada Tipo de serviço; abaixo, **Destaque VIP**, **Como funciona a contratação** e **Mais bem avaliados**.
+2. Clique em **Landing Page** no painel: o catálogo filtra pelo Tipo (os botões no topo trocam o filtro). Cada card mostra o Prestador, a nota, o prazo e o preço com unidade.
+3. Abra **Landing Page de lançamento** (Bruno Cavalcanti, VIP): ficha do Prestador com link para o Perfil no site, preço, prazo e as abas **O que está incluído**, **Sobre o Prestador** e **Avaliações**.
+4. **Contratar** → **Carrinho** → **Ir para a Contratação**: dados do Cliente e "Combinar pagamento com o Prestador". **Confirmar Contratação** mostra a Contratação recebida (nada é cobrado).
+5. Mostre também uma Oferta **sob consulta** (Site institucional sob medida, Maré Sistemas): não vai para o carrinho, o botão pede orçamento no site.
+6. Explique o mapeamento: Oferta vira produto, Tipo de serviço vira categoria, Prestador vira marca (tem página própria), Avaliação do Prestador aparece no produto. Triagem, Preço de referência, Projetos e Propostas ficam só na plataforma própria: é o que uma loja pronta não faz, e a loja manda para lá quando o Cliente não sabe o que precisa.
+
+Depois do ensaio, os pedidos de teste são apagados no reset (peça ao coordenador).
 
 ## Perguntas prováveis
 - *O VIP é pago?* Nesta versão não: só registra interesse. Cobrança exige decisões de produto e jurídicas próprias.
