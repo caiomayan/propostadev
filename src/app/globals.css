@@ -248,7 +248,7 @@ dialog::backdrop { background: var(--overlay); }
 .trust-seal summary:focus-visible { outline: 2px solid var(--foreground); outline-offset: 2px; }
 .trust-why { margin-top: 8px; padding: 12px 14px; border-radius: var(--radius-md, 12px); background: var(--muted); color: var(--foreground); max-width: 46ch; }
 .trust-why p { margin: 0 0 8px; }
-.trust-why ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.trust-why ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; list-style: disc; }
 .trust-checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
 .trust-checklist li { display: flex; gap: 12px; align-items: flex-start; }
 .trust-checklist .mark { flex: none; width: 24px; height: 24px; border-radius: 999px; display: grid; place-items: center; background: var(--muted); color: var(--muted-foreground); }
