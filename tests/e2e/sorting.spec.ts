@@ -8,7 +8,7 @@ async function login(page: Page, email: string) {
   await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await expect(page).toHaveURL(/\/painel$/);
 }
-const prices = async (page: Page) => (await page.locator(".provider-actions strong").allInnerTexts()).filter((text) => !text.includes("/hora") && /\d/.test(text)).map((text) => Number(text.match(/[\d.]+,\d{2}/)![0].replace(/\./g, "").replace(",", ".")));
+const prices = async (page: Page) => (await page.locator(".search-results .provider-actions strong").allInnerTexts()).filter((text) => !text.includes("/hora") && /\d/.test(text)).map((text) => Number(text.match(/[\d.]+,\d{2}/)![0].replace(/\./g, "").replace(",", ".")));
 
 test("busca ordena em um clique, sem exigir modelo de preço, e mantém os filtros", async ({ page }) => {
   await page.goto("/buscar?q=site");
@@ -28,7 +28,7 @@ test("busca ordena em um clique, sem exigir modelo de preço, e mantém os filtr
 test("ordem por preço não mistura R$/hora com R$/projeto", async ({ page }) => {
   await page.goto("/buscar?ordenar=preco");
   await expect(page.locator(".filter-error")).toHaveCount(0);
-  const texts = await page.locator(".provider-actions strong").allInnerTexts();
+  const texts = await page.locator(".search-results .provider-actions strong").allInnerTexts();
   expect(texts.some((text) => text.includes("/hora"))).toBe(false);
 });
 
