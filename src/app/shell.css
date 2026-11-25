@@ -251,3 +251,5 @@ input[type=checkbox]:focus-visible, input[type=radio]:focus-visible { outline: 3
   .otp-cells { gap: 6px; }
   .dash-figure { padding: 16px 18px; }
 }
+
+.plataforma-action { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }

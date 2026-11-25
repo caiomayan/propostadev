@@ -1,4 +1,5 @@
 import { seedDemoOportunidades } from "./oportunidades";
+import { seedDemoPlataforma } from "./plataforma";
 import { seedDemoPrecosExternos } from "./precos-externos";
 import { seedDemoSelo } from "./selo";
 import { seedDemoVip } from "./vip";
@@ -9,5 +10,6 @@ export async function seedDemoMvp3(options: { includeDemoExternalPrices: boolean
   await seedDemoSelo();
   await seedDemoOportunidades();
   await seedDemoVip();
+  await seedDemoPlataforma(); // depois do VIP: os pedidos só valem para quem não é VIP
   if (options.includeDemoExternalPrices) await seedDemoPrecosExternos();
 }

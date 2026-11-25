@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { providers } from "@/lib/db/schema";
 import { panelLinks, type PanelLink } from "@/lib/account-nav";
 import { needsEmailConfirmation } from "./email-gate";
+import { isPlataformaUser } from "./plataforma-emails";
 import type { AccountType } from "./user-fields";
 
 export type AccountSummary = { name: string; email: string; role: string | null; photoUrl: string | null; links: PanelLink[] };
@@ -23,6 +24,6 @@ export async function accountSummary(user: SessionUser): Promise<AccountSummary>
   const pending = needsEmailConfirmation(user);
   const links: PanelLink[] = pending ? [{ href: "/confirmar-email", label: "Confirmar e-mail", icon: "mail" }]
     : !type ? [{ href: "/boas-vindas", label: "Escolher tipo de conta", icon: "account" }]
-    : [...panelLinks(type), ...(provider?.active ? [{ href: `/prestadores/${provider.slug}`, label: "Ver meu perfil público", icon: "public" } as PanelLink] : [])];
+    : [...panelLinks(type), ...(isPlataformaUser(user) ? [{ href: "/plataforma", label: "Plataforma", icon: "platform" } as PanelLink] : []), ...(provider?.active ? [{ href: `/prestadores/${provider.slug}`, label: "Ver meu perfil público", icon: "public" } as PanelLink] : [])];
   return { name: user.name, email: user.email, role: type && (type === "PRESTADOR" ? "Prestador" : "Cliente"), photoUrl: provider?.photoUrl ?? user.image ?? null, links };
 }

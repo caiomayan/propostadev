@@ -1,6 +1,6 @@
 import type { AccountType } from "@/lib/auth/user-fields";
 
-export type PanelIcon = "home" | "profile" | "offers" | "opportunities" | "proposals" | "vip" | "projects" | "triage" | "account" | "mail" | "public";
+export type PanelIcon = "home" | "profile" | "offers" | "opportunities" | "proposals" | "vip" | "projects" | "triage" | "account" | "mail" | "public" | "platform";
 export type PanelLink = { href: string; label: string; icon: PanelIcon };
 export type SiteLink = { href: string; label: string };
 

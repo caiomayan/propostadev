@@ -99,6 +99,13 @@ Para screenshots, mantenha um servidor separado em 3100 apontando ao DATABASE_UR
 
 Resultados e limites reais: docs/VALIDATION.md. Escopo: docs/SCOPE.md. Regras: docs/specs/MVP.md e docs/DATABASE-RULES.md. Progresso: docs/tasks/BACKLOG.md. Decisões de implementação: docs/adr/0002-implementation.md.
 
+## Painel da plataforma (VIP)
+
+`/plataforma` é a página da Equipe da plataforma (ADR 0005): lista quem pediu o VIP (Interesse no VIP de quem ainda não é VIP, com a data) e quem é VIP agora, com "Conceder VIP" e "Retirar VIP". Conceder e retirar mexem só em `vip`; o Interesse no VIP fica registrado.
+
+- Acesso: variável `PLATAFORMA_EMAILS`, e-mails separados por vírgula, sem diferença de caixa; só vale com e-mail confirmado. Vazia, ninguém entra. Quem não está na lista (ou não está logado) recebe 404, e o link "Plataforma" do menu da conta só aparece para a Equipe. Não é segredo; em Production vale `plataforma@demo.example`, conta criada pela demo (login com a senha da demo).
+- A demo cria `plataforma@demo.example` e Interesses no VIP de prestador4 e prestador6 (nunca de prestador1). `pnpm demo:apresentacao` volta o VIP das contas `@demo.example` ao conjunto do seed (prestador2, 3, 5 e 8) e recria esses pedidos.
+
 ## Preço de mercado externo
 
 Uma coleta semanal com Firecrawl lê páginas públicas de "quanto custa" (lista versionada em `src/modules/external-prices/sources.ts`) e grava, por Tipo de serviço e por fonte, a faixa em reais, o trecho que a sustenta e a data. O resultado da Triagem e o painel de Ofertas mostram essas linhas ao lado do Preço de referência, sem misturar: o preço externo nunca entra na média. api, backend e integração de sistemas não têm fonte.
