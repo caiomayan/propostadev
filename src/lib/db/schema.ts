@@ -90,4 +90,12 @@ export type Offer = typeof offers.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type ServiceType = typeof serviceTypes.$inferSelect;
 export type Review = typeof reviews.$inferSelect;
+// Aviso (MVP 3 extras, ADR 0005): mensagem dentro do site, gravada na mesma transação da ação que a gera. Só o dono (usuario_id) lê ou marca como lido.
+export const avisoTypes = ["CONVITE_RECEBIDO", "PROPOSTA_RECEBIDA", "PROPOSTA_PRE_SELECIONADA", "PROPOSTA_ACEITA", "PROPOSTA_RECUSADA"] as const;
+export const avisoType = pgEnum("aviso_tipo", avisoTypes);
+export const avisos = pgTable("aviso", {
+  id: uuid("id").defaultRandom().primaryKey(), userId: text("usuario_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  type: avisoType("tipo").notNull(), projectId: uuid("projeto_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  readAt: timestamp("lido_em", { withTimezone: true }), createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+}, (t) => [index("aviso_usuario_recentes_idx").on(t.userId, t.createdAt.desc()), index("aviso_usuario_nao_lidos_idx").on(t.userId).where(sql`${t.readAt} IS NULL`)]);
 export const mutationRateLimits = pgTable("mutation_rate_limit", { key: text("key").primaryKey(), count: integer("count").default(1).notNull(), windowStartedAt: timestamp("window_started_at", { withTimezone: true }).defaultNow().notNull() });

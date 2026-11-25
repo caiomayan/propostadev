@@ -4,11 +4,16 @@
 
 **Blocked by:** None
 
-**Status:** ready-for-agent
+**Status:** review (e2e roda só no CI do PR)
 
-- [ ] Unidade: leitura de `PLATAFORMA_EMAILS` (vazia, espaços, caixa).
-- [ ] Integração: página e ações recusam quem não é da Equipe (inclusive e-mail não confirmado); conceder e retirar mudam só `vip`; o Interesse no VIP continua registrado.
-- [ ] Ações validam entrada e sessão no servidor; o id do Prestador vem do formulário, mas a autorização vem só da sessão.
-- [ ] E2E: plataforma@demo.example concede VIP a quem pediu e o selo VIP aparece no Perfil; visitante e prestador1 recebem 404.
-- [ ] `.env.example` e README documentam `PLATAFORMA_EMAILS`.
-- [ ] Verificado no browser em 375 e 1440 px, console limpo.
+- [x] Unidade: leitura de `PLATAFORMA_EMAILS` (vazia, espaços, caixa).  
+  Evidência: `pnpm test` → 106 passam, incluindo `tests/unit/plataforma-emails.test.ts`.
+- [x] Integração: página e ações recusam quem não é da Equipe (inclusive e-mail não confirmado); conceder e retirar mudam só `vip`; o Interesse no VIP continua registrado.  
+  Evidência: `pnpm test:integration` → 98 passam, incluindo `tests/integration/plataforma.test.ts` (a coluna `updated_at` é mexida por trigger do banco; o resto da linha fica igual).
+- [x] Ações validam entrada e sessão no servidor; o id do Prestador vem do formulário, mas a autorização vem só da sessão.  
+  Evidência: `src/modules/plataforma/actions.ts` (zod uuid + `isPlataformaUser(sessão)` + rate limit); teste com sessão de Prestador dono do pedido recusada.
+- [ ] E2E: plataforma@demo.example concede VIP a quem pediu e o selo VIP aparece no Perfil; visitante e prestador1 recebem 404.  
+  Escrito em `tests/e2e/plataforma.spec.ts` (e `PLATAFORMA_EMAILS` no `playwright.config.ts`); não rodado localmente por regra do brief, fica para o CI. O mesmo fluxo foi feito à mão no portal (conceder → selo VIP no Perfil → retirar).
+- [x] `.env.example` e README documentam `PLATAFORMA_EMAILS`.
+- [x] Verificado no browser em 375 e 1440 px, console limpo.  
+  Evidência: portal do Maestri, `next dev` na 3101; sem overflow horizontal em 375; visitante recebe 404; log do dev só com o aviso preexistente de `scroll-behavior`.

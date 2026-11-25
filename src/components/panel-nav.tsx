@@ -1,10 +1,10 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CircleUserRound, Compass, ExternalLink, FileText, FolderKanban, Crown, House, Mail, Search, Settings2, Tag, type LucideIcon } from "lucide-react";
+import { CircleUserRound, Compass, ExternalLink, FileText, FolderKanban, Crown, House, Mail, Search, Settings2, ShieldCheck, Tag, type LucideIcon } from "lucide-react";
 import { isCurrent, type PanelIcon, type PanelLink } from "@/lib/account-nav";
 
-export const panelIcons: Record<PanelIcon, LucideIcon> = { home: House, profile: CircleUserRound, offers: Tag, opportunities: Compass, proposals: FileText, vip: Crown, projects: FolderKanban, triage: Search, account: Settings2, mail: Mail, public: ExternalLink };
+export const panelIcons: Record<PanelIcon, LucideIcon> = { home: House, profile: CircleUserRound, offers: Tag, opportunities: Compass, proposals: FileText, vip: Crown, projects: FolderKanban, triage: Search, account: Settings2, mail: Mail, public: ExternalLink, platform: ShieldCheck };
 
 /** Itens da navegação do painel, com a seção atual marcada. */
 export function PanelLinks({ links }: { links: PanelLink[] }) {

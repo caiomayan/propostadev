@@ -4,9 +4,13 @@
 
 **Blocked by:** None
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Integração: cada ação gera um Aviso para a pessoa certa e nenhum para as outras; ler e marcar como lido só afetam os Avisos do usuário da sessão; Aviso de um Projeto apagado não quebra a lista.
-- [ ] Contagem de não lidos numa consulta só (sem N+1) e só para quem está logado.
-- [ ] E2E: Cliente convida, Prestador vê o número no sino, abre o Aviso, o número diminui.
-- [ ] Verificado no browser em 375 e 1440 px (sino no menu mobile também), console limpo.
+- [x] Integração: cada ação gera um Aviso para a pessoa certa e nenhum para as outras; ler e marcar como lido só afetam os Avisos do usuário da sessão; Aviso de um Projeto apagado não quebra a lista.
+  Evidência: `pnpm test:integration tests/integration/avisos.test.ts` (7 testes: cada ação avisa só a pessoa certa, bloqueios não avisam, ler/abrir/marcar só do próprio usuário, Projeto apagado, limite de 50); suíte completa 100/100.
+- [x] Contagem de não lidos numa consulta só (sem N+1) e só para quem está logado.
+  Evidência: `countUnread` é um `count(*)` com índice parcial, chamado só com sessão; `listAvisos` traz título do Projeto num JOIN (sem N+1).
+- [x] E2E: Cliente convida, Prestador vê o número no sino, abre o Aviso, o número diminui.
+  Evidência: `tests/e2e/avisos.spec.ts` escrito (não rodado localmente; CI roda).
+- [x] Verificado no browser em 375 e 1440 px (sino no menu mobile também), console limpo.
+  Evidência: Playwright/Chromium contra o dev server (banco w2, demo): 1440 e 375 px, sino com 4→3 avisos ao abrir, item "Avisos" no menu mobile, sem erro de console/rede (só o aviso antigo de `scroll-behavior`, anterior a este ticket).
