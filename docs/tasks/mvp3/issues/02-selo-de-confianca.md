@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] Prefactor feito pelo coordenador no mvp3: migration 0007 (coluna `vip`, tabelas `interesse_vip` e `preco_mercado_externo`, RLS) e módulo de seed próprio em `scripts/demo-mvp3/selo.ts` (idempotente, só aditivo, pode rodar contra a produção). Não crie migration nova; não edite `scripts/seed-demo.ts`.
 - [x] Integração: sem verificada → sem selo; verificada nota ≥ 4 + e-mail confirmado → selo; e-mail não confirmado → sem; média verificada < 4,0 → sem; só Avaliações antigas → sem; agregados sem duplicação por joins.
@@ -22,3 +22,7 @@
 - Seed: demo local com 15 Prestadores com selo e 5 sem (`scripts/demo-mvp3/selo.ts` só garante e-mail confirmado nos demo com verificada e imprime a contagem).
 - Browser: 375 e 1440 px (Perfil, busca, painel) sem overflow e sem erro de console do selo (só o aviso preexistente de `scroll-behavior` do Next).
 - E2E `tests/e2e/trust-seal.spec.ts` escrito (Perfil, busca, ausência de selo, checklist); não executado localmente (regra do brief: roda no CI), por isso o item fica aberto até o CI.
+
+## Comentários
+
+- 25/11: PR #2 em produção; e2e trust-seal verde no CI; 15 Prestadores com selo na demo de produção.

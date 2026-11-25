@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] Prefactor feito pelo coordenador no mvp3: migration 0007 (coluna `vip`, tabelas `interesse_vip` e `preco_mercado_externo`, RLS) e módulo de seed próprio em `scripts/demo-mvp3/vip.ts` (idempotente, só aditivo, pode rodar contra a produção). Não crie migration nova; não edite `scripts/seed-demo.ts`.
 - [x] Integração (`pnpm test:integration tests/integration/vip.test.ts`: 5 passam): Destaque respeita filtros e limite de 3; nenhuma ação escreve `vip`; Interesse idempotente; Cliente e Prestador sem e-mail confirmado recusados; rate limit de mutações aplicado.
@@ -12,3 +12,7 @@
 - [x] Seed demo em `scripts/demo-mvp3/vip.ts`: prestadores demo 2, 3 (Landing Page), 5 (Site institucional) e 8 (API); o 1 fica sem VIP para demonstrar o interesse.
 - [x] E2E escrito (`tests/e2e/vip.spec.ts`; roda no CI, não localmente): faixa Destaque VIP na busca e registro de interesse pelo painel.
 - [x] Verificado no browser em 375 e 1440 px (Playwright do repo contra `next dev` :3003): /buscar com faixa e /painel/vip, sem erro de console nem overflow horizontal.
+
+## Comentários
+
+- 25/11: PRs #5 e #8 em produção; e2e vip verde no CI; faixa Destaque VIP e selo VIP verificados em produção (1900 e 375 px, sem erro de console).
