@@ -12,6 +12,7 @@ import type { ActionState } from "@/lib/auth/action-state";
 import { parseDraft } from "@/modules/triage/validation";
 import { findServiceType } from "@/modules/triage/queries";
 import { MAX_INVITES } from "@/modules/proposals/validation";
+import { avisarPrestador } from "@/modules/avisos/record";
 
 // A autorização vem sempre da sessão: o formulário nunca informa o Cliente.
 export async function publishProject(_: ActionState, form: FormData): Promise<ActionState> {
@@ -75,6 +76,7 @@ export async function inviteProvider(_: ActionState, form: FormData): Promise<Ac
       if (already.rows.length) return "ja" as const;
       if (count.rows[0].n >= MAX_INVITES) return "limite" as const;
       await tx.execute(sql`INSERT INTO convite (projeto_id, prestador_id) VALUES (${projectId.data}::uuid, ${providerId.data}::uuid)`);
+      await avisarPrestador(tx, "CONVITE_RECEBIDO", projectId.data, providerId.data);
       return "ok" as const;
     });
     if (outcome === "projeto") return { error: "Projeto não encontrado, não está aberto ou você não tem permissão." };

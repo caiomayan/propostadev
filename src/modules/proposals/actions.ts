@@ -7,6 +7,8 @@ import { getSession } from "@/lib/auth/session";
 import { accountTypeDenial } from "@/lib/auth/account-type";
 import { mutationAllowed } from "@/lib/auth/mutation-limit";
 import type { ActionState } from "@/lib/auth/action-state";
+import { avisarClienteDoProjeto, avisarPrestador } from "@/modules/avisos/record";
+import type { AvisoType } from "@/modules/avisos/links";
 import { parseProposal, uuidSchema } from "./validation";
 
 // Todas as ações do Prestador partem da sessão: o perfil vem do usuário logado, nunca do formulário.
@@ -33,15 +35,19 @@ export async function submitProposal(_: ActionState, form: FormData): Promise<Ac
   const { valor, prazo, mensagem } = parsed.data;
   let created: { id: string }[];
   try {
-    // Um único INSERT ... SELECT decide se o Projeto está aberto e se há Oferta ativa no tipo.
-    created = (await db.execute<{ id: string }>(sql`
-      INSERT INTO proposta (projeto_id, prestador_id, valor, prazo_dias, mensagem)
-      SELECT p.id, ${context.providerId}::uuid, ${valor}::numeric, ${prazo}::int, ${mensagem}
-      FROM projeto p
-      WHERE p.id = ${projectId.data}::uuid AND p.status = 'ABERTO'
-        AND EXISTS (SELECT 1 FROM oferta_servico o JOIN tipo_servico t ON t.id = o.tipo_servico_id
-          WHERE o.prestador_id = ${context.providerId}::uuid AND o.tipo_servico_id = p.tipo_servico_id AND o.ativo AND o.deleted_at IS NULL AND t.ativo)
-      RETURNING id`)).rows;
+    // Um único INSERT ... SELECT decide se o Projeto está aberto e se há Oferta ativa no tipo; o Aviso ao Cliente sai na mesma transação.
+    created = await db.transaction(async (tx) => {
+      const inserted = (await tx.execute<{ id: string }>(sql`
+        INSERT INTO proposta (projeto_id, prestador_id, valor, prazo_dias, mensagem)
+        SELECT p.id, ${context.providerId}::uuid, ${valor}::numeric, ${prazo}::int, ${mensagem}
+        FROM projeto p
+        WHERE p.id = ${projectId.data}::uuid AND p.status = 'ABERTO'
+          AND EXISTS (SELECT 1 FROM oferta_servico o JOIN tipo_servico t ON t.id = o.tipo_servico_id
+            WHERE o.prestador_id = ${context.providerId}::uuid AND o.tipo_servico_id = p.tipo_servico_id AND o.ativo AND o.deleted_at IS NULL AND t.ativo)
+        RETURNING id`)).rows;
+      if (inserted.length) await avisarClienteDoProjeto(tx, "PROPOSTA_RECEBIDA", projectId.data);
+      return inserted;
+    });
   } catch (error) {
     const cause = error instanceof Error && "cause" in error ? error.cause : error;
     if (cause && typeof cause === "object" && "code" in cause && cause.code === "23505") return { error: "Você já enviou uma proposta para este projeto. Edite a proposta existente." };
@@ -99,6 +105,8 @@ async function clientContext() {
   return { clientId: session.user.id };
 }
 
+const avisoByStatus: Partial<Record<string, AvisoType>> = { PRE_SELECIONADA: "PROPOSTA_PRE_SELECIONADA", RECUSADA: "PROPOSTA_RECUSADA" };
+
 /** Um UPDATE condicional por transição: dono do Projeto, Projeto ABERTO e estado de origem permitido. */
 async function moveProposal(form: FormData, from: readonly ("ENVIADA" | "PRE_SELECIONADA")[], to: "ENVIADA" | "PRE_SELECIONADA" | "RECUSADA", done: string, blocked: string): Promise<ActionState> {
   const context = await clientContext();
@@ -106,13 +114,19 @@ async function moveProposal(form: FormData, from: readonly ("ENVIADA" | "PRE_SEL
   const id = uuidSchema.safeParse(form.get("propostaId"));
   if (!id.success) return { error: "Proposta inválida." };
   try {
-    const changed = await db.execute<{ id: string }>(sql`
-      UPDATE proposta pr SET status = ${to}::proposta_status, updated_at = now()
-      FROM projeto p
-      WHERE pr.id = ${id.data}::uuid AND p.id = pr.projeto_id AND p.cliente_id = ${context.clientId} AND p.status = 'ABERTO'
-        AND pr.status IN (${sql.join(from.map((status) => sql`${status}`), sql`, `)})
-      RETURNING pr.id`);
-    if (!changed.rows.length) return { error: blocked };
+    const moved = await db.transaction(async (tx) => {
+      const changed = await tx.execute<{ id: string; projectId: string; providerId: string }>(sql`
+        UPDATE proposta pr SET status = ${to}::proposta_status, updated_at = now()
+        FROM projeto p
+        WHERE pr.id = ${id.data}::uuid AND p.id = pr.projeto_id AND p.cliente_id = ${context.clientId} AND p.status = 'ABERTO'
+          AND pr.status IN (${sql.join(from.map((status) => sql`${status}`), sql`, `)})
+        RETURNING pr.id, pr.projeto_id AS "projectId", pr.prestador_id AS "providerId"`);
+      const row = changed.rows[0];
+      // Desfazer a pré-seleção (volta a ENVIADA) não avisa ninguém.
+      if (row && avisoByStatus[to]) await avisarPrestador(tx, avisoByStatus[to], row.projectId, row.providerId);
+      return Boolean(row);
+    });
+    if (!moved) return { error: blocked };
   } catch { return { error: "Não foi possível salvar a decisão. Tente novamente em alguns instantes." }; }
   revalidatePath("/painel", "layout");
   return { success: done };
@@ -146,13 +160,15 @@ export async function acceptProposal(_: ActionState, form: FormData): Promise<Ac
         WHERE pr.id = ${id.data}::uuid AND p.cliente_id = ${context.clientId} AND p.status = 'ABERTO' FOR UPDATE OF p`);
       const projectId = locked.rows[0]?.id;
       if (!projectId) return false;
-      const won = await tx.execute(sql`
+      const won = await tx.execute<{ id: string; providerId: string }>(sql`
         UPDATE proposta SET status = 'ACEITA', updated_at = now()
-        WHERE id = ${id.data}::uuid AND projeto_id = ${projectId}::uuid AND status IN ('ENVIADA', 'PRE_SELECIONADA') RETURNING id`);
+        WHERE id = ${id.data}::uuid AND projeto_id = ${projectId}::uuid AND status IN ('ENVIADA', 'PRE_SELECIONADA') RETURNING id, prestador_id AS "providerId"`);
       if (!won.rows.length) return false;
-      await tx.execute(sql`
+      const rejected = await tx.execute<{ providerId: string }>(sql`
         UPDATE proposta SET status = 'RECUSADA', updated_at = now()
-        WHERE projeto_id = ${projectId}::uuid AND id <> ${id.data}::uuid AND status IN ('ENVIADA', 'PRE_SELECIONADA')`);
+        WHERE projeto_id = ${projectId}::uuid AND id <> ${id.data}::uuid AND status IN ('ENVIADA', 'PRE_SELECIONADA') RETURNING prestador_id AS "providerId"`);
+      await avisarPrestador(tx, "PROPOSTA_ACEITA", projectId, won.rows[0].providerId);
+      for (const { providerId } of rejected.rows) await avisarPrestador(tx, "PROPOSTA_RECUSADA", projectId, providerId);
       const closed = await tx.execute(sql`
         UPDATE projeto SET status = 'ENCERRADO', proposta_aceita_id = ${id.data}::uuid, updated_at = now()
         WHERE id = ${projectId}::uuid AND status = 'ABERTO' RETURNING id`);
