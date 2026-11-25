@@ -345,6 +345,7 @@ add_action('init', function () {
   remove_action('woocommerce_after_shop_loop', 'storefront_sorting_wrapper', 9);
   remove_action('woocommerce_after_shop_loop', 'storefront_sorting_wrapper_close', 31);
   remove_action('woocommerce_before_shop_loop', 'woocommerce_pagination', 30);
+  remove_action('woocommerce_before_shop_loop', 'storefront_woocommerce_pagination', 30);
 });
 add_filter('woocommerce_catalog_orderby', fn ($o) => [
   'menu_order' => 'Relevância', 'rating' => 'Melhor avaliação', 'price' => 'Menor preço', 'price-desc' => 'Maior preço', 'date' => 'Mais recentes',
@@ -353,6 +354,20 @@ add_filter('loop_shop_columns', fn () => 3);
 add_filter('loop_shop_per_page', fn () => 12);
 
 /* ---------------------------------------------------------------- Contratação */
+
+// Carrinho e Contratação (blocos) montam o preço pela Store API, sem o filtro de preço: a unidade vai como dado do item.
+add_filter('woocommerce_get_item_data', function ($data, $item) {
+  $type = $item['data']->get_meta('_pd_tipo_preco');
+  if (!$type) return $data;
+  $unit = match ($type) {
+    'POR_HORA' => 'por hora',
+    'A_PARTIR_DE', 'INTERVALO' => 'valor inicial do projeto; o Prestador confirma o final',
+    default => 'por projeto',
+  };
+  $data[] = ['key' => 'Preço', 'value' => $unit];
+  $data[] = ['key' => 'Prazo', 'value' => pd_prazo($item['data'])];
+  return $data;
+}, 10, 2);
 
 add_filter('woocommerce_checkout_fields', function ($fields) {
   if (isset($fields['order']['order_comments'])) {
