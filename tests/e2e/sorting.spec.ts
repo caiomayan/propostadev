@@ -43,7 +43,7 @@ test("o foco volta à opção escolhida depois de ordenar pelo teclado", async (
 
 test("avaliações do perfil ordenam por nota", async ({ page }) => {
   await page.goto("/buscar?q=sistema%20agil");
-  await page.locator(".provider-result h2 a").first().click();
+  await page.locator(".search-results .provider-result h2 a").first().click();
   await expect(page).toHaveURL(/\/prestadores\//);
   const sort = page.getByRole("navigation", { name: "Ordenar avaliações" });
   await sort.getByRole("link", { name: "Pior nota" }).click();
