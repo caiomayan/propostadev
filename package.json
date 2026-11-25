@@ -10,6 +10,7 @@
     "dev": "next dev",
     "auth:generate": "auth generate --config scripts/auth-generation.ts --output src/lib/db/auth-schema.ts --yes",
     "test:integration": "tsx scripts/prepare-test-db.ts && vitest run --config vitest.integration.config.ts",
+    "demo:apresentacao": "tsx --conditions=react-server scripts/demo-mvp3/preparar-apresentacao.ts",
     "precos:coletar": "tsx --conditions=react-server --env-file=.env scripts/coletar-precos-externos.ts",
     "db:seed": "tsx --conditions=react-server --env-file=.env scripts/seed.ts",
     "build": "next build",
