@@ -10,11 +10,11 @@ export const filterLabels: Record<FilterKey, string> = { q: "Busca", tipo: "Tipo
 
 const first = (value: unknown) => (Array.isArray(value) ? value[0] : value);
 // Aceita "1500,50" além de "1500.50": quem digita em português usa vírgula. Milhar com ponto não é suportado (ambíguo).
-const money = z.string().trim().transform((value) => value.replace(",", ".")).pipe(moneySchema);
+const moneyInput = z.string().trim().transform((value) => value.replace(",", ".")).pipe(moneySchema);
 const fields = {
   q: z.string().trim().min(1).max(120),
   tipo: z.string().trim().min(1).max(120),
-  orcamento_min: money,
+  orcamento_min: moneyInput,
   prazo_ate: z.string().trim().regex(/^\d{1,4}$/).transform(Number).pipe(z.number().int().min(1).max(3650)),
   situacao: z.enum(opportunitySituations),
 } as const;
