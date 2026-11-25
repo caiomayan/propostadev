@@ -49,11 +49,4 @@ services:
     volumes:
       - wp:/var/www/html
       - ./seed:/seed:ro
-  tunnel:
-    image: cloudflare/cloudflared:2026.10.1
-    profiles: [publico]
-    restart: unless-stopped
-    command: tunnel --no-autoupdate run --url http://wordpress:80 propostadev-loja
-    volumes:
-      - ${HOME}/.cloudflared:/home/nonroot/.cloudflared:ro
 volumes: { db: {}, wp: {} }

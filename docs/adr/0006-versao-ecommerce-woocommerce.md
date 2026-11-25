@@ -9,7 +9,7 @@ O site (Next.js) é a versão própria da plataforma. A disciplina pede também 
 ## Decisões
 
 1. **WooCommerce (WordPress), auto-hospedado.** Alternativas: Shopify e Nuvemshop (exigem cadastro do dono, e o Shopify cobra depois do teste), Vercel (não roda WordPress: precisa de PHP, MySQL e disco persistente). O WooCommerce é gratuito, é a plataforma de e-commerce mais usada e é instalável e configurável inteiro por linha de comando (WP-CLI), então a loja é reproduzível a partir do repositório.
-2. **Hospedagem na VM Oracle do dono, em Docker Compose separado do Carmine, publicada por túnel da Cloudflare em `propostadev.caiomayan.com`.** As portas 80/443 da VM não estão abertas para a internet; o Carmine já sai por túnel. A loja tem rede, volumes e túnel próprios e limite de memória (768 MB no WordPress). Fica fora do Coolify por enquanto (prazo); o mesmo `ecommerce/compose.yml` pode ser importado no Coolify depois.
+2. **Hospedagem na VM Oracle do dono, em Docker Compose separado do Carmine, publicada em `propostadev.caiomayan.com` por uma rota a mais no túnel da Cloudflare que já roda na VM (`caiomayan-vm`, serviço do sistema), apontando para `127.0.0.1:8090`.** As portas 80/443 da VM não estão abertas para a internet; o Carmine já sai por esse túnel, e as rotas dele não mudaram. A loja tem rede, volumes e túnel próprios e limite de memória (768 MB no WordPress). Fica fora do Coolify por enquanto (prazo); o mesmo `ecommerce/compose.yml` pode ser importado no Coolify depois.
 3. **Mapeamento do domínio para o WooCommerce:**
    - Oferta → produto virtual (sem frete), vendido um por pedido; Oferta por hora aceita quantidade de horas.
    - Categoria > Tipo de serviço → categorias de produto (com hierarquia).
@@ -24,4 +24,4 @@ O site (Next.js) é a versão própria da plataforma. A disciplina pede também 
 
 - Ficam fora da loja: Triagem, Preço de referência, Projetos e Propostas, Comparação, Selo de confiança, Avisos e o painel da plataforma. São a diferença entre a plataforma própria e a loja pronta.
 - Senhas da loja (banco e administrador `equipe`) ficam em `~/.config/propostadev/loja.env` na VM, fora do git.
-- Um contêiner `cloudflared` próprio, com credencial de túnel em `~/.cloudflared` da VM.
+- Nenhuma credencial nova: a rota e o registro DNS (CNAME com proxy) foram criados pela API da Cloudflare na conta do dono. Para tirar a loja do ar, remover a rota `propostadev.caiomayan.com` do túnel `caiomayan-vm` e o CNAME.

@@ -7,11 +7,12 @@ O que a loja faz: catálogo das Ofertas dos Prestadores da demo, filtrado por ca
 ## Rodar (na VM, da raiz do repositório)
 
 ```sh
-ENV=~/.config/propostadev/loja.env                    # senhas do banco e do administrador; LOJA_URL para o endereço público
+ENV=~/.config/propostadev/loja.env                    # senhas do banco e do administrador; LOJA_URL=https://propostadev.caiomayan.com
 docker compose --env-file $ENV -f ecommerce/compose.yml up -d                         # banco + WordPress (local: http://localhost:8090)
 docker compose --env-file $ENV -f ecommerce/compose.yml run --rm cli sh /seed/instalar.sh  # instala e configura tudo; pode repetir
-docker compose --env-file $ENV -f ecommerce/compose.yml --profile publico up -d tunnel    # publica pelo túnel da Cloudflare
 ```
+
+O endereço público é uma rota do túnel da Cloudflare `caiomayan-vm` (já rodando na VM) para `127.0.0.1:8090`, com CNAME `propostadev` na zona caiomayan.com.
 
 ## Atualizar o catálogo
 

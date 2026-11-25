@@ -46,7 +46,7 @@ ul.products li.product .price,.single-product .summary .price{color:var(--pd-for
 .star-rating span::before,.star-rating::before,p.stars a,p.stars a::before{color:var(--pd-forest)!important}
 a,.woocommerce-tabs ul.tabs li.active a{color:var(--pd-forest)}
 .site-header{background:var(--pd-bg)!important}
-.woocommerce-product-gallery .woocommerce-product-gallery__image img{opacity:1!important}
+.woocommerce-product-gallery,.woocommerce-product-gallery .woocommerce-product-gallery__image img{opacity:1!important}
 .site-footer .site-info + .site-info{display:none}
 CSS;
 }
@@ -150,6 +150,9 @@ add_filter('storefront_featured_products_args', fn ($a) => array_merge($a, ['tit
 add_filter('storefront_product_categories_args', fn ($a) => array_merge($a, ['title' => 'Serviços por categoria', 'limit' => 3, 'columns' => 3]));
 add_filter('storefront_popular_products_args', fn ($a) => array_merge($a, ['title' => 'Mais bem avaliados', 'limit' => 4, 'columns' => 4]));
 add_filter('storefront_recent_products_args', fn ($a) => array_merge($a, ['title' => 'Ofertas recentes', 'limit' => 4, 'columns' => 4]));
+
+// Capa é uma arte fixa: sem zoom (no celular ele mostrava só um pedaço).
+add_action('after_setup_theme', fn () => remove_theme_support('wc-product-gallery-zoom'), 99);
 
 // Favicon da marca.
 add_action('wp_head', function () {
