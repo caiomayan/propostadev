@@ -44,7 +44,34 @@ Isso apaga só os Interesses no VIP das contas `@demo.example` (o botão "Tenho 
 3. Explique: o Firecrawl lê as páginas toda segunda-feira e extrai a faixa com um schema JSON; o valor só é gravado se aparecer no trecho citado. Fica separado do Preço de referência, que continua sendo só o mercado da plataforma.
 4. Volte e escolha "Preciso de uma API para meu aplicativo" → **API**: "Ainda não há preço externo para este Tipo de serviço" (sem fonte pública confiável em reais).
 
+## 5. Versão e-commerce com WooCommerce (~2 min, visitante)
+Endereço: https://propostadev.caiomayan.com (ADR 0006). Mesma identidade do site.
+1. Página inicial: o painel lima **O que você precisa?** leva direto a cada Tipo de serviço; abaixo, **Destaque VIP**, **Como funciona a contratação** e **Mais bem avaliados**.
+2. Clique em **Landing Page** no painel: o catálogo filtra pelo Tipo (os botões no topo trocam o filtro). Cada card mostra o Prestador, a nota, o prazo e o preço com unidade.
+3. Abra **Landing Page de lançamento** (Bruno Cavalcanti, VIP): ficha do Prestador com link para o Perfil no site, preço, prazo e as abas **O que está incluído**, **Sobre o Prestador** e **Avaliações**.
+4. **Contratar** leva ao **Carrinho** → **Ir para a Contratação**: nome, e-mail e **Descreva seu Projeto** (obrigatório; sem endereço, porque nada é entregue nem cobrado) e "Combinar pagamento com o Prestador". **Confirmar Contratação** mostra a Contratação recebida, que chega ao Prestador com o Projeto e o contato do Cliente.
+5. **Regras de negócio** (o **Entrar** fica no cabeçalho; senha das contas demo). Mostre que **Continuar com Google** usa a mesma conta do Proposta.dev: login único entre a plataforma e a loja.
+   - Entre como **cliente1@demo.example** (Mariana Costa) → **Minhas Contratações**: uma *Aguardando o Prestador* (Bruno Cavalcanti) e uma *Concluída* (Aurora Web Studio), com as respostas do Prestador.
+   - Saia e entre como **prestador2@demo.example** (Bruno) → **Contratações recebidas**: a Contratação da Mariana com a descrição do Projeto. **Confirmar escopo** e depois **Marcar como concluída**. Outro Prestador não vê essa Contratação, e Prestador não entra no `/wp-admin`.
+   - (Opcional) Saia e abra **Quero oferecer serviços** no rodapé: o cadastro de Prestador cria a conta e leva direto a Minhas Ofertas.
+   - Como Bruno, abra **Minhas Ofertas**: ele edita, pausa e cria Ofertas com as mesmas regras do site. Tente criar outra Landing Page ativa: a loja recusa (uma Oferta ativa por Tipo de serviço, como no site).
+   - Volte como Mariana e abra a Oferta do Bruno → aba **Avaliações**: agora o formulário aparece; a Avaliação sai com o selo **Contratação verificada**. Quem não contratou vê o aviso de que só quem teve a Contratação concluída avalia.
+   - Tente pôr no carrinho Ofertas de dois Prestadores: a loja recusa (uma Contratação é com um Prestador por vez, como a Proposta no site).
+6. Mostre também uma Oferta **sob consulta** (Site institucional sob medida, Maré Sistemas): não vai para o carrinho, o botão pede orçamento no site.
+7. Explique o mapeamento: Oferta vira produto, Tipo de serviço vira categoria, Prestador vira marca (tem página própria), Avaliação do Prestador aparece no produto. Triagem, Preço de referência, Projetos e Propostas ficam só na plataforma própria: é o que uma loja pronta não faz, e a loja manda para lá quando o Cliente não sabe o que precisa.
+
+Depois do ensaio, volte a loja ao ponto de partida com o reset de `ecommerce/README.md` (apaga as Contratações e Avaliações feitas no ensaio e recria as duas de exemplo).
+
+## 5b. Como provar que a loja é WooCommerce (~1 min)
+1. **Painel do WooCommerce:** entre na loja como **plataforma@demo.example** (Equipe, senha das contas demo) → menu da conta → **Painel da Equipe**, ou abra `/wp-admin`. Mostre **WooCommerce → Pedidos** (as Contratações com os status Aguardando o Prestador e Concluída), **Produtos** (as 27 Ofertas), **Clientes** e **Relatórios**.
+2. **API do WooCommerce, ao vivo:** abra https://propostadev.caiomayan.com/wp-json/wc/store/v1/products, o catálogo em JSON pela API pública do WooCommerce.
+3. **Código da página:** Ctrl+U na loja e busque `generator`: aparecem `WordPress` e `WooCommerce 11.3.1`. O rodapé também diz "Loja feita com WooCommerce (WordPress)".
+4. **Repositório:** `ecommerce/seed/instalar.sh` instala o WooCommerce por WP-CLI (`wp plugin install woocommerce`), e as regras ficam em `ecommerce/seed/mu-plugin/`, que usa só os ganchos do WooCommerce, sem plugin pago.
+
 ## Perguntas prováveis
 - *O VIP é pago?* Nesta versão não: só registra interesse. Cobrança exige decisões de produto e jurídicas próprias.
 - *Por que não misturar o preço externo na média?* Porque o Preço de referência promete mostrar o mercado da plataforma, com o tamanho da amostra; misturar esconderia a origem do número.
+- *E o cadastro de Prestador na loja?* Existe: **Quero oferecer serviços** (rodapé e tela de login) cria a conta de Prestador com as mesmas regras do Perfil do site e leva a Minhas Ofertas. O Perfil completo, o Selo de confiança e a Triagem ficam na plataforma própria, que é o diferencial dela.
+- *O banco é compartilhado?* Os dados não; a identidade sim: **Continuar com Google** entra na loja com a conta Proposta.dev (o site confirma quem é e entrega à loja um token assinado de uso único). Os dados ficam separados: a loja tem banco próprio (MariaDB do WordPress) e o site tem o Postgres. O catálogo da loja é uma cópia da demo do site, refeita a cada reset. É a separação típica de uma loja pronta como canal de venda; integrar os dois pela API do site é o próximo passo.
+- *Por que WooCommerce?* É gratuito, é a plataforma de e-commerce mais usada e é configurável por linha de comando, então a loja inteira se recria a partir do repositório. Shopify e Nuvemshop exigem conta, e o Shopify cobra depois do teste.
 - *E se uma fonte mudar ou sair do ar?* A coleta grava FALHA e a tela continua mostrando o último valor válido, com a data.

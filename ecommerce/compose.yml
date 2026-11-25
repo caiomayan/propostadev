@@ -1,0 +1,55 @@
+# Versão e-commerce do Proposta.dev (WooCommerce). ADR 0006. Segredos em ~/.config/propostadev/loja.env (fora do repo).
+# Subir: docker compose --env-file ~/.config/propostadev/loja.env -f ecommerce/compose.yml up -d
+name: propostadev-loja
+services:
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: loja
+      MARIADB_USER: loja
+      MARIADB_PASSWORD: ${LOJA_DB_PASSWORD:?defina LOJA_DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${LOJA_DB_ROOT_PASSWORD:?defina LOJA_DB_ROOT_PASSWORD}
+    volumes: [db:/var/lib/mysql]
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      retries: 20
+  wordpress:
+    image: wordpress:6.8-php8.3-apache
+    restart: unless-stopped
+    depends_on: { db: { condition: service_healthy } }
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: loja
+      WORDPRESS_DB_USER: loja
+      WORDPRESS_DB_PASSWORD: ${LOJA_DB_PASSWORD}
+      WORDPRESS_CONFIG_EXTRA: |
+        define('WP_HOME', getenv('LOJA_URL') ?: 'http://localhost:8090');
+        define('WP_SITEURL', getenv('LOJA_URL') ?: 'http://localhost:8090');
+        if (isset($$_SERVER['HTTP_X_FORWARDED_PROTO']) && $$_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') { $$_SERVER['HTTPS'] = 'on'; }
+        define('DISALLOW_FILE_EDIT', true);
+      LOJA_URL: ${LOJA_URL:-http://localhost:8090}
+      LOJA_SSO_SECRET: ${LOJA_SSO_SECRET:-}
+    volumes: [wp:/var/www/html]
+    ports: ["127.0.0.1:8090:80"]
+    mem_limit: 768m
+  cli:
+    image: wordpress:cli-php8.3
+    profiles: [cli]
+    user: "33:33"
+    depends_on: [wordpress]
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: loja
+      WORDPRESS_DB_USER: loja
+      WORDPRESS_DB_PASSWORD: ${LOJA_DB_PASSWORD}
+      LOJA_URL: ${LOJA_URL:-http://localhost:8090}
+      LOJA_ADMIN_PASSWORD: ${LOJA_ADMIN_PASSWORD}
+      WP_CLI_CACHE_DIR: /tmp/wp-cli-cache
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-}
+      PD_RESET: ${PD_RESET:-0}
+    volumes:
+      - wp:/var/www/html
+      - ./seed:/seed:ro
+volumes: { db: {}, wp: {} }
