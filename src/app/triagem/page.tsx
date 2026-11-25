@@ -18,6 +18,8 @@ import { findServiceType, getGoals, precoReferencia, prestadoresCompativeis, typ
 import { draftKeys, draftQuery, parseDraft, rawDraft, type Draft, type SearchParams } from "@/modules/triage/validation";
 import { RollingFigure } from "@/components/rolling-figure";
 import { money } from "@/lib/format";
+import { ExternalPrices } from "@/components/external-prices";
+import { latestExternalPrices } from "@/modules/external-prices/queries";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Triagem do projeto", description: "Descreva o que você precisa, veja o preço de referência e os prestadores compatíveis." };
@@ -84,8 +86,9 @@ async function DetailsStep({ serviceType, goalSlug, raw, errors }: { serviceType
 }
 
 async function ResultStep({ serviceType, draft, goalSlug, ordem }: { serviceType: ServiceTypeSummary; draft: Draft; goalSlug: string; ordem: unknown }) {
-  const [reference, compatible, session] = await Promise.all([
+  const [reference, external, compatible, session] = await Promise.all([
     precoReferencia(serviceType.id),
+    latestExternalPrices(serviceType.id),
     prestadoresCompativeis({ tipoServicoId: serviceType.id, orcamento: draft.orcamento, prazoDias: draft.prazoDias }),
     getSession(),
   ]);
@@ -106,6 +109,8 @@ async function ResultStep({ serviceType, draft, goalSlug, ordem }: { serviceType
         <PriceRuler data={{ faixa: reference.faixa, media: reference.mediaFixos, n: reference.n, orcamento: draft.orcamento, posicao: position }}/>
       </> : <div className="insufficient"><strong>Dados insuficientes</strong><p>Só {reference.n} {reference.n === 1 ? "prestador anuncia" : "prestadores anunciam"} preço por projeto neste tipo de serviço. Precisamos de pelo menos 3 para mostrar uma média ou faixa sem enganar. Você ainda pode publicar o projeto e receber propostas.</p></div>}
     </section>
+
+    <ExternalPrices prices={external} serviceName={serviceType.name} headingId="preco-externo" level={2}/>
 
     <section className="stack" aria-labelledby="compativeis">
       <div><p className="eyebrow">Prestadores compatíveis</p><h2 id="compativeis">{providers.length ? `${providers.length} ${providers.length === 1 ? "prestador oferece" : "prestadores oferecem"} ${serviceType.name}` : "Ainda não há prestadores neste tipo"}</h2><p className="muted">{isDefault ? "Ordenados por orçamento, prazo, avaliações verificadas e nota. " : ""}Cada card mostra o motivo.</p></div>
