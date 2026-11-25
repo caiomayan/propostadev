@@ -20,8 +20,8 @@ function testPool() {
 }
 
 test("busca sem acento, filtros, preço médio por tipo e estados vazios", async ({ page }) => {
-  await page.goto("/buscar?q=clara%20codigo");
-  await expect(page.getByRole("heading", { name: "Clara Medeiros" })).toBeVisible();
+  await page.goto("/buscar?q=patricia%20lins");
+  await expect(page.getByRole("heading", { name: "Patrícia Lins" })).toBeVisible();
   await expect(page.locator(".search-results .provider-result")).toHaveCount(1);
   await page.goto("/buscar?tipo=landing-page");
   await expect(page.locator(".price-statistic")).toContainText("R$ 1.000,00");
@@ -59,11 +59,11 @@ test("comparação limita três, persiste após reload, substitui contexto e rem
       SELECT $1,p.id,t.id,'Z API adicional para comparação','Oferta temporária de API para validar substituição de contexto na comparação.','FIXO',2500,'FIXO',15,true
       FROM perfil_prestador p CROSS JOIN tipo_servico t WHERE p.slug='aurora-web-studio-3f9a1c2e' AND t.slug='api'`, [extraId]);
     await page.goto("/buscar");
-    for (const name of ["Aurora Web Studio", "Bruno Cavalcanti", "Nexo Studio"]) {
+    for (const name of ["Aurora Web Studio", "Bruno Cavalcanti", "Clara Medeiros"]) { // todos na página 1 (ordem por nome, 12 por página)
       await page.locator(".search-results .provider-result").filter({ has: page.getByRole("heading", { name, exact: true }) }).getByRole("button", { name: "Comparar", exact: true }).click();
       await expect(page.locator(".search-results .provider-result").filter({ has: page.getByRole("heading", { name, exact: true }) }).getByRole("button", { name: "Remover da comparação" })).toBeVisible();
     }
-    await page.locator(".search-results .provider-result").filter({ has: page.getByRole("heading", { name: "Clara Medeiros", exact: true }) }).getByRole("button", { name: "Comparar", exact: true }).click();
+    await page.locator(".search-results .provider-result").filter({ has: page.getByRole("heading", { name: "Diego Albuquerque", exact: true }) }).getByRole("button", { name: "Comparar", exact: true }).click();
     await expect(page.getByRole("status")).toContainText("até três prestadores");
     const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("proposta-comparison-offers") ?? "[]") as string[]);
     expect(stored).toHaveLength(3);

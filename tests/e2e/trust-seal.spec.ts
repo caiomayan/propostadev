@@ -11,7 +11,7 @@ test("Selo de confiança aparece no Perfil, na busca e explica os critérios; qu
   await expect(seal.getByText("Média das Avaliações verificadas de 4,0 ou mais")).toBeVisible();
   await expect(seal.getByText("E-mail da conta confirmado")).toBeVisible();
 
-  await page.goto("/buscar?q=Clara%20C%C3%B3digo");
+  await page.goto("/buscar?q=Clara%20Medeiros");
   await expect(page.locator(".search-results .provider-result .trust-seal")).toHaveCount(1);
 
   // Sem Avaliação verificada (só uma Avaliação anterior) → sem selo.
