@@ -86,6 +86,7 @@ fi
 wp eval-file /seed/textos.php
 wp eval-file /seed/checkout-classico.php
 wp eval-file /seed/termos.php
+wp option update pd_sso_ativo yes >/dev/null  # botão Google: a rota do site já está no ar (PR #16)
 wp eval-file /seed/demo.php
 wp rewrite flush >/dev/null 2>&1 || true
 wp cache flush >/dev/null
