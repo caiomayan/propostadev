@@ -215,3 +215,19 @@
   .proposal-card { padding: 18px; }
   .proposal-figures .figure { font-size: 1.3125rem; }
 }
+
+/* Filtros de Oportunidades (MVP 3): painel recolhível; abre sozinho quando há filtro ativo. */
+.opportunity-filters { background: var(--card); border-radius: var(--radius-lg); }
+.opportunity-filters summary { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 8px 24px; font-weight: 700; cursor: pointer; border-radius: var(--radius-lg); }
+.opportunity-filters summary:focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
+.opportunity-filters details[open] > summary { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.opportunity-filter-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px 20px; padding: 8px 24px 4px; }
+.opportunity-filter-fields input, .opportunity-filter-fields select { width: 100%; min-width: 0; }
+.opportunity-filter-actions { display: flex; flex-wrap: wrap; gap: 12px; padding: 16px 24px 24px; }
+.opportunity-count { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.opportunity-count p { margin: 0; }
+.opportunity-count .chips-row { list-style: none; padding: 0; }
+@media (max-width: 768px) {
+  .opportunity-filters summary, .opportunity-filter-fields, .opportunity-filter-actions { padding-inline: 16px; }
+  .opportunity-filter-actions .button { flex: 1 1 140px; }
+}

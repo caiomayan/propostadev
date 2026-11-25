@@ -3,6 +3,7 @@ import { sql, type SQL } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { reputationSubquery } from "@/modules/reviews/queries";
+import type { FilterKey, OpportunityFilters } from "./filters";
 import { uuidSchema } from "./validation";
 
 export type ProposalStatus = "ENVIADA" | "PRE_SELECIONADA" | "RECUSADA" | "ACEITA" | "RETIRADA";
@@ -60,13 +61,38 @@ const select = (providerId: string) => sql`
   FROM projeto p JOIN tipo_servico t ON t.id = p.tipo_servico_id JOIN "user" u ON u.id = p.cliente_id
   LEFT JOIN proposta pr ON pr.projeto_id = p.id AND pr.prestador_id = ${providerId}::uuid`;
 
-export async function listOpportunities(userId: string): Promise<{ standing: ProviderStanding; items: Opportunity[] }> {
+export type OpportunityServiceType = { slug: string; name: string };
+
+/** Escapa o texto para ILIKE: % e _ da entrada valem como texto, não como curinga. */
+const likePattern = (text: string) => `%${text.replace(/[\\%_]/g, "\\$&")}%`;
+
+/**
+ * Oportunidades do Prestador da sessão, com filtros opcionais (ticket 03 do MVP 3). Os filtros só restringem o que o Prestador
+ * já poderia ver: Tipo fora dos seus é ignorado (vai em `ignored`), nunca amplia o acesso. Valores chegam já validados por
+ * `parseOpportunityFilters`, e tudo entra no SQL como parâmetro.
+ */
+export async function listOpportunities(userId: string, filters: OpportunityFilters = {}): Promise<{ standing: ProviderStanding; items: Opportunity[]; types: OpportunityServiceType[]; ignored: FilterKey[] }> {
   const standing = await getProviderStanding(userId);
-  if (standing.state !== "ok") return { standing, items: [] };
+  if (standing.state !== "ok") return { standing, items: [], types: [], ignored: [] };
+  const typesResult = await db.execute<OpportunityServiceType>(sql`
+    SELECT DISTINCT t.slug, t.nome AS name FROM oferta_servico o JOIN tipo_servico t ON t.id = o.tipo_servico_id
+    WHERE o.prestador_id = ${standing.providerId}::uuid AND o.ativo AND o.deleted_at IS NULL ORDER BY t.nome`);
+  const types = typesResult.rows;
+  const ignored: FilterKey[] = [];
+  const conditions: SQL[] = [];
+  if (filters.q) conditions.push(sql`unaccent(concat_ws(' ', p.titulo, p.descricao)) ILIKE unaccent(${likePattern(filters.q)}) ESCAPE '\\'`);
+  if (filters.tipo) { if (types.some((type) => type.slug === filters.tipo)) conditions.push(sql`t.slug = ${filters.tipo}`); else ignored.push("tipo"); }
+  // O teto do orçamento decide: "até R$ 3.000" e "R$ 1.000 a R$ 3.000" servem a quem cobra a partir de R$ 2.500. "Ainda não sei" sempre passa.
+  if (filters.orcamento_min) conditions.push(sql`(p.orcamento_tipo = 'NAO_SEI' OR p.orcamento_max >= ${filters.orcamento_min}::numeric)`);
+  if (filters.prazo_ate !== undefined) conditions.push(sql`p.prazo_desejado_dias <= ${filters.prazo_ate}`);
+  if (filters.situacao === "convidado") conditions.push(sql`EXISTS (SELECT 1 FROM convite c WHERE c.projeto_id = p.id AND c.prestador_id = ${standing.providerId}::uuid)`);
+  if (filters.situacao === "sem_proposta") conditions.push(sql`pr.id IS NULL`);
+  if (filters.situacao === "enviada") conditions.push(sql`pr.id IS NOT NULL`);
+  const extra = conditions.length ? sql` AND ${sql.join(conditions, sql` AND `)}` : sql``;
   const result = await db.execute<Row>(sql`${select(standing.providerId)}
-    WHERE p.status = 'ABERTO' AND EXISTS (SELECT 1 FROM oferta_servico o WHERE o.prestador_id = ${standing.providerId}::uuid AND o.tipo_servico_id = p.tipo_servico_id AND o.ativo AND o.deleted_at IS NULL)
+    WHERE p.status = 'ABERTO' AND EXISTS (SELECT 1 FROM oferta_servico o WHERE o.prestador_id = ${standing.providerId}::uuid AND o.tipo_servico_id = p.tipo_servico_id AND o.ativo AND o.deleted_at IS NULL)${extra}
     ORDER BY invited DESC, p.created_at DESC, p.id`);
-  return { standing, items: result.rows.map(toOpportunity) };
+  return { standing, items: result.rows.map(toOpportunity), types, ignored };
 }
 
 /** Uma Oportunidade: aberta e do tipo do Prestador, ou um Projeto em que ele já enviou Proposta (somente leitura). */

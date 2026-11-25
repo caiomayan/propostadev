@@ -4,12 +4,18 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** done
 
 - [x] Prefactor feito pelo coordenador no mvp3: migration 0007 (coluna `vip`, tabelas `interesse_vip` e `preco_mercado_externo`, RLS) e módulo de seed próprio em `scripts/demo-mvp3/oportunidades.ts` (idempotente, só aditivo, pode rodar contra a produção). Não crie migration nova; não edite `scripts/seed-demo.ts`.
-- [ ] Integração: cada filtro isolado e combinados; NAO_SEI incluído com filtro de orçamento; Projeto sem prazo só aparece sem filtro de prazo; Tipo fora dos do Prestador ignorado; situação usa só o Prestador da sessão; entradas inválidas ignoradas sem erro.
-- [ ] Parâmetros validados com zod no servidor; Prestador sempre da sessão.
-- [ ] Estado vazio com "limpar filtros"; contagem de resultados.
-- [ ] Seed demo (no seu módulo): Oportunidades variadas (orçamentos, prazos, Convites) para mostrar os filtros.
-- [ ] E2E: abrir a página com filtros na URL e ver o recorte certo.
-- [ ] Verificado no browser em 375 e 1440 px, sem erro de console.
+- [x] Integração (evidência: `pnpm test:integration` → 78 passed, incl. tests/integration/opportunity-filters.test.ts, 10 testes): cada filtro isolado e combinados; NAO_SEI incluído com filtro de orçamento; Projeto sem prazo só aparece sem filtro de prazo; Tipo fora dos do Prestador ignorado; situação usa só o Prestador da sessão; entradas inválidas ignoradas sem erro.
+- [x] Parâmetros validados (src/modules/proposals/filters.ts, campo a campo; Prestador vem de `getProviderStanding(session)`): com zod no servidor; Prestador sempre da sessão.
+- [x] Estado vazio e contagem (verificado no browser e no e2e): com "limpar filtros"; contagem de resultados.
+- [x] Seed demo (scripts/demo-mvp3/oportunidades.ts; rodado 2x, 0 duplicados): (no seu módulo): Oportunidades variadas (orçamentos, prazos, Convites) para mostrar os filtros.
+- [x] E2E (tests/e2e/opportunity-filters.spec.ts; 6 passed contra `next dev` com a demo; no CI roda com o build): abrir a página com filtros na URL e ver o recorte certo.
+- [x] Verificado no browser (Chromium headless, 375 e 1440 px: sem overflow horizontal, sem erro de console/rede): em 375 e 1440 px, sem erro de console.
+
+## Comentários
+
+- Decisão não coberta pela spec: situação `enviada`/`sem_proposta` considera qualquer Proposta do Prestador no Projeto (inclusive retirada/recusada), coerente com o chip de status do card. Coordenador pode redefinir.
+- Seletor de Tipo só aparece se o Prestador tem Ofertas em 2+ Tipos. Vírgula decimal aceita em `orcamento_min`.
+- `pnpm lint`, tipos e `pnpm test` (97) passando. Build e e2e completo ficam para o CI.
