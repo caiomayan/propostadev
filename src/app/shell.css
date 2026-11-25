@@ -252,4 +252,4 @@ input[type=checkbox]:focus-visible, input[type=radio]:focus-visible { outline: 3
   .dash-figure { padding: 16px 18px; }
 }
 
-.plataforma-action { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.plataforma-action { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 6px; align-items: flex-start; } /* acima do link do nome, que cobre a linha inteira */

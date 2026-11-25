@@ -28,3 +28,4 @@
 .aviso-meta span { overflow-wrap: anywhere; }
 .aviso-new { flex-shrink: 0; }
 @media (max-width: 560px) { .aviso-row { padding: 16px 18px; } }
+@media (max-width: 359px) { .avisos-bell { display: none; } } /* em 320 px o sino empurraria o botão Menu; o menu mobile já mostra Avisos com o número */
